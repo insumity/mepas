@@ -1,0 +1,5 @@
+1) Inside an SQL function I had:
+        RETURN QUERY SELECT id INTO received_message_id ...
+ and although this was passing from PostgresSQL I received
+ error message in Java when trying to execute the query. The
+ error message was: 'PSQLException ERROR: cannot open SELECT query as cursor'
