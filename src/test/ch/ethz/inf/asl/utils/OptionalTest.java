@@ -28,7 +28,6 @@ public class OptionalTest {
         optional.get();
     }
 
-
     @Test(groups = SMALL)
     public void testIsPresentWhenThereIsSomething() {
         Optional<String> optional = Optional.of("Sfdsf");
