@@ -15,5 +15,7 @@ lastest version (should be 9.3)
 
 Monday(29/09)
 -------------
-Don't forget to clean up code ... perhaps some methods are unused and they are only
+1) Don't forget to clean up code ... perhaps some methods are unused and they are only
 used in their tests. I'm talking about Message
+
+2) Do we have to implement a sendMessage to multiple queues?
