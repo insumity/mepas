@@ -2,6 +2,7 @@ package ch.ethz.inf.asl.middleware;
 
 import ch.ethz.inf.asl.Message;
 import ch.ethz.inf.asl.MessageProtocolException;
+import ch.ethz.inf.asl.utils.Optional;
 import ch.ethz.inf.asl.utils.Utilities;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -18,6 +19,8 @@ import static org.mockito.Mockito.*;
 import static org.testng.Assert.assertEquals;
 
 import static ch.ethz.inf.asl.utils.TestConstants.SMALL;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertTrue;
 
 public class MWMessagingProtocolImplTest {
 
@@ -175,7 +178,7 @@ public class MWMessagingProtocolImplTest {
         int queueId = 56;
         boolean retrieveByArrivalTime = false;
         String content = Utilities.createStringWith(2000, '%');
-        Message expectedMessage = new Message(234, requestingUserId, queueId, Timestamp.valueOf("1999-01-08 04:05:06"), content);
+        Message expectedMessage = new Message(234, Optional.of(requestingUserId), queueId, Timestamp.valueOf("1999-01-08 04:05:06"), content);
 
         ResultSet mockedResultSet = mock(ResultSet.class);
         when(mockedResultSet.next()).thenReturn(true).thenReturn(false); // only returns one row
@@ -187,8 +190,9 @@ public class MWMessagingProtocolImplTest {
         when(mockedResultSet.getString(6)).thenReturn(content);
         when(mockedStatement.executeQuery()).thenReturn(mockedResultSet);
 
-        Message actualMessage = protocol.receiveMessage(queueId, retrieveByArrivalTime);
-        assertEquals(actualMessage, expectedMessage);
+        Optional<Message> actualMessage = protocol.receiveMessage(queueId, retrieveByArrivalTime);
+        assertTrue(actualMessage.isPresent());
+        assertEquals(actualMessage.get(), expectedMessage);
     }
 
     @Test(groups = SMALL)
@@ -202,8 +206,8 @@ public class MWMessagingProtocolImplTest {
 
         int queueId = 56;
         boolean retrieveByArrivalTime = false;
-        Message actualMessage = protocol.receiveMessage(queueId, retrieveByArrivalTime);
-        assertEquals(actualMessage, null);
+        Optional<Message> actualMessage = protocol.receiveMessage(queueId, retrieveByArrivalTime);
+        assertFalse(actualMessage.isPresent());
     }
 
     @Test(groups = SMALL, expectedExceptions = MessageProtocolException.class, expectedExceptionsMessageRegExp = ".*than 2 messages.*")
@@ -252,7 +256,7 @@ public class MWMessagingProtocolImplTest {
         int queueId = 56;
         boolean retrieveByArrivalTime = false;
         String content = Utilities.createStringWith(200, 'A');
-        Message expectedMessage = new Message(senderId, requestingUserId, queueId, Timestamp.valueOf("1999-01-08 04:05:06"), content);
+        Message expectedMessage = new Message(senderId, Optional.of(requestingUserId), queueId, Timestamp.valueOf("1999-01-08 04:05:06"), content);
 
         ResultSet mockedResultSet = mock(ResultSet.class);
         when(mockedResultSet.next()).thenReturn(true).thenReturn(false); // only returns one row
@@ -264,8 +268,9 @@ public class MWMessagingProtocolImplTest {
         when(mockedResultSet.getString(6)).thenReturn(content);
         when(mockedStatement.executeQuery()).thenReturn(mockedResultSet);
 
-        Message actualMessage = protocol.receiveMessage(senderId, queueId, retrieveByArrivalTime);
-        assertEquals(actualMessage, expectedMessage);
+        Optional<Message> actualMessage = protocol.receiveMessage(senderId, queueId, retrieveByArrivalTime);
+        assertTrue(actualMessage.isPresent());
+        assertEquals(actualMessage.get(), expectedMessage);
     }
 
     // FIXME more tests for read message
@@ -277,7 +282,7 @@ public class MWMessagingProtocolImplTest {
         int queueId = 56;
         boolean retrieveByArrivalTime = false;
         String content = Utilities.createStringWith(200, 'A');
-        Message expectedMessage = new Message(234234, requestingUserId, queueId, Timestamp.valueOf("1999-01-08 04:05:06"), content);
+        Message expectedMessage = new Message(234234, Optional.of(requestingUserId), queueId, Timestamp.valueOf("1999-01-08 04:05:06"), content);
 
         ResultSet mockedResultSet = mock(ResultSet.class);
         when(mockedResultSet.next()).thenReturn(true).thenReturn(false); // only returns one row
@@ -289,8 +294,9 @@ public class MWMessagingProtocolImplTest {
         when(mockedResultSet.getString(6)).thenReturn(content);
         when(mockedStatement.executeQuery()).thenReturn(mockedResultSet);
 
-        Message actualMessage = protocol.readMessage(queueId, retrieveByArrivalTime);
-        assertEquals(actualMessage, expectedMessage);
+        Optional<Message> actualMessage = protocol.readMessage(queueId, retrieveByArrivalTime);
+        assertTrue(actualMessage.isPresent());
+        assertEquals(actualMessage.get(), expectedMessage);
     }
 
     // FIXME more test for list queues
