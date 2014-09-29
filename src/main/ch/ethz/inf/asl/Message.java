@@ -69,16 +69,10 @@ public class Message {
         if (obj instanceof Message) {
             Message other = (Message) obj;
 
-            boolean equalsReceivers;
-            if (this.receiverId == null) {
-                equalsReceivers = (other.receiverId == null);
-            }
-            else {
-                equalsReceivers = this.receiverId.equals(other.receiverId);
-            }
-
-            return this.senderId == other.senderId && equalsReceivers
-                    && this.queueId == other.queueId && this.arrivalTime.equals(other.arrivalTime)
+            return this.senderId == other.senderId
+                    && Objects.equals(this.receiverId, other.receiverId) // receiverId can be null
+                    && this.queueId == other.queueId
+                    && this.arrivalTime.equals(other.arrivalTime)
                     && this.content.equals(other.content);
         }
         return false;
