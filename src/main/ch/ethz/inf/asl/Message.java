@@ -1,5 +1,7 @@
 package ch.ethz.inf.asl;
 
+import ch.ethz.inf.asl.utils.Optional;
+
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.List;
@@ -15,12 +17,13 @@ import static ch.ethz.inf.asl.utils.Helper.verifyTrue;
 public class Message {
 
     private int senderId;
-    private Integer receiverId;
+    private Optional<Integer> receiverId;
     private int queueId;
     private Timestamp arrivalTime;
     private String content;
 
-    public Message(int senderId, Integer receiverId, int queueId, Timestamp arrivalTime, String content) {
+    public Message(int senderId, Optional<Integer> receiverId, int queueId, Timestamp arrivalTime, String content) {
+        notNull(receiverId, "receiverId cannot be null");
         notNull(arrivalTime, "arrivalTime cannot be null");
         notNull(content, "content cannot be null");
         verifyTrue(Arrays.asList(POSSIBLE_MESSAGE_LENGTHS).contains(content.length()),
@@ -42,11 +45,11 @@ public class Message {
     }
 
     public boolean hasReceiver() {
-        return receiverId != null;
+        return receiverId.isPresent();
     }
 
     public Integer getReceiverId() {
-        return receiverId;
+        return receiverId.get();
     }
 
     public Timestamp getArrivalTime() {

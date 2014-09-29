@@ -1,5 +1,7 @@
 package ch.ethz.inf.asl;
 
+import ch.ethz.inf.asl.utils.Optional;
+
 public abstract class MessagingProtocol {
 
     // FIXME fix java docs
@@ -45,7 +47,7 @@ public abstract class MessagingProtocol {
      * specific queue.
      * @param queueId queue from which the message should be received.
      */
-    public abstract Message receiveMessage(int queueId, boolean retrieveByArrivalTime);
+    public abstract Optional<Message> receiveMessage(int queueId, boolean retrieveByArrivalTime);
 
     /**
      * Querys/?Receives a message that exists in queue with the given {@param queueId}
@@ -53,9 +55,9 @@ public abstract class MessagingProtocol {
      * @param senderId the id of the sender of the message
      * @param queueId queue from where the message is read
      */
-    public abstract Message receiveMessage(int senderId, int queueId, boolean retrieveByArrivalTime);
+    public abstract Optional<Message> receiveMessage(int senderId, int queueId, boolean retrieveByArrivalTime);
 
-    public abstract Message readMessage(int queueId, boolean retrieveByArrivalTime);
+    public abstract Optional<Message> readMessage(int queueId, boolean retrieveByArrivalTime);
 
     /**
      * Query for queues where messages for you are waiting.

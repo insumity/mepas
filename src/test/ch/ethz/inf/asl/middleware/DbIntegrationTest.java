@@ -6,7 +6,6 @@ import org.testng.annotations.*;
 
 import java.io.IOException;
 import java.sql.*;
-import java.time.Instant;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -188,7 +187,7 @@ public class DbIntegrationTest {
         int senderId = 2;
         int receiverId = 3;
         int queueId = 5;
-        Timestamp arrivalTime = Timestamp.from(Instant.now());
+        Timestamp arrivalTime = Timestamp.valueOf("2014-12-12 12:34:12");
         String message = Utilities.createStringWith(200, 'A');
         stmt.setInt(1, senderId);
         stmt.setInt(2, receiverId);
@@ -216,7 +215,7 @@ public class DbIntegrationTest {
         CallableStatement stmt = connection.prepareCall(MWMessagingProtocolImpl.SEND_MESSAGE);
         int senderId = 4;
         int queueId = 2;
-        Timestamp arrivalTime = Timestamp.from(Instant.now());
+        Timestamp arrivalTime = Timestamp.valueOf("2014-12-12 12:34:12");
         String message = Utilities.createStringWith(2000, 'A');
         stmt.setInt(1, senderId);
         stmt.setNull(2, Types.INTEGER);
@@ -244,7 +243,7 @@ public class DbIntegrationTest {
         CallableStatement stmt = connection.prepareCall(MWMessagingProtocolImpl.SEND_MESSAGE);
         int receiverId = 4;
         int queueId = 2;
-        Timestamp arrivalTime = Timestamp.from(Instant.now());
+        Timestamp arrivalTime = Timestamp.valueOf("2014-12-12 12:34:12");
         String message = Utilities.createStringWith(2000, 'A');
         stmt.setNull(1, Types.INTEGER);
         stmt.setInt(2, receiverId);
@@ -267,7 +266,7 @@ public class DbIntegrationTest {
         CallableStatement stmt = connection.prepareCall(MWMessagingProtocolImpl.SEND_MESSAGE);
         int senderId = 1;
         int receiverId = 4;
-        Timestamp arrivalTime = Timestamp.from(Instant.now());
+        Timestamp arrivalTime = Timestamp.valueOf("2014-12-12 12:34:12");
         String message = Utilities.createStringWith(2000, 'A');
         stmt.setInt(1, senderId);
         stmt.setInt(2, receiverId);
@@ -314,7 +313,7 @@ public class DbIntegrationTest {
         int senderId = 1;
         int receiverId = 4;
         int queueId = 3;
-        Timestamp arrivalTime = Timestamp.from(Instant.now());
+        Timestamp arrivalTime = Timestamp.valueOf("2014-12-12 12:34:12");
         stmt.setInt(1, senderId);
         stmt.setInt(2, receiverId);
         stmt.setInt(3, queueId);
@@ -337,7 +336,7 @@ public class DbIntegrationTest {
         int senderId = 2;
         int receiverId = 2;
         int queueId = 3;
-        Timestamp arrivalTime = Timestamp.from(Instant.now());
+        Timestamp arrivalTime = Timestamp.valueOf("2014-12-12 12:34:12");
         String message = Utilities.createStringWith(200, 'A');
         stmt.setInt(1, senderId);
         stmt.setInt(2, receiverId);

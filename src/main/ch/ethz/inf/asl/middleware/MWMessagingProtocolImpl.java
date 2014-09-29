@@ -3,9 +3,11 @@ package ch.ethz.inf.asl.middleware;
 import ch.ethz.inf.asl.Message;
 import ch.ethz.inf.asl.MessageProtocolException;
 import ch.ethz.inf.asl.MessagingProtocol;
+import ch.ethz.inf.asl.utils.Optional;
 
 import java.sql.*;
-import java.time.Instant;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -54,7 +56,10 @@ public class MWMessagingProtocolImpl extends MessagingProtocol {
         }
 
         try (CallableStatement stmt = connection.prepareCall(MWMessagingProtocolImpl.SEND_MESSAGE)) {
-            Timestamp arrivalTime = Timestamp.from(Instant.now());
+            Date date = new Date();
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+            String formattedDate = simpleDateFormat.format(date);
+            Timestamp arrivalTime = Timestamp.valueOf(formattedDate);
             stmt.setInt(1, requestingUserId);
 
             if (receiverId != null) { // there is a receiver?? //FIXME
@@ -87,10 +92,16 @@ public class MWMessagingProtocolImpl extends MessagingProtocol {
     private Message getMessageFromResultSet(ResultSet resultSet) throws SQLException {
         resultSet.getInt(1); // corresponds to rowId, perhaps don't return it ... TODO FIXME
         int readSenderId = resultSet.getInt(2);
-        Integer readReceiverId = resultSet.getInt(3);
+        Optional<Integer> readReceiverId;
+
+        int receiverId = resultSet.getInt(3);
         if (resultSet.wasNull()) {
-            readReceiverId = null;
+            readReceiverId = Optional.empty();
         }
+        else {
+            readReceiverId = Optional.of(receiverId);
+        }
+
         int readQueueId = resultSet.getInt(4);
         Timestamp readArrivalTime = resultSet.getTimestamp(5);
         String readMessage = resultSet.getString(6);
@@ -101,7 +112,7 @@ public class MWMessagingProtocolImpl extends MessagingProtocol {
 
     // TODO FIXME duplicate code ... when reading ResultSet
     @Override
-    public Message receiveMessage(int queueId, boolean retrieveByArrivalTime) {
+    public Optional<Message> receiveMessage(int queueId, boolean retrieveByArrivalTime) {
         try (CallableStatement stmt = connection.prepareCall(MWMessagingProtocolImpl.RECEIVE_MESSAGE)) {
             stmt.setInt(1, requestingUserId);
             stmt.setInt(2, queueId);
@@ -109,7 +120,7 @@ public class MWMessagingProtocolImpl extends MessagingProtocol {
             ResultSet rs = stmt.executeQuery();
 
             if (!rs.next()) {
-                return null; // means there is no message FIXME .. I don't really like it
+                return Optional.empty(); // means there is no message FIXME .. I don't really like it
                 // I could use optional but it's Java 8
             }
 
@@ -120,14 +131,14 @@ public class MWMessagingProtocolImpl extends MessagingProtocol {
                 throw new MessageProtocolException("more than 2 messages received");
             }
 
-            return readMessage;
+            return Optional.of(readMessage);
         } catch (SQLException e) {
             throw new MessageProtocolException("failed to receive message", e);
         }
     }
 
     @Override
-    public Message receiveMessage(int senderId, int queueId, boolean retrieveByArrivalTime) {
+    public Optional<Message> receiveMessage(int senderId, int queueId, boolean retrieveByArrivalTime) {
         try (CallableStatement stmt = connection.prepareCall(MWMessagingProtocolImpl.RECEIVE_MESSAGE_FROM_SENDER)) {
             stmt.setInt(1, requestingUserId);
             stmt.setInt(2, senderId);
@@ -135,7 +146,7 @@ public class MWMessagingProtocolImpl extends MessagingProtocol {
             ResultSet rs = stmt.executeQuery();
 
             if (!rs.next()) {
-                return null;
+                return Optional.empty();
             }
 
             Message readMessage = getMessageFromResultSet(rs);
@@ -145,14 +156,14 @@ public class MWMessagingProtocolImpl extends MessagingProtocol {
                 throw new MessageProtocolException("more than 2 messages received");
             }
 
-            return readMessage;
+            return Optional.of(readMessage);
         } catch (SQLException e) {
             throw new MessageProtocolException("failed to receive message", e);
         }
     }
 
     @Override
-    public Message readMessage(int queueId, boolean retrieveByArrivalTime) {
+    public Optional<Message> readMessage(int queueId, boolean retrieveByArrivalTime) {
         try (CallableStatement stmt = connection.prepareCall(MWMessagingProtocolImpl.READ_MESSAGE)) {
             stmt.setInt(1, requestingUserId);
             stmt.setInt(2, queueId);
@@ -160,7 +171,7 @@ public class MWMessagingProtocolImpl extends MessagingProtocol {
             ResultSet rs = stmt.executeQuery();
 
             if (!rs.next()) {
-                return null;
+                return Optional.empty();
             }
 
             Message readMessage = getMessageFromResultSet(rs);
@@ -170,7 +181,7 @@ public class MWMessagingProtocolImpl extends MessagingProtocol {
                 throw new MessageProtocolException("more than 2 messages read");
             }
 
-            return readMessage;
+            return Optional.of(readMessage);
         } catch (SQLException e) {
             throw new MessageProtocolException("failed to read message", e);
         }
