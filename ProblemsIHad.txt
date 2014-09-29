@@ -1,5 +1,31 @@
+
+While doing db integration testing
+
 1) Inside an SQL function I had:
         RETURN QUERY SELECT id INTO received_message_id ...
  and although this was passing from PostgresSQL I received
  error message in Java when trying to execute the query. The
  error message was: 'PSQLException ERROR: cannot open SELECT query as cursor'
+
+2) Another error I found was the following. In receive_message_from_sender
+I had SELECT * FROM
+     WHERE sender_id = p_sender_id AND receiver_id = p_requesting_user_id OR
+           receiver_id IS NULL
+Here I forgot to have the paranthesis so because of operator precendence
+(http://www.postgresql.org/docs/7.2/static/sql-precedence.html) it ended up
+doing this instead:
+(sender_id = p_sender_id AND receiver_id = p_requesting_user_id) OR
+           receiver_id IS NULL
+
+3) on the tests I had the problem with the expected exception message. I fixed
+this by using "(?s) .." which transforms the regex in single line mode:
+"(?s) for "single line mode" makes the dot match all characters, including line breaks. Not supported by Ruby or JavaScript. In Tcl, (?s) also makes the caret and dollar match at the start and end of the string only."
+from http://www.regular-expressions.info/modifiers.html ... The problem was
+that the exception message contained new lines
+
+4) While testing I found a nullPointerexception bug in Message equals. I had this.receiverId.equals(other.receiverId)
+and receiverId can be null
+
+5) Arrays.asList(POSSIBLE_MESSAGE_LENGTHS) ... where array is of primitive type will return a list containing only
+one element the array. REad more here (in the comments section): http://stackoverflow.com/questions/1128723/in-java-how-can-i-test-if-an-array-contains-a-certain-value
+yerguds: indeed, this does not work for primitives. In java primitive types can't be generic. asList is declared as <T> List<T> asList(T...). When you pass an int[] into it, the compiler infers T=int[] because it can't infer T=int, because primitives can't be generic.

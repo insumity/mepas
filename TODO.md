@@ -12,3 +12,8 @@ Thursday (25/09)
 ----------------
 1) Whenever I use a reference in the PostgresSQL manual, make sure I reference to it's
 lastest version (should be 9.3)
+
+Monday(29/09)
+-------------
+Don't forget to clean up code ... perhaps some methods are unused and they are only
+used in their tests. I'm talking about Message

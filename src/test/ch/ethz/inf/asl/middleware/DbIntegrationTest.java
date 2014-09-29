@@ -1,38 +1,32 @@
-package ch.ethz.inf.asl;
+package ch.ethz.inf.asl.middleware;
 
+import ch.ethz.inf.asl.utils.Utilities;
 import org.postgresql.util.PSQLException;
 import org.testng.annotations.*;
 
 import java.io.IOException;
 import java.sql.*;
 import java.time.Instant;
+import java.util.LinkedList;
+import java.util.List;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertTrue;
+import static ch.ethz.inf.asl.utils.TestConstants.INTEGRATION;
+import static org.testng.Assert.*;
 
 // why don't I do integration tests from the protocol? e.g. createQueue and check the real db?? TODO Fixme
+// So the idea would be that with the DbIntegrationTest I'm actually creating unit tests for my stored procedures
+// I could have written integration tests for the MWMessagingProtocolImpl but then I wouldn't be able to test
+// immediately the test procedures, e.g. what would happen if the requestingId is null .. blah blah blah
+
 public class DbIntegrationTest {
 
-    private static final String INITIALIZE_DATABASE = "{ call initialize_database() }";
-    private static final String CREATE_CLIENT = "{ ? = call create_client(?) }";
-    private static final String INTEGRATION = "integration";
+    private static final String INITIALIZE_DATABASE = "{ call initialize_database() }"; // TODO add tests for those guys
+    private static final String CREATE_CLIENT = "{ ? = call create_client(?) }"; // TODO
 
     private Connection getConnection(String db) throws SQLException, ClassNotFoundException {
         Class.forName("org.postgresql.Driver");
         return DriverManager.getConnection(
                 "jdbc:postgresql://localhost:5432/" + db, "bandwitch", "");
-    }
-
-    // creates a string of the given length containing only the given character
-    private String createStringWith(int length, char c) {
-        StringBuffer stringBuffer = new StringBuffer();
-
-        for (int i = 0; i < length; ++i) {
-            stringBuffer.append(c);
-        }
-
-        return stringBuffer.toString();
     }
 
     private boolean messageExists(int senderId, Integer receiverId, int queueId, Timestamp arrivalTime, String message) throws SQLException, ClassNotFoundException {
@@ -90,6 +84,7 @@ public class DbIntegrationTest {
         }
     }
 
+    // TODO .. add finally blocks here and in tearDown
     @BeforeMethod(groups = INTEGRATION)
     public void initialize() throws ClassNotFoundException, SQLException, IOException, InterruptedException {
 
@@ -100,8 +95,8 @@ public class DbIntegrationTest {
 
 
         // load all the functions from `auxiliary_function.sql` and `basic_functions.sql`
-        loadSQLFile("bandwitch", "integrationtest", "src/resources/auxiliary_functions.sql");
-        loadSQLFile("bandwitch", "integrationtest", "src/resources/basic_functions.sql");
+        loadSQLFile("bandwitch", "integrationtest", "resources/auxiliary_functions.sql");
+        loadSQLFile("bandwitch", "integrationtest", "resources/basic_functions.sql");
 
         // create all the relations: queue, client and message
         connection = getConnection("integrationtest");
@@ -194,7 +189,7 @@ public class DbIntegrationTest {
         int receiverId = 3;
         int queueId = 5;
         Timestamp arrivalTime = Timestamp.from(Instant.now());
-        String message = createStringWith(200, 'A');
+        String message = Utilities.createStringWith(200, 'A');
         stmt.setInt(1, senderId);
         stmt.setInt(2, receiverId);
         stmt.setInt(3, queueId);
@@ -222,7 +217,7 @@ public class DbIntegrationTest {
         int senderId = 4;
         int queueId = 2;
         Timestamp arrivalTime = Timestamp.from(Instant.now());
-        String message = createStringWith(2000, 'A');
+        String message = Utilities.createStringWith(2000, 'A');
         stmt.setInt(1, senderId);
         stmt.setNull(2, Types.INTEGER);
         stmt.setInt(3, queueId);
@@ -250,7 +245,7 @@ public class DbIntegrationTest {
         int receiverId = 4;
         int queueId = 2;
         Timestamp arrivalTime = Timestamp.from(Instant.now());
-        String message = createStringWith(2000, 'A');
+        String message = Utilities.createStringWith(2000, 'A');
         stmt.setNull(1, Types.INTEGER);
         stmt.setInt(2, receiverId);
         stmt.setInt(3, queueId);
@@ -273,7 +268,7 @@ public class DbIntegrationTest {
         int senderId = 1;
         int receiverId = 4;
         Timestamp arrivalTime = Timestamp.from(Instant.now());
-        String message = createStringWith(2000, 'A');
+        String message = Utilities.createStringWith(2000, 'A');
         stmt.setInt(1, senderId);
         stmt.setInt(2, receiverId);
         stmt.setNull(3, Types.INTEGER);
@@ -296,7 +291,7 @@ public class DbIntegrationTest {
         int senderId = 1;
         int receiverId = 4;
         int queueId = 3;
-        String message = createStringWith(2000, 'A');
+        String message = Utilities.createStringWith(2000, 'A');
         stmt.setInt(1, senderId);
         stmt.setInt(2, receiverId);
         stmt.setInt(3, queueId);
@@ -343,7 +338,7 @@ public class DbIntegrationTest {
         int receiverId = 2;
         int queueId = 3;
         Timestamp arrivalTime = Timestamp.from(Instant.now());
-        String message = createStringWith(200, 'A');
+        String message = Utilities.createStringWith(200, 'A');
         stmt.setInt(1, senderId);
         stmt.setInt(2, receiverId);
         stmt.setInt(3, queueId);
@@ -673,5 +668,236 @@ public class DbIntegrationTest {
         }
     }
 
+    @Test(groups = INTEGRATION)
+    public void testReadMessage() throws SQLException, ClassNotFoundException {
+        Connection connection = getConnection("integrationtest");
+        CallableStatement stmt = connection.prepareCall(MWMessagingProtocolImpl.READ_MESSAGE);
 
+        int requestingUserId = 1;
+        int queueId = 1;
+        boolean retrieveByArrivalTime = false;
+        stmt.setInt(1, requestingUserId);
+        stmt.setInt(2, queueId);
+        stmt.setBoolean(3, retrieveByArrivalTime);
+
+        try {
+            ResultSet rs = stmt.executeQuery();
+            boolean thereAreRows = rs.next();
+
+            assertTrue(thereAreRows);
+
+            int numberOfQueues = numberOfRows("message");
+            assertEquals(numberOfQueues, NUMBER_OF_MESSAGES);
+
+            DbMessage actualMessage = createMessage(rs);
+            DbMessage expectedMessage = new DbMessage(7, 2, 1, 1, Timestamp.valueOf("1999-01-08 04:05:06"), MESSAGE_CONSTANT);
+
+            assertEquals(actualMessage, expectedMessage);
+
+            boolean hasMoreRows = rs.next();
+            assertFalse(hasMoreRows);
+        }
+        finally {
+            stmt.close();
+            connection.close();
+        }
+    }
+
+    @Test(groups = INTEGRATION)
+    public void testReadMessageThatHasNullReceiverId() throws SQLException, ClassNotFoundException {
+        Connection connection = getConnection("integrationtest");
+        CallableStatement stmt = connection.prepareCall(MWMessagingProtocolImpl.READ_MESSAGE);
+
+        int requestingUserId = 4;
+        int queueId = 3;
+        boolean retrieveByArrivalTime = false;
+        stmt.setInt(1, requestingUserId);
+        stmt.setInt(2, queueId);
+        stmt.setBoolean(3, retrieveByArrivalTime);
+
+        try {
+            ResultSet rs = stmt.executeQuery();
+            boolean thereAreRows = rs.next();
+
+            assertTrue(thereAreRows);
+
+            int numberOfQueues = numberOfRows("message");
+            assertEquals(numberOfQueues, NUMBER_OF_MESSAGES);
+
+            DbMessage actualMessage = createMessage(rs);
+            DbMessage expectedMessage = new DbMessage(11, 5, null, 3, Timestamp.valueOf("1999-01-08 04:15:23"), MESSAGE_CONSTANT);
+
+            assertEquals(actualMessage, expectedMessage);
+
+            boolean hasMoreRows = rs.next();
+            assertFalse(hasMoreRows);
+        }
+        finally {
+            stmt.close();
+            connection.close();
+        }
+    }
+
+    @Test(groups = INTEGRATION)
+    public void testReadMessageUserDoesNotReadHisOwnMessage() throws SQLException, ClassNotFoundException {
+        Connection connection = getConnection("integrationtest");
+        CallableStatement stmt = connection.prepareCall(MWMessagingProtocolImpl.READ_MESSAGE);
+
+        int requestingUserId = 5;
+        int queueId = 3;
+        boolean retrieveByArrivalTime = false;
+        stmt.setInt(1, requestingUserId);
+        stmt.setInt(2, queueId);
+        stmt.setBoolean(3, retrieveByArrivalTime);
+
+        try {
+            ResultSet rs = stmt.executeQuery();
+            boolean thereAreRows = rs.next();
+
+            assertFalse(thereAreRows);
+        }
+        finally {
+            stmt.close();
+            connection.close();
+        }
+    }
+
+    @Test(groups = INTEGRATION, expectedExceptions = PSQLException.class, expectedExceptionsMessageRegExp = "(?s).*INVALID_REQUESTING_USER_ID is NULL.*")
+    public void testReadMessageWithNullRequestingUserId() throws SQLException, ClassNotFoundException {
+        Connection connection = getConnection("integrationtest");
+        CallableStatement stmt = connection.prepareCall(MWMessagingProtocolImpl.READ_MESSAGE);
+        int queueId = 3;
+        boolean retrieveByArrivalTime = false;
+        stmt.setNull(1, Types.INTEGER);
+        stmt.setInt(2, queueId);
+        stmt.setBoolean(3, retrieveByArrivalTime);
+
+        try {
+            stmt.executeQuery();
+        }
+        finally {
+            stmt.close();
+            connection.close();
+        }
+    }
+
+    @Test(groups = INTEGRATION)
+    public void testReceiveMessageFromSender() throws SQLException, ClassNotFoundException {
+        Connection connection = getConnection("integrationtest");
+        CallableStatement stmt = connection.prepareCall(MWMessagingProtocolImpl.RECEIVE_MESSAGE_FROM_SENDER);
+
+        int requestingUserId = 5;
+        int senderId = 4;
+        boolean retrieveByArrivalTime = false;
+        stmt.setInt(1, requestingUserId);
+        stmt.setInt(2, senderId);
+        stmt.setBoolean(3, retrieveByArrivalTime);
+
+        try {
+            ResultSet rs = stmt.executeQuery();
+            boolean thereAreRows = rs.next();
+
+            assertTrue(thereAreRows);
+
+            int numberOfQueues = numberOfRows("message");
+            assertEquals(numberOfQueues, NUMBER_OF_MESSAGES - 1);
+
+            DbMessage actualMessage = createMessage(rs);
+            DbMessage expectedMessage = new DbMessage(5, senderId, requestingUserId, 4, Timestamp.valueOf("1999-01-08 04:05:06"), MESSAGE_CONSTANT);
+
+            assertEquals(actualMessage, expectedMessage);
+
+            boolean hasMoreRows = rs.next();
+            assertFalse(hasMoreRows);
+        }
+        finally {
+            stmt.close();
+            connection.close();
+        }
+    }
+
+    @Test(groups = INTEGRATION, expectedExceptions = PSQLException.class, expectedExceptionsMessageRegExp = "(?s).*INVALID_REQUESTING_USER_ID is NULL.*")
+    public void testReceiveMessageFromSenderWithNullRequestingUserId() throws SQLException, ClassNotFoundException {
+        Connection connection = getConnection("integrationtest");
+        CallableStatement stmt = connection.prepareCall(MWMessagingProtocolImpl.RECEIVE_MESSAGE_FROM_SENDER);
+
+        int senderId = 4;
+        boolean retrieveByArrivalTime = false;
+        stmt.setNull(1, Types.INTEGER);
+        stmt.setInt(2, senderId);
+        stmt.setBoolean(3, retrieveByArrivalTime);
+
+        try {
+            stmt.executeQuery();
+        }
+        finally {
+            stmt.close();
+            connection.close();
+        }
+    }
+
+    @Test(groups = INTEGRATION, expectedExceptions = PSQLException.class, expectedExceptionsMessageRegExp = "(?s).*INVALID_SENDER_ID with same id as the one issuing.*")
+    public void testReceiveMessageFromSenderWithRequestingUserIdEqualToSenderId() throws SQLException, ClassNotFoundException {
+        Connection connection = getConnection("integrationtest");
+        CallableStatement stmt = connection.prepareCall(MWMessagingProtocolImpl.RECEIVE_MESSAGE_FROM_SENDER);
+
+        int requestingUserId = 3;
+        int senderId = 3;
+        boolean retrieveByArrivalTime = false;
+        stmt.setInt(1, requestingUserId);
+        stmt.setInt(2, senderId);
+        stmt.setBoolean(3, retrieveByArrivalTime);
+
+        try {
+            stmt.executeQuery();
+        } finally {
+            stmt.close();
+            connection.close();
+        }
+    }
+
+    @Test(groups = INTEGRATION)
+    public void testListQueues() throws SQLException, ClassNotFoundException {
+        Connection connection = getConnection("integrationtest");
+        // TODO make all MWMe..Protocol static imports
+        CallableStatement stmt = connection.prepareCall(MWMessagingProtocolImpl.LIST_QUEUES);
+
+        int requestingUserId = 5;
+        stmt.setInt(1, requestingUserId);
+
+        try {
+            ResultSet rs = stmt.executeQuery();
+            List<Integer> queues = new LinkedList<Integer>();
+
+            while (rs.next()) {
+                queues.add(rs.getInt(1));
+            }
+
+            Integer[] expectedQueues = new Integer[] {2, 4};
+            Integer[] actualQueues = queues.toArray(new Integer[0]);
+
+            assertEqualsNoOrder(actualQueues, expectedQueues);
+        } finally {
+            stmt.close();
+            connection.close();
+
+        }
+    }
+
+    @Test(groups = INTEGRATION, expectedExceptions = PSQLException.class, expectedExceptionsMessageRegExp = "(?s).*INVALID_REQUESTING_USER_ID is NULL.*")
+    public void testListQueuesWithNullRequestingUserId() throws SQLException, ClassNotFoundException {
+        Connection connection = getConnection("integrationtest");
+        // TODO make all MWMe..Protocol static imports
+        CallableStatement stmt = connection.prepareCall(MWMessagingProtocolImpl.LIST_QUEUES);
+
+        stmt.setNull(1, Types.INTEGER);
+
+        try {
+            stmt.executeQuery();
+        } finally {
+            stmt.close();
+            connection.close();
+
+        }
+    }
 }

@@ -1,6 +1,4 @@
-/* populates the database with data that are going to be used
-by integration testing */
-
+/* populates the database with data that are going to be used by integration testing */
 
 INSERT INTO client(name) VALUES('client01');
 INSERT INTO client(name) VALUES('client02');
