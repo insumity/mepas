@@ -1,6 +1,7 @@
 package ch.ethz.inf.asl.middleware;
 
 import ch.ethz.inf.asl.Message;
+import ch.ethz.inf.asl.MessageConstants;
 import ch.ethz.inf.asl.MessageProtocolException;
 import ch.ethz.inf.asl.MessagingProtocol;
 import ch.ethz.inf.asl.utils.Optional;
@@ -10,6 +11,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+
+import static ch.ethz.inf.asl.utils.Helper.hasText;
+import static ch.ethz.inf.asl.utils.Helper.notNull;
 
 public class MWMessagingProtocolImpl extends MessagingProtocol {
 
@@ -30,9 +34,17 @@ public class MWMessagingProtocolImpl extends MessagingProtocol {
     }
 
     @Override
-    public int createQueue() {
+    public int createQueue(String queueName) {
+        hasText(queueName, "queueName cannot be null or empty");
+
+        if (queueName.length() > MessageConstants.MAXIMUM_QUEUE_NAME_LENGTH) {
+            throw new IllegalArgumentException("queueName exceed max queue name length of: "
+                + MessageConstants.MAXIMUM_QUEUE_NAME_LENGTH);
+        }
+
         try (CallableStatement stmt = connection.prepareCall(CREATE_QUEUE)) {
             stmt.registerOutParameter(1, Types.INTEGER);
+            stmt.setString(2, queueName);
             stmt.execute();
             return stmt.getInt(1);
         } catch (SQLException e) {
@@ -50,20 +62,22 @@ public class MWMessagingProtocolImpl extends MessagingProtocol {
         }
     }
 
-    private void sendMessageCommon(Integer receiverId, int queueId, String content) {
+    private void sendMessageCommon(Optional<Integer> receiverId, int queueId, String content) {
+
+        // TODO use constatns
         if (content.length() != 200 && content.length() != 2000) {
             throw new IllegalArgumentException("Given content has invalid length");
         }
 
-        try (CallableStatement stmt = connection.prepareCall(MWMessagingProtocolImpl.SEND_MESSAGE)) {
+        try (CallableStatement stmt = connection.prepareCall(SEND_MESSAGE)) {
             Date date = new Date();
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
             String formattedDate = simpleDateFormat.format(date);
             Timestamp arrivalTime = Timestamp.valueOf(formattedDate);
             stmt.setInt(1, requestingUserId);
 
-            if (receiverId != null) { // there is a receiver?? //FIXME
-                stmt.setInt(2, receiverId);
+            if (receiverId.isPresent()) {
+                stmt.setInt(2, receiverId.get());
             }
             else {
                 stmt.setNull(2, Types.INTEGER);
@@ -80,13 +94,12 @@ public class MWMessagingProtocolImpl extends MessagingProtocol {
 
     @Override
     public void sendMessage(int queueId, String content) {
-        sendMessageCommon(null, queueId, content);
+        sendMessageCommon(Optional.<Integer>empty(), queueId, content);
     }
 
     @Override
     public void sendMessage(int receiverId, int queueId, String content) {
-        // guaranteed that receiverId != null, it's primitive TODO
-        sendMessageCommon(receiverId, queueId, content);
+        sendMessageCommon(Optional.of(receiverId), queueId, content);
     }
 
     private Message getMessageFromResultSet(ResultSet resultSet) throws SQLException {
@@ -113,7 +126,7 @@ public class MWMessagingProtocolImpl extends MessagingProtocol {
     // TODO FIXME duplicate code ... when reading ResultSet
     @Override
     public Optional<Message> receiveMessage(int queueId, boolean retrieveByArrivalTime) {
-        try (CallableStatement stmt = connection.prepareCall(MWMessagingProtocolImpl.RECEIVE_MESSAGE)) {
+        try (CallableStatement stmt = connection.prepareCall(RECEIVE_MESSAGE)) {
             stmt.setInt(1, requestingUserId);
             stmt.setInt(2, queueId);
             stmt.setBoolean(3, retrieveByArrivalTime);
@@ -139,7 +152,7 @@ public class MWMessagingProtocolImpl extends MessagingProtocol {
 
     @Override
     public Optional<Message> receiveMessage(int senderId, int queueId, boolean retrieveByArrivalTime) {
-        try (CallableStatement stmt = connection.prepareCall(MWMessagingProtocolImpl.RECEIVE_MESSAGE_FROM_SENDER)) {
+        try (CallableStatement stmt = connection.prepareCall(RECEIVE_MESSAGE_FROM_SENDER)) {
             stmt.setInt(1, requestingUserId);
             stmt.setInt(2, senderId);
             stmt.setBoolean(3, retrieveByArrivalTime);
@@ -164,7 +177,7 @@ public class MWMessagingProtocolImpl extends MessagingProtocol {
 
     @Override
     public Optional<Message> readMessage(int queueId, boolean retrieveByArrivalTime) {
-        try (CallableStatement stmt = connection.prepareCall(MWMessagingProtocolImpl.READ_MESSAGE)) {
+        try (CallableStatement stmt = connection.prepareCall(READ_MESSAGE)) {
             stmt.setInt(1, requestingUserId);
             stmt.setInt(2, queueId);
             stmt.setBoolean(3, retrieveByArrivalTime);
@@ -201,7 +214,7 @@ public class MWMessagingProtocolImpl extends MessagingProtocol {
 
     @Override
     public int[] listQueues() {
-        try (CallableStatement stmt = connection.prepareCall(MWMessagingProtocolImpl.LIST_QUEUES)) {
+        try (CallableStatement stmt = connection.prepareCall(LIST_QUEUES)) {
             stmt.setInt(1, requestingUserId);
             ResultSet rs = stmt.executeQuery();
 

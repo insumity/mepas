@@ -19,7 +19,7 @@ public abstract class MessagingProtocol {
      * Creates a queue in the system.
      * @return the newly created id of the queue
      */
-    public abstract int createQueue();
+    public abstract int createQueue(String queueName);
 
     /**
      * Deletes the queue with the given id.

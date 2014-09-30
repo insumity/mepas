@@ -1,6 +1,5 @@
 package ch.ethz.inf.asl;
 
-import ch.ethz.inf.asl.utils.Helper;
 import ch.ethz.inf.asl.utils.Optional;
 import org.testng.annotations.Test;
 
@@ -8,11 +7,8 @@ import java.sql.Timestamp;
 import java.util.NoSuchElementException;
 
 import static ch.ethz.inf.asl.utils.TestConstants.SMALL;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertNotEquals;
-import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.*;
 import static org.testng.AssertJUnit.assertEquals;
-import static org.testng.AssertJUnit.assertNull;
 
 public class MessageTest {
 

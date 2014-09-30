@@ -2,7 +2,8 @@ package ch.ethz.inf.asl.client;
 
 import ch.ethz.inf.asl.Message;
 import ch.ethz.inf.asl.MessagingProtocol;
-import ch.ethz.inf.asl.common.MessageType;
+import ch.ethz.inf.asl.common.Request;
+import ch.ethz.inf.asl.common.Response;
 import ch.ethz.inf.asl.utils.Optional;
 
 import java.io.IOException;
@@ -21,31 +22,38 @@ public class ClientMessagingProtocolImpl extends MessagingProtocol {
         this.objectOutputStream = objectOutputStream;
     }
 
-    @Override
-    public int createQueue() {
-        // creatQueueMessage
-
-
-        // send message, request
-        int requestorId;
-        MessageType type;
-        Object[] neededParameters;
+    private void sendRequest(Request request) {
         try {
-            objectOutputStream.writeObject(new Object());
+            objectOutputStream.writeObject(request);
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
 
-        // read response
+    private Response receiveResponse() {
+        Object obj = null;
         try {
-            objectInputStream.readObject();
+            obj = objectInputStream.readObject();
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
+        return (Response) obj;
+    }
 
-        return 0;
+    @Override
+    public int createQueue(String queueName) {
+
+        // create request message
+        Request request = new Request(requestorId).createQueue(queueName);
+
+        // send message
+        sendRequest(request);
+
+        // read response
+        Response response = receiveResponse();
+        return response.getQueueId();
     }
 
     @Override
@@ -55,17 +63,44 @@ public class ClientMessagingProtocolImpl extends MessagingProtocol {
 
     @Override
     public void sendMessage(int queueId, String content) {
+        // create request message
+        Request request = new Request(requestorId).sendMessage(queueId, content);
 
+        // send message
+        sendRequest(request);
+
+        // read response
+        Response response = receiveResponse();
+        // no TODO error check there is no ERROR
+        return;
     }
 
     @Override
     public void sendMessage(int receiverId, int queueId, String content) {
+// create request message
+        Request request = new Request(requestorId).sendMessage(receiverId, queueId, content);
 
+        // send message
+        sendRequest(request);
+
+        // read response
+        Response response = receiveResponse();
+        // no TODO error
+        return;
     }
 
     @Override
     public Optional<Message> receiveMessage(int queueId, boolean retrieveByArrivalTime) {
-        return null;
+        // create request message
+        Request request = new Request(requestorId).receiveMessage(queueId, retrieveByArrivalTime);
+
+        // send message
+        sendRequest(request);
+
+        // read response
+        Response response = receiveResponse();
+        // no TODO error
+        return response.getMessage();
     }
 
     @Override

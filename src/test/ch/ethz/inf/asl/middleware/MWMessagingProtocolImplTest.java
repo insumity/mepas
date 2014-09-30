@@ -38,7 +38,7 @@ public class MWMessagingProtocolImplTest {
     @Test(groups = SMALL)
     public void testCreateQueueCallsStoredProcedure() throws SQLException {
         MWMessagingProtocolImpl protocol = new MWMessagingProtocolImpl(2, mockedConnection);
-        protocol.createQueue();
+        protocol.createQueue("someQueueName");
         verify(mockedConnection).prepareCall(CREATE_QUEUE);
         verify(mockedStatement).execute();
     }
@@ -46,7 +46,7 @@ public class MWMessagingProtocolImplTest {
     @Test(groups = SMALL)
     public void testCreateQueueRetrievesResult() throws SQLException {
         MWMessagingProtocolImpl protocol = new MWMessagingProtocolImpl(2, mockedConnection);
-        protocol.createQueue();
+        protocol.createQueue("someOtherQueueName");
         verify(mockedStatement).getInt(1);
     }
 
@@ -54,7 +54,25 @@ public class MWMessagingProtocolImplTest {
     public void testCreateQueueThrowsException() throws SQLException {
         MWMessagingProtocolImpl protocol = new MWMessagingProtocolImpl(2, mockedConnection);
         when(mockedStatement.execute()).thenThrow(SQLException.class);
-        protocol.createQueue();
+        protocol.createQueue("queueName");
+    }
+
+    @Test(groups = SMALL, expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = ".*length.*")
+    public void testCreateQueueWithLongQueueNameThrowsException() throws SQLException {
+        MWMessagingProtocolImpl protocol = new MWMessagingProtocolImpl(2, mockedConnection);
+        protocol.createQueue("queueNamequeueNamequeueNamequeueNamequeueName");
+    }
+
+    @Test(groups = SMALL, expectedExceptions = NullPointerException.class, expectedExceptionsMessageRegExp = ".*cannot be null.*")
+    public void testCreateQueueWithNullName() throws SQLException {
+        MWMessagingProtocolImpl protocol = new MWMessagingProtocolImpl(2, mockedConnection);
+        protocol.createQueue(null);
+    }
+
+    @Test(groups = SMALL, expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = ".*empty.*")
+    public void testCreateQueueWithEmptyName() throws SQLException {
+        MWMessagingProtocolImpl protocol = new MWMessagingProtocolImpl(2, mockedConnection);
+        protocol.createQueue("");
     }
 
     @Test(groups = SMALL)

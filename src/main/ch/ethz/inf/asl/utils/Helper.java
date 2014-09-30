@@ -13,6 +13,13 @@ public class Helper {
         }
     }
 
+    public static void hasText(String obj, String message) {
+        notNull(obj, message);
+        if (obj.isEmpty()) {
+            throw new IllegalArgumentException(message);
+        }
+    }
+
     public static void verifyTrue(boolean value, String message) {
         if (value != true) {
             throw new IllegalArgumentException(message);
