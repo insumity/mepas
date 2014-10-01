@@ -27,4 +27,19 @@ public class Response implements Serializable {
     public Optional<Message> getMessage() {
         return message;
     }
+
+    @Override
+    public String toString() {
+        if (message != null) {
+            if (message.isPresent()) {
+                return "(queueId: " + queueId + ", message:( " + message.get().getContent().substring(0, 20) + "))";
+            }
+            else {
+                return "(queueId: " + queueId + ", message:(not present))";
+            }
+        }
+        else {
+            return "(queueId: " + queueId + ")";
+        }
+    }
 }

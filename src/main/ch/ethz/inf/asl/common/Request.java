@@ -88,4 +88,16 @@ public class Request implements Serializable {
     public String toString() {
         return "(requestorId: " + requestorId + ", type: " +  type + ")";
     }
+
+    public boolean isCreateQueue() {
+        return type == CREATE_QUEUE;
+    }
+
+    public boolean isSendMessage() {
+        return type == SEND_MESSAGE;
+    }
+
+    public boolean isReceiveMessage() {
+        return type == RECEIVE_MESSAGE;
+    }
 }

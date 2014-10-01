@@ -2,6 +2,7 @@ package ch.ethz.inf.asl;
 
 import ch.ethz.inf.asl.utils.Optional;
 
+import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.List;
@@ -14,7 +15,7 @@ import static ch.ethz.inf.asl.utils.Helper.verifyTrue;
 /**
  * Represents a message that is received from the queueing system ... TODO
  */
-public class Message {
+public class Message implements Serializable {
 
     private int senderId;
     private Optional<Integer> receiverId;

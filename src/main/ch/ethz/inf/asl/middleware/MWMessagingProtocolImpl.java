@@ -64,7 +64,7 @@ public class MWMessagingProtocolImpl extends MessagingProtocol {
 
     private void sendMessageCommon(Optional<Integer> receiverId, int queueId, String content) {
 
-        // TODO use constatns
+        // TODO use constants, I have them in MessageConstants
         if (content.length() != 200 && content.length() != 2000) {
             throw new IllegalArgumentException("Given content has invalid length");
         }

@@ -19,3 +19,8 @@ Monday(29/09)
 used in their tests. I'm talking about Message
 
 2) Do we have to implement a sendMessage to multiple queues?
+
+
+Wednesday (01/10)
+------------------
+1) Should my API contain an sendMessage to multiple queues? 

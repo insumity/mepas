@@ -1,9 +1,12 @@
 package ch.ethz.inf.asl.utils;
 
+import java.io.Serializable;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
-public class Optional<T> {
+// FIXME .. shouldn't implmenet serializable, llook here:
+// http://stackoverflow.com/questions/24547673/why-java-util-optional-is-not-serializable-how-to-serialize-the-object-with-suc
+public class Optional<T> implements Serializable {
 
     private T value;
 

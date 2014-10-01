@@ -14,8 +14,20 @@ import java.net.UnknownHostException;
 public class Client {
 
     public static void main(String[] args) {
+
+        int userId = Integer.valueOf(args[0]);
+        int otherUserId;
+        if (userId == 1) {
+            otherUserId = 2;
+        }
+        else {
+            otherUserId = 1;
+        }
+
         String hostName = "localhost";
         int portNumber = 6789;
+        String content = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+        System.out.println(content.length());
 
         try (
         Socket kkSocket = new Socket(hostName, portNumber);
@@ -24,33 +36,33 @@ public class Client {
         ObjectInputStream in = new ObjectInputStream(
                 kkSocket.getInputStream());
         ) {
-            BufferedReader stdIn =
-                    new BufferedReader(new InputStreamReader(System.in));
-            String fromServer;
-            String fromUser;
+            Response fromServer;
 
             // initiate conversation with server by sending the request
-            Request request = new Request(2).createQueue("mepas");
+            Request request = new Request(userId).createQueue("mepas");
+
             // send message
             objectOutputStream.writeObject(request);
 
-            // get back the response from the mw
-//            Response response = (Response) in.readObject();
+            boolean send = true;
+            while ((fromServer = (Response) in.readObject()) != null) {
+                System.out.println("Server response: " + fromServer);
 
-            int i = 0;
-            while ((fromServer = (String) in.readObject()) != null) {
-                System.out.println("Server: " + fromServer);
-
-                fromUser = "Hey you man! let's go ... client again: " + i;
-                i++;
-
-                Thread.sleep(1000);
-                if (fromUser != null) {
-                    System.out.println("Client: " + fromUser);
+                Thread.sleep(2000);
+                if (send) {
+                    request = new Request(userId).sendMessage(otherUserId, 1, content);
                     objectOutputStream.writeObject(request);
+                    send = !send;
+                }
+                else {
+                    request = new Request(userId).receiveMessage(1, true);
+                    objectOutputStream.writeObject(request);
+                    send = !send;
                 }
             }
-        } catch (UnknownHostException e) {
+
+        }
+         catch (UnknownHostException e) {
             System.err.println("Don't know about host " + hostName);
             System.exit(1);
         } catch (IOException e) {
