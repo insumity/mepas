@@ -1,9 +1,9 @@
 package ch.ethz.inf.asl.middleware;
 
-import ch.ethz.inf.asl.Message;
-import ch.ethz.inf.asl.MessageConstants;
-import ch.ethz.inf.asl.MessageProtocolException;
-import ch.ethz.inf.asl.MessagingProtocol;
+import ch.ethz.inf.asl.common.Message;
+import ch.ethz.inf.asl.common.MessageConstants;
+import ch.ethz.inf.asl.exceptions.MessageProtocolException;
+import ch.ethz.inf.asl.common.MessagingProtocol;
 import ch.ethz.inf.asl.utils.Optional;
 
 import java.sql.*;
@@ -13,7 +13,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static ch.ethz.inf.asl.utils.Helper.hasText;
-import static ch.ethz.inf.asl.utils.Helper.notNull;
 
 public class MWMessagingProtocolImpl extends MessagingProtocol {
 
@@ -105,21 +104,26 @@ public class MWMessagingProtocolImpl extends MessagingProtocol {
     private Message getMessageFromResultSet(ResultSet resultSet) throws SQLException {
         resultSet.getInt(1); // corresponds to rowId, perhaps don't return it ... TODO FIXME
         int readSenderId = resultSet.getInt(2);
-        Optional<Integer> readReceiverId;
+        Integer readReceiverId;
 
         int receiverId = resultSet.getInt(3);
         if (resultSet.wasNull()) {
-            readReceiverId = Optional.empty();
+            readReceiverId = null;
         }
         else {
-            readReceiverId = Optional.of(receiverId);
+            readReceiverId = receiverId;
         }
 
         int readQueueId = resultSet.getInt(4);
         Timestamp readArrivalTime = resultSet.getTimestamp(5);
         String readMessage = resultSet.getString(6);
 
-        return new Message(readSenderId, readReceiverId, readQueueId, readArrivalTime, readMessage);
+        if (readReceiverId == null) { // duplicate code from above, I dpn't likeit FIXEME
+            return new Message(readSenderId, readQueueId, readArrivalTime, readMessage);
+        }
+        else {
+            return new Message(readSenderId, readReceiverId, readQueueId, readArrivalTime, readMessage);
+        }
     }
 
 
@@ -133,8 +137,7 @@ public class MWMessagingProtocolImpl extends MessagingProtocol {
             ResultSet rs = stmt.executeQuery();
 
             if (!rs.next()) {
-                return Optional.empty(); // means there is no message FIXME .. I don't really like it
-                // I could use optional but it's Java 8
+                return Optional.empty();
             }
 
             Message readMessage = getMessageFromResultSet(rs);

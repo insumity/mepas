@@ -1,4 +1,4 @@
-package ch.ethz.inf.asl;
+package ch.ethz.inf.asl.exceptions;
 
 public class MessageProtocolException extends RuntimeException {
 

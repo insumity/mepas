@@ -1,7 +1,7 @@
 package ch.ethz.inf.asl.middleware;
 
-import ch.ethz.inf.asl.Message;
-import ch.ethz.inf.asl.MessageProtocolException;
+import ch.ethz.inf.asl.common.Message;
+import ch.ethz.inf.asl.exceptions.MessageProtocolException;
 import ch.ethz.inf.asl.utils.Optional;
 import ch.ethz.inf.asl.utils.Utilities;
 import org.testng.annotations.BeforeMethod;
@@ -196,7 +196,7 @@ public class MWMessagingProtocolImplTest {
         int queueId = 56;
         boolean retrieveByArrivalTime = false;
         String content = Utilities.createStringWith(2000, '%');
-        Message expectedMessage = new Message(234, Optional.of(requestingUserId), queueId, Timestamp.valueOf("1999-01-08 04:05:06"), content);
+        Message expectedMessage = new Message(234, requestingUserId, queueId, Timestamp.valueOf("1999-01-08 04:05:06"), content);
 
         ResultSet mockedResultSet = mock(ResultSet.class);
         when(mockedResultSet.next()).thenReturn(true).thenReturn(false); // only returns one row
@@ -274,7 +274,7 @@ public class MWMessagingProtocolImplTest {
         int queueId = 56;
         boolean retrieveByArrivalTime = false;
         String content = Utilities.createStringWith(200, 'A');
-        Message expectedMessage = new Message(senderId, Optional.of(requestingUserId), queueId, Timestamp.valueOf("1999-01-08 04:05:06"), content);
+        Message expectedMessage = new Message(senderId, requestingUserId, queueId, Timestamp.valueOf("1999-01-08 04:05:06"), content);
 
         ResultSet mockedResultSet = mock(ResultSet.class);
         when(mockedResultSet.next()).thenReturn(true).thenReturn(false); // only returns one row
@@ -300,7 +300,7 @@ public class MWMessagingProtocolImplTest {
         int queueId = 56;
         boolean retrieveByArrivalTime = false;
         String content = Utilities.createStringWith(200, 'A');
-        Message expectedMessage = new Message(234234, Optional.of(requestingUserId), queueId, Timestamp.valueOf("1999-01-08 04:05:06"), content);
+        Message expectedMessage = new Message(234234, requestingUserId, queueId, Timestamp.valueOf("1999-01-08 04:05:06"), content);
 
         ResultSet mockedResultSet = mock(ResultSet.class);
         when(mockedResultSet.next()).thenReturn(true).thenReturn(false); // only returns one row

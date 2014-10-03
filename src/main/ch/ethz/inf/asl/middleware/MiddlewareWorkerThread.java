@@ -1,7 +1,5 @@
 package ch.ethz.inf.asl.middleware;
 
-import ch.ethz.inf.asl.MessagingProtocol;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;

@@ -4,13 +4,10 @@ import java.io.Serializable;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
-// FIXME .. shouldn't implmenet serializable, llook here:
-// http://stackoverflow.com/questions/24547673/why-java-util-optional-is-not-serializable-how-to-serialize-the-object-with-suc
+// Optional shouldn't be serializble TODO FIXME
 public class Optional<T> implements Serializable {
 
     private T value;
-
-    private static final Optional<?> EMPTY = new Optional<>();
 
     private Optional(T value) {
         if (value == null) {
@@ -31,8 +28,7 @@ public class Optional<T> implements Serializable {
     }
 
     public static<T> Optional<T> empty() {
-        Optional<T> t = (Optional<T>) EMPTY;
-        return t;
+        return new Optional<>();
     }
 
     public boolean isPresent() {
@@ -58,5 +54,10 @@ public class Optional<T> implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(value);
+    }
+
+    @Override
+    public String toString() {
+        return String.valueOf(value);
     }
 }

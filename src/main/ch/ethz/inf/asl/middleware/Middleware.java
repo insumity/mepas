@@ -1,9 +1,7 @@
 package ch.ethz.inf.asl.middleware;
 
-import ch.ethz.inf.asl.Message;
-import ch.ethz.inf.asl.common.Request;
-import ch.ethz.inf.asl.common.Response;
-import ch.ethz.inf.asl.utils.Optional;
+import ch.ethz.inf.asl.common.request.Request;
+import ch.ethz.inf.asl.common.response.Response;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -41,27 +39,11 @@ public class Middleware {
                         "jdbc:postgresql://localhost:5432/tryingstuff", "bandwitch", "");
 
                 while ((request = (Request) ois.readObject()) != null) {
-
-
-                    protocol = new MWMessagingProtocolImpl(request.getRequestorId(),
-                            connection);
-
-                    Response response = null;
-                    // based on request ... do stuff
-                    if (request.isCreateQueue()) {
-                        int queueId = protocol.createQueue(request.getQueueName());
-                        response = new Response().createQueue(queueId);
-                    }
-                    else if (request.isSendMessage()) {
-                        protocol.sendMessage(request.getReceiverId(), request.getQueueId(), request.getContent());
-                        response = new Response();
-                    }
-                    else if (request.isReceiveMessage()) {
-                        Optional<Message> message = protocol.receiveMessage(request.getQueueId(), true);
-                        response = new Response().receiveMessage(message);
-                    }
-
-                    System.err.println("(request: " + request + ", response: " + response + ")");
+                    protocol = new MWMessagingProtocolImpl(request.getRequestorId(), connection);
+                    System.out.println("Received from client: " + request.getRequestorId()
+                        + " the request: " + request);
+                    Response response = request.execute(protocol);
+                    System.out.println("Got response: " + response + ", to be send to the client!");
                     out.writeObject(response);
                 }
 
@@ -77,7 +59,7 @@ public class Middleware {
 
     public static void main(String[] args) throws IOException {
 
-        int portNumber = 6789;
+        int portNumber = Integer.valueOf(args[0]);
 
         Executor executor = Executors.newFixedThreadPool(2);
         try (

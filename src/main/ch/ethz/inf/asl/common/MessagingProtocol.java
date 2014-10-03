@@ -1,5 +1,6 @@
-package ch.ethz.inf.asl;
+package ch.ethz.inf.asl.common;
 
+import ch.ethz.inf.asl.common.Message;
 import ch.ethz.inf.asl.utils.Optional;
 
 public abstract class MessagingProtocol {

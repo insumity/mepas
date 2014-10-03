@@ -1,4 +1,4 @@
-package ch.ethz.inf.asl;
+package ch.ethz.inf.asl.common;
 
 public class MessageConstants {
     public static final Integer[] POSSIBLE_MESSAGE_LENGTHS = new Integer[] {200, 2000};

@@ -1,10 +1,7 @@
 package ch.ethz.inf.asl.client;
 
-import ch.ethz.inf.asl.Message;
-import ch.ethz.inf.asl.MessagingProtocol;
-import ch.ethz.inf.asl.common.MessageType;
-import ch.ethz.inf.asl.common.Request;
-import ch.ethz.inf.asl.common.Response;
+import ch.ethz.inf.asl.common.Message;
+import ch.ethz.inf.asl.exceptions.MessageProtocolException;
 import ch.ethz.inf.asl.utils.Optional;
 
 import java.io.*;
@@ -13,51 +10,53 @@ import java.net.UnknownHostException;
 
 public class Client {
 
+    // duplicated method FIXME
+    private static String stringOf(int length) {
+        String a = "";
+
+        for (int i = 0; i < length; ++i) {
+            a += "|";
+        }
+        return a;
+    }
+
     public static void main(String[] args) {
 
         int userId = Integer.valueOf(args[0]);
-        int otherUserId;
-        if (userId == 1) {
-            otherUserId = 2;
-        }
-        else {
-            otherUserId = 1;
-        }
+        int otherUserId = Integer.valueOf(args[1]);
+        String hostName = args[2];
+        int portNumber = Integer.valueOf(args[3]);
+        String content = stringOf(200);
 
-        String hostName = "localhost";
-        int portNumber = 6789;
-        String content = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-        System.out.println(content.length());
+        try (Socket kkSocket = new Socket(hostName, portNumber))
+         {
+            ClientMessagingProtocolImpl protocol = new ClientMessagingProtocolImpl(userId, kkSocket);
 
-        try (
-        Socket kkSocket = new Socket(hostName, portNumber);
-
-        ObjectOutputStream objectOutputStream = new ObjectOutputStream(kkSocket.getOutputStream());
-        ObjectInputStream in = new ObjectInputStream(
-                kkSocket.getInputStream());
-        ) {
-            Response fromServer;
-
-            // initiate conversation with server by sending the request
-            Request request = new Request(userId).createQueue("mepas");
-
-            // send message
-            objectOutputStream.writeObject(request);
+            int result = protocol.createQueue("mepasCool");
+            System.out.println("Queue created with queue id: " + result);
 
             boolean send = true;
-            while ((fromServer = (Response) in.readObject()) != null) {
-                System.out.println("Server response: " + fromServer);
+            while (true) {
 
                 Thread.sleep(2000);
-                if (send) {
-                    request = new Request(userId).sendMessage(otherUserId, 1, content);
-                    objectOutputStream.writeObject(request);
-                    send = !send;
-                }
-                else {
-                    request = new Request(userId).receiveMessage(1, true);
-                    objectOutputStream.writeObject(request);
-                    send = !send;
+                try {
+                    if (send) {
+                        protocol.sendMessage(otherUserId, 1, content);
+                        System.err.println("Send message");
+                        send = !send;
+                    } else {
+                        Optional<Message> message = protocol.receiveMessage(1, true);
+                        if (message.isPresent()) {
+                            System.err.println("Received message: " + message.get());
+                        }
+                        else {
+                            System.err.println("Received message: NONE");
+                        }
+                        send = !send;
+                    }
+                } catch (MessageProtocolException e) {
+                    e.printStackTrace();
+                    break;
                 }
             }
 
@@ -70,8 +69,6 @@ public class Client {
                     hostName);
             System.exit(1);
         } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
     }
