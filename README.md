@@ -1,3 +1,7 @@
+[![Build Status](https://magnum.travis-ci.com/insumity/mepas.svg?token=zwxMV6HFTjurdrTshKys&branch=master)](https://magnum.travis-ci.com/insumity/mepas)
+
+
+
 
 In the following text I'll try to write down my ideas about the project and why
 I followed some design decisions. Hopefully it will help me later on creating
