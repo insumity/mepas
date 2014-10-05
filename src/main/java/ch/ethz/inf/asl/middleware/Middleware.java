@@ -67,7 +67,7 @@ public class Middleware {
 
             while (true) {
                 Socket socket = serverSocket.accept();
-                 MiddlewareThread mwthread = new MiddlewareThread(socket, null);
+                    MiddlewareThread mwthread = new MiddlewareThread(socket, null);
                 executor.execute(mwthread);
             }
 

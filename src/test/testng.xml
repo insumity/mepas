@@ -1,0 +1,17 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<suite name="TestSuite" verbose="1" >
+
+    <test name="all">
+        <groups>
+            <run>
+                <include name="small"/>
+                <!--<include name="integration"/>-->
+            </run>
+        </groups>
+        <packages>
+            <package name="ch.ethz.inf.asl.*"/>
+        </packages>
+    </test>
+
+</suite>

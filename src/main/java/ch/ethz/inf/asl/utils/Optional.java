@@ -45,7 +45,7 @@ public class Optional<T> implements Serializable {
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof Optional) {
-            Optional other = (Optional) obj;
+            Optional<T> other = (Optional<T>) obj;
             return Objects.equals(this.value, other.value);
         }
         return false;
