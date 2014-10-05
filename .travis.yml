@@ -7,3 +7,9 @@ jdk:
 addons:
   postgresql: "9.3"
 
+notifications:
+  email:
+    recipients:
+      - karolos@gmail.com
+    on_success: never
+    on_failure: always
