@@ -1,4 +1,4 @@
-[![Build Status](https://magnum.travis-ci.com/insumity/mepas.svg?token=zwxMV6HFTjurdrTshKys&branch=master)](http://travis-ci.com/insumity/mepas)
+[![Build Status](https://magnum.travis-ci.com/insumity/mepas.svg?token=zwxMV6HFTjurdrTshKys&branch=master)](https://magnum.travis-ci.com/insumity/mepas)
 
 
 
