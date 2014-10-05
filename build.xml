@@ -44,7 +44,7 @@
              classname="org.testng.TestNGAntTask"/>
 
   <target name="test" depends="compile">
-     <testng classpathref="classpath" >
+     <testng classpathref="classpath" haltOnfailure="true">
         <xmlfileset dir="src/test" includes="testng.xml"/>
      </testng>
   </target>
