@@ -23,4 +23,12 @@ used in their tests. I'm talking about Message
 
 Wednesday (01/10)
 ------------------
-1) Should my API contain an sendMessage to multiple queues? 
+1) Should my API contain an sendMessage to multiple queues?
+ 
+ 
+Sunday(05/10)
+-------------
+ 
+1) Include concurrent call tests ot the stored procedures
+2) check a maven project and change the "resources" and all this directoreis in this project.
+3) IT's PostgreSQL not PostgresSQL!!! FIx it everywhere
