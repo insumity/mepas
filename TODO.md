@@ -32,3 +32,4 @@ Sunday(05/10)
 1) Include concurrent call tests ot the stored procedures
 2) check a maven project and change the "resources" and all this directoreis in this project.
 3) IT's PostgreSQL not PostgresSQL!!! FIx it everywhere
+4) What is the `out` directory for?? in the init directory

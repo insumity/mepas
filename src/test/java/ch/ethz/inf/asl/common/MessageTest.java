@@ -38,7 +38,7 @@ public class MessageTest {
     @Test(groups = SMALL)
     public void testGetSenderId() {
         Message msg =  new Message(11, 34, 2, Timestamp.valueOf("2012-03-03 11:22:12"), STRING_OF_200_CHARACTERS);
-        assertEquals(msg.getSenderId(), 12);
+        assertEquals(msg.getSenderId(), 11);
     }
 
     @Test(groups = SMALL)
