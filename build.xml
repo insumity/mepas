@@ -1,0 +1,60 @@
+<project name="mepas" default="run" basedir=".">
+
+  <!-- set global properties for this build -->
+  <property name="src.dir"    location="src"/>
+  <property name="build.dir"  location="bin"/>
+  <property name="lib.dir"    location="lib"/>
+  <property name="test.dir"   location="src/test"/>
+  <property name="test-output.dir"   location="test-output"/>
+
+  <property name="main-class" value="ch.ethz.inf.asl.middleware.Middleware" />
+
+  <path id="classpath">
+    <fileset dir="${lib.dir}" includes="postgresql-9.3-1102.jdbc41.jar"/>
+    <fileset dir="${lib.dir}" includes="testng-6.8.jar"/>
+    <fileset dir="${lib.dir}" includes="mockito-all-1.9.5.jar"/>
+    <pathelement location="${build.dir}"/>
+  </path>
+
+  <target name="compile" description="compiles the source">
+    <!-- Compile the java code from ${src} into ${build} -->
+    <mkdir dir="${build.dir}"/>
+    <javac srcdir="${src.dir}" destdir="${build.dir}" classpathref="classpath" includeantruntime="false" />
+    <javac srcdir="${test.dir}" destdir="${build.dir}" classpathref="classpath" includeantruntime="false" />
+    <!-- <compilerarg value="-Xlint"/> -->
+  </target>
+
+  <target name="jar" depends="compile" description="generate a jar executable">
+    <!-- Put everything in into a executable jar file -->
+    <jar jarfile="${ant.project.name}.jar" basedir="${build.dir}" />
+  </target>
+
+  <target name="run" depends="jar" description="execute the jar file" >
+    <java classname="${main-class}" fork="true">
+      <classpath>
+        <path refid="classpath"/>
+        <path location="${ant.project.name}.jar"/>
+      </classpath>
+      <arg value="${user}"/>
+      <arg value="${password}"/>
+    </java>
+  </target>
+
+  <taskdef name="testng" classpathref="classpath"
+             classname="org.testng.TestNGAntTask"/>
+
+  <target name="test" depends="compile">
+     <testng classpathref="classpath" >
+        <xmlfileset dir="src/test" includes="testng.xml"/>
+     </testng>
+  </target>
+
+  <target name="clean" description="clean up" >
+      <!-- Delete the ${build} directory and the jar file -->
+      <delete dir="${build.dir}"/>
+      <delete dir="${test-output.dir}"/>
+      <delete file="${ant.project.name}.jar"/>
+  </target>
+
+
+</project>
