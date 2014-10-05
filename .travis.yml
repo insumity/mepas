@@ -4,3 +4,7 @@ install: ant compile
 jdk:
   - openjdk7
   - oraclejdk7
+
+addons:
+  postgresql: "9.3"
+

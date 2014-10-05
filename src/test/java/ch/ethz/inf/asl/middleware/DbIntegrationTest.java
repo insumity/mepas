@@ -19,13 +19,17 @@ import static org.testng.Assert.*;
 
 public class DbIntegrationTest {
 
+
+    private static final String USERNAME = "postgres";
+    private static final String PASSWORD = "";
+
     private static final String INITIALIZE_DATABASE = "{ call initialize_database() }"; // TODO add tests for those guys
     private static final String CREATE_CLIENT = "{ ? = call create_client(?) }"; // TODO
 
     private Connection getConnection(String db) throws SQLException, ClassNotFoundException {
         Class.forName("org.postgresql.Driver");
         return DriverManager.getConnection(
-                "jdbc:postgresql://localhost:5432/" + db, "bandwitch", "");
+                "jdbc:postgresql://localhost:5432/" + db, USERNAME, PASSWORD);
     }
 
     private boolean messageExists(int senderId, Integer receiverId, int queueId, Timestamp arrivalTime, String message) throws SQLException, ClassNotFoundException {
@@ -94,8 +98,8 @@ public class DbIntegrationTest {
 
 
         // load all the functions from `auxiliary_function.sql` and `basic_functions.sql`
-        loadSQLFile("bandwitch", "integrationtest", "src/main/resources/auxiliary_functions.sql");
-        loadSQLFile("bandwitch", "integrationtest", "src/main/resources/basic_functions.sql");
+        loadSQLFile(USERNAME, "integrationtest", "src/main/resources/auxiliary_functions.sql");
+        loadSQLFile(USERNAME, "integrationtest", "src/main/resources/basic_functions.sql");
 
         // create all the relations: queue, client and message
         connection = getConnection("integrationtest");
@@ -105,7 +109,7 @@ public class DbIntegrationTest {
         connection.close();
 
         // populate the tables
-        loadSQLFile("bandwitch", "integrationtest", "src/test/resources/populate_database.sql");
+        loadSQLFile(USERNAME, "integrationtest", "src/test/resources/populate_database.sql");
     }
 
     @AfterMethod(groups = INTEGRATION)

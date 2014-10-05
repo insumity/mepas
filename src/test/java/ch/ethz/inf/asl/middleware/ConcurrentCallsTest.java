@@ -17,13 +17,16 @@ public class ConcurrentCallsTest {
     // the state code is handling serialization failures (which always return with a SQLSTATE value of '40001'), becau
     // you retrieve the errorMessage and then get compare it to "40001" from there. Cha cha :)
 
+    private static final String USERNAME = "postgres";
+    private static final String PASSWORD = "";
+
     private static final String INITIALIZE_DATABASE = "{ call initialize_database() }"; // TODO add tests for those guys
     private static final String CREATE_CLIENT = "{ ? = call create_client(?) }"; // TODO
 
     private Connection getConnection(String db) throws SQLException, ClassNotFoundException {
         Class.forName("org.postgresql.Driver");
         return DriverManager.getConnection(
-                "jdbc:postgresql://localhost:5432/" + db, "bandwitch", "");
+                "jdbc:postgresql://localhost:5432/" + db, USERNAME, PASSWORD);
     }
 
     private void loadSQLFile(String username, String db, String filePath) throws IOException, InterruptedException {
@@ -59,8 +62,8 @@ public class ConcurrentCallsTest {
 
         // load all the functions from `auxiliary_function.sql` and `basic_functions.sql`
         System.err.println(System.getProperty("user.dir"));
-        loadSQLFile("bandwitch", "integrationtest", "src/main/resources/auxiliary_functions.sql");
-        loadSQLFile("bandwitch", "integrationtest", "src/main/resources/basic_functions.sql");
+        loadSQLFile(USERNAME, "integrationtest", "src/main/resources/auxiliary_functions.sql");
+        loadSQLFile(USERNAME, "integrationtest", "src/main/resources/basic_functions.sql");
 
         // create all the relations: queue, client and message
         connection = getConnection("integrationtest");
@@ -70,7 +73,7 @@ public class ConcurrentCallsTest {
         connection.close();
 
         // populate the tables
-        loadSQLFile("bandwitch", "integrationtest", "src/test/resources/populate_database.sql");
+        loadSQLFile(USERNAME, "integrationtest", "src/test/resources/populate_database.sql");
     }
 
     @AfterMethod(groups = INTEGRATION)
