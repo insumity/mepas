@@ -81,7 +81,7 @@ public class SQLFunctionsIntegrationTest {
 
     @BeforeMethod(groups = INTEGRATION)
     public void initialize() throws ClassNotFoundException, SQLException, IOException, InterruptedException {
-        IntegrationTest.initialize(true);
+        IntegrationTest.initialize(false, true);
     }
 
     @AfterMethod(groups = INTEGRATION)
