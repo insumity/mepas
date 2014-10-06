@@ -5,6 +5,7 @@ INSERT INTO client(name) VALUES('client02');
 INSERT INTO client(name) VALUES('client03');
 INSERT INTO client(name) VALUES('client04');
 INSERT INTO client(name) VALUES('client05');
+INSERT INTO client(name) VALUES('client06');
 
 INSERT INTO queue(name) VALUES('queue01');
 INSERT INTO queue(name) VALUES('queue02');

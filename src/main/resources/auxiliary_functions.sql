@@ -70,7 +70,7 @@ BEGIN
 	IF (SELECT count(id) FROM client WHERE id = p_client_id) != 0 THEN
 		DELETE FROM client WHERE id = p_client_id;
 	ELSE
-		RAISE EXCEPTION 'INVALID_CLIENT with (client_id)=(%)', p_client_id;
+		RAISE EXCEPTION 'DELETE_CLIENT: trying to delete a non existent client';
 	END IF;
 END
 $$ LANGUAGE plpgsql;
