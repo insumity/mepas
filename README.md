@@ -132,3 +132,8 @@ those indexes should be unique and we are going to base ourselves in index-combi
 (http://www.postgresql.org/docs/9.3/static/indexes-bitmap-scans.html)
 
 
+
+
+Monday (6/10/2014)
+1) for reading postgres net messages, use lo0 interface and filter with `tcp.port eq 5432` the port
+where the dbms is running (Wireshark) 

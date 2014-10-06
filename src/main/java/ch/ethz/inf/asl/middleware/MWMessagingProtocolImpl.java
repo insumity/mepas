@@ -203,8 +203,8 @@ public class MWMessagingProtocolImpl extends MessagingProtocol {
         }
     }
 
-    // FIXME move up
-    private int[] makeIntegerListToIntArray(List<Integer> list) {
+    // FIXME move up or put to Utilities. I don't like it here!
+    private int[] makeIntegerListToPrimitiveIntArray(List<Integer> list) {
         int[] array = new int[list.size()];
         int index = 0;
         for (Integer i: list) {
@@ -226,7 +226,7 @@ public class MWMessagingProtocolImpl extends MessagingProtocol {
                 queues.add(rs.getInt(1));
             }
 
-            return makeIntegerListToIntArray(queues);
+            return makeIntegerListToPrimitiveIntArray(queues);
         } catch (SQLException e) {
             throw new MessageProtocolException("failed to list queues", e);
         }

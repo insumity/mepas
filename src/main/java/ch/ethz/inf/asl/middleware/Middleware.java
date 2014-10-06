@@ -1,8 +1,11 @@
 package ch.ethz.inf.asl.middleware;
 
+import ch.ethz.inf.asl.common.MessagingProtocol;
 import ch.ethz.inf.asl.common.request.Request;
 import ch.ethz.inf.asl.common.response.Response;
+import org.postgresql.ds.PGPoolingDataSource;
 
+import javax.activation.DataSource;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -18,11 +21,11 @@ public class Middleware {
 
     static class MiddlewareThread implements Runnable {
 
-        private MWMessagingProtocolImpl protocol;
+        private PGPoolingDataSource source;
         private Socket socket;
-        public MiddlewareThread(Socket socket, MWMessagingProtocolImpl protocol) {
+        public MiddlewareThread(Socket socket, PGPoolingDataSource source) {
             this.socket = socket;
-            this.protocol = protocol;
+            this.source = source;
         }
 
 
@@ -35,16 +38,15 @@ public class Middleware {
                 // read request ..
                 Request request;
 
-                Connection connection = DriverManager.getConnection(
-                        "jdbc:postgresql://localhost:5432/tryingstuff", "bandwitch", "");
-
                 while ((request = (Request) ois.readObject()) != null) {
-                    protocol = new MWMessagingProtocolImpl(request.getRequestorId(), connection);
+                    Connection conn = source.getConnection();
+                    MessagingProtocol protocol = new MWMessagingProtocolImpl(request.getRequestorId(), conn);
                     System.out.println("Received from client: " + request.getRequestorId()
                         + " the request: " + request);
                     Response response = request.execute(protocol);
                     System.out.println("Got response: " + response + ", to be send to the client!");
                     out.writeObject(response);
+                    conn.close();
                 }
 
         } catch (IOException e1) {
@@ -57,9 +59,37 @@ public class Middleware {
         }
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, SQLException {
 
         int portNumber = Integer.valueOf(args[0]);
+
+        // initialize connection pool (from: http://jdbc.postgresql.org/documentation/head/ds-ds.html)
+        PGPoolingDataSource source = new PGPoolingDataSource();
+        source.setDataSourceName("connection pool");
+        source.setServerName("localhost");
+        source.setDatabaseName("tryingstuff");
+        source.setUser("bandwitch");
+        source.setPassword("");
+        source.setInitialConnections(3);
+        source.setMaxConnections(3);
+        source.initialize();
+
+        Connection one;
+        Connection two;
+        Connection three;
+
+        one = source.getConnection();
+        two = source.getConnection();
+        three = source.getConnection();
+
+        one.close();
+        two.close();
+        three.close();
+        one = source.getConnection();
+        two = source.getConnection();
+        three = source.getConnection();
+
+
 
         Executor executor = Executors.newFixedThreadPool(2);
         try (
@@ -67,7 +97,7 @@ public class Middleware {
 
             while (true) {
                 Socket socket = serverSocket.accept();
-                    MiddlewareThread mwthread = new MiddlewareThread(socket, null);
+                    MiddlewareThread mwthread = new MiddlewareThread(socket, source);
                 executor.execute(mwthread);
             }
 
