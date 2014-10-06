@@ -5,6 +5,7 @@ import ch.ethz.inf.asl.utils.Utilities;
 import org.postgresql.util.PSQLException;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
@@ -12,6 +13,7 @@ import java.sql.*;
 
 import static ch.ethz.inf.asl.middleware.IntegrationTest.getConnection;
 import static ch.ethz.inf.asl.middleware.MWMessagingProtocolImpl.RECEIVE_MESSAGE;
+import static ch.ethz.inf.asl.middleware.MWMessagingProtocolImpl.RECEIVE_MESSAGE_FROM_SENDER;
 import static ch.ethz.inf.asl.middleware.MWMessagingProtocolImpl.SEND_MESSAGE;
 import static ch.ethz.inf.asl.utils.TestConstants.INTEGRATION;
 import static org.testng.Assert.assertEquals;
@@ -34,16 +36,6 @@ public class SQLFunctionsConcurrentCallsIntegrationTest {
 
     private static final String INITIALIZE_DATABASE = "{ call initialize_database() }";
 
-    @BeforeMethod(groups = INTEGRATION)
-    public void initialize() throws ClassNotFoundException, SQLException, IOException, InterruptedException {
-        IntegrationTest.initialize(false);
-    }
-
-    @AfterMethod(groups = INTEGRATION)
-    public void tearDown() throws SQLException, ClassNotFoundException {
-        IntegrationTest.tearDown();
-    }
-
     private void addMessagesWithNullReceiverToTheSystem(int numberOfMessages, int senderId, int queueId)
             throws SQLException, ClassNotFoundException {
 
@@ -63,10 +55,23 @@ public class SQLFunctionsConcurrentCallsIntegrationTest {
         }
     }
 
-    @Test(groups = INTEGRATION, description = "The idea of the test is to fill the system with " +
+    @DataProvider(name = "trueAndFalse")
+    public static Object[][] trueAndFalse() {
+        return new Object[][] {
+                {true, true}, {true, false},
+                {false, true}, {false, false}
+        };
+    }
+
+
+    @Test(groups = INTEGRATION, dataProvider = "trueAndFalse",
+            description = "The idea of the test is to fill the system with " +
             "many messages, e.g. X messages, with receiver id being NULL and then create some concurrent readers " +
             "that try to read these messages. In total the concurrent readers should have only read X messages. ")
-    public void testMessagesAreReceivedOnlyOnce() throws SQLException, ClassNotFoundException, InterruptedException {
+    public void testMessagesAreReceivedOnlyOnce(final boolean readCommitted, final boolean fromSender)
+            throws SQLException, ClassNotFoundException, InterruptedException, IOException {
+        IntegrationTest.initialize(readCommitted, false);
+
         final String CONCURRENT_UPDATE_ERROR_SQL_STATE = "40001";
         final int NUMBER_OF_MESSAGES = 2000;
 
@@ -75,7 +80,7 @@ public class SQLFunctionsConcurrentCallsIntegrationTest {
         // readMessagesByReader[i] contains the messages the i-th reader read
         final int[] readMessagesByReader = new int[NUMBER_OF_CONCURRENT_READERS];
 
-        int senderId = 6;
+        final int senderId = 6;
         // should always be greater than NUMBER_OF_CONCURRENT_READERS since a reader doesn't read messages
         // he sent. TODO .. not really -1 or something??
         assert(NUMBER_OF_CONCURRENT_READERS < senderId);
@@ -95,15 +100,30 @@ public class SQLFunctionsConcurrentCallsIntegrationTest {
                 // at maximum you are going to read NUMBER_OF_MESSAGES messages
                 for (int i = 0; i < NUMBER_OF_MESSAGES; ++i) {
                     try (Connection connection = getConnection(DB_NAME)) {
-//                        connection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
+                        if (!readCommitted) {
+                            connection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
+                        }
 
-                        try (CallableStatement stmt = connection.prepareCall(RECEIVE_MESSAGE)) {
+
+                        String callToPrepate = RECEIVE_MESSAGE;
+                        if (fromSender) {
+                            callToPrepate = RECEIVE_MESSAGE_FROM_SENDER;
+                        }
+
+                        try (CallableStatement stmt = connection.prepareCall(callToPrepate)) {
 
                             boolean retrieveByArrivalTime = false;
                             // TODO this is buggy ... should I verify requestingUserId is in the valid range
                             // ???
                             stmt.setInt(1, (id + 1));
-                            stmt.setInt(2, 1);
+
+                            if (fromSender) {
+                                stmt.setInt(2, senderId);
+                            }
+                            else {
+                                stmt.setInt(2, 1);
+                            }
+
                             stmt.setBoolean(3, retrieveByArrivalTime);
 
                             ResultSet rs = null;
@@ -151,5 +171,7 @@ public class SQLFunctionsConcurrentCallsIntegrationTest {
         }
 
         assertEquals(totalReadMessages, NUMBER_OF_MESSAGES);
+
+        IntegrationTest.tearDown();
     }
 }

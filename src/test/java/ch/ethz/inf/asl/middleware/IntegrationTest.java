@@ -47,7 +47,7 @@ public class IntegrationTest {
     }
 
     /* creates a database and fill it with tables and data */
-    public static void initialize(boolean populateDatabaseWithMessages) throws ClassNotFoundException, SQLException, IOException, InterruptedException {
+    public static void initialize(boolean readCommittedLevel, boolean populateDatabaseWithMessages) throws ClassNotFoundException, SQLException, IOException, InterruptedException {
 
         try (Connection connection = getConnection("")) {
             // drop the database just in case it's there
@@ -59,7 +59,13 @@ public class IntegrationTest {
 
         // load all the functions from `auxiliary_function.sql` and `repeatable_read_basic_functions.sql`
         loadSQLFile(USERNAME, DB_NAME, "src/main/resources/auxiliary_functions.sql");
-        loadSQLFile(USERNAME, DB_NAME, "src/main/resources/read_committed_basic_functions.sql");
+
+        if (readCommittedLevel) {
+            loadSQLFile(USERNAME, DB_NAME, "src/main/resources/read_committed_basic_functions.sql");
+        }
+        else {
+            loadSQLFile(USERNAME, DB_NAME, "src/main/resources/repeatable_read_basic_functions.sql");
+        }
 
         // create all the relations: queue, client and message
         try (Connection connection = getConnection(DB_NAME);
