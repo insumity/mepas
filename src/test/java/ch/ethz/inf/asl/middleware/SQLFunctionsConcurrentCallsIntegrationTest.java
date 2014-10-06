@@ -95,7 +95,7 @@ public class SQLFunctionsConcurrentCallsIntegrationTest {
                 // at maximum you are going to read NUMBER_OF_MESSAGES messages
                 for (int i = 0; i < NUMBER_OF_MESSAGES; ++i) {
                     try (Connection connection = getConnection(DB_NAME)) {
-                        connection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
+//                        connection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
 
                         try (CallableStatement stmt = connection.prepareCall(RECEIVE_MESSAGE)) {
 
@@ -147,7 +147,6 @@ public class SQLFunctionsConcurrentCallsIntegrationTest {
 
         int totalReadMessages = 0;
         for (int i = 0; i < NUMBER_OF_CONCURRENT_READERS; ++i) {
-            System.out.println(i + ": " + readMessagesByReader[i]);
             totalReadMessages += readMessagesByReader[i];
         }
 

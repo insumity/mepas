@@ -110,7 +110,7 @@ BEGIN
                                             that sender_id != receiver_id because of the `check_cannot_send_to_itself`
                                             constraint in the message relation */
                                          OR (receiver_id IS NULL AND sender_id != p_requesting_user_id))
-        ORDER BY arrival_time DESC LIMIT 1 FOR UPDATE;
+        ORDER BY arrival_time DESC LIMIT 1;
 
     RETURN QUERY SELECT * FROM message
                     WHERE queue_id = p_queue_id AND (receiver_id = p_requesting_user_id
@@ -124,7 +124,7 @@ BEGIN
     SELECT id INTO received_message_id FROM message
       WHERE queue_id = p_queue_id AND (receiver_id = p_requesting_user_id
                                    OR (receiver_id IS NULL AND sender_id != p_requesting_user_id))
-      LIMIT 1 FOR UPDATE;
+      LIMIT 1;
 
     RETURN QUERY SELECT * FROM message
                     WHERE queue_id = p_queue_id AND (receiver_id = p_requesting_user_id

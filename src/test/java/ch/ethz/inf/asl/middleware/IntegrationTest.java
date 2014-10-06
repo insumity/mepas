@@ -59,7 +59,7 @@ public class IntegrationTest {
 
         // load all the functions from `auxiliary_function.sql` and `repeatable_read_basic_functions.sql`
         loadSQLFile(USERNAME, DB_NAME, "src/main/resources/auxiliary_functions.sql");
-        loadSQLFile(USERNAME, DB_NAME, "src/main/resources/repeatable_read_basic_functions.sql");
+        loadSQLFile(USERNAME, DB_NAME, "src/main/resources/read_committed_basic_functions.sql");
 
         // create all the relations: queue, client and message
         try (Connection connection = getConnection(DB_NAME);
