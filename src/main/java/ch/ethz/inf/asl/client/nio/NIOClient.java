@@ -25,14 +25,18 @@ public class NIOClient {
 
     public static void main(String[] args) throws IOException {
 
-        int userId = 1;
-        int otherUserId = 2;
+        int userId = 2;
+        int otherUserId = 3;
         String hostName = "localhost";
         int portNumber = 3000;
         String content = stringOf(200);
 
         SocketAddress address = new InetSocketAddress(hostName, portNumber);
         SocketChannel client = SocketChannel.open(address);
+        client.configureBlocking(false);
+
+        // wait until the connection is established
+        while (!client.finishConnect());
 
         NIOClientMessagingProtocolImpl protocol =
                 new NIOClientMessagingProtocolImpl(userId, client);

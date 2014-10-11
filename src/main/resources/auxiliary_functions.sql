@@ -47,6 +47,7 @@ $$ LANGUAGE plpgsql;
 CREATE FUNCTION clear_database() RETURNS void AS $$
 BEGIN
   DROP TABLE client, queue, message;
+  /* FIXME are indexes closes? */
 END
 $$ LANGUAGE plpgsql;
 

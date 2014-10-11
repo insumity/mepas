@@ -173,9 +173,13 @@ public class NIOMiddleware {
                 // Get a key representing one of bits of I/O
                 // activity (key)
 
+                // TODO
+                if (key.isValid()) {
+                    continue; //
+                }
+
                 // What kind of activity is it?
-                if ((key.readyOps() & SelectionKey.OP_ACCEPT) ==
-                        SelectionKey.OP_ACCEPT) {
+                if (key.isAcceptable()) {
 
                     System.out.println( "acc" );
                     // It's an incoming connection. Register this socket with the Selector
@@ -190,8 +194,7 @@ public class NIOMiddleware {
 
                     // Register it with the selector, for reading
                     sc.register( selector, SelectionKey.OP_READ );
-                } else if ((key.readyOps() & SelectionKey.OP_READ) ==
-                        SelectionKey.OP_READ) {
+                } else if (key.isReadable()) {
 
                     // new object
                     if (key.attachment() == null ) {
@@ -237,7 +240,7 @@ public class NIOMiddleware {
                             ObjectInputStream ois = new ObjectInputStream(bari);
                             Request x = (Request) ois.readObject();
 
-//                            object.clear(); // delete object for next read
+                            object.clear(); // delete object for next read
 
                             System.err.println("object is: " + x);
 

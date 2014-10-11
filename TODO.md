@@ -33,3 +33,22 @@ Sunday(05/10)
 2) check a maven project and change the "resources" and all this directoreis in this project.
 3) IT's PostgreSQL not PostgresSQL!!! FIx it everywhere
 4) What is the `out` directory for?? in the init directory
+
+Wednesaday(08/10)
+-----------------
+You can use `ON CASCADE` in the definition of the message table in queue_id, client_id.
+In case the queue is deleted all the msgs are also deleted
+
+YOu might want to delte the db from scratch (see auxiliary_functions.sql)
+
+Thinkg about the index order of the multi-value index
+
+Thursday (09/10)
+----------------
+
+1) My own connection pool [check it erasmus style]
+2) My own thread pool [check it semi-erasmus]
+
+Friday (10/10)
+--------------
+1) Make messages up to 2000 characters, not 200 and 2000 characters

@@ -5,27 +5,31 @@ import ch.ethz.inf.asl.common.MessagingProtocol;
 import ch.ethz.inf.asl.common.request.*;
 import ch.ethz.inf.asl.common.response.*;
 import ch.ethz.inf.asl.exceptions.MessageProtocolException;
+import ch.ethz.inf.asl.logger.MyLogger;
 import ch.ethz.inf.asl.utils.Optional;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 public class ClientMessagingProtocolImpl extends MessagingProtocol {
 
     private int requestorId;
 
     private Socket socket;
-    private ObjectInputStream objectInputStream;
-    private ObjectOutputStream objectOutputStream;
+    private DataInputStream dataInputStream;
+    private DataOutputStream dataOutputStream;
+    private MyLogger logger;
 
-    public ClientMessagingProtocolImpl(int requestorId, Socket socket) {
+
+    public ClientMessagingProtocolImpl(int requestorId, Socket socket) throws IOException {
         this.requestorId = requestorId;
         this.socket = socket;
+//        this.logger = new MyLogger("Logger for: " + requestorId); // FIXME ... here?
         try {
-            objectInputStream= new ObjectInputStream(socket.getInputStream());
-            objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
+            dataInputStream = new DataInputStream(socket.getInputStream());
+            dataOutputStream = new DataOutputStream(socket.getOutputStream());
         } catch (IOException e) {
             throw new MessageProtocolException("Client protocol couldn't be initialized", e);
         }
@@ -33,15 +37,49 @@ public class ClientMessagingProtocolImpl extends MessagingProtocol {
 
     private void sendRequest(Request request) {
         try {
-            objectOutputStream.writeObject(request);
+            byte[] data = objectToByteArray(request);
+
+            dataOutputStream.write(data);
+            dataOutputStream.flush(); //FIXME
         } catch (IOException e) {
             throw new MessageProtocolException("Request couldn't be sent", e);
         }
     }
 
+    private Object byteArrayToObject(byte[] data) throws IOException, ClassNotFoundException {
+        ByteArrayInputStream bari = new ByteArrayInputStream(data);
+        ObjectInputStream ois = new ObjectInputStream(bari);
+        return ois.readObject();
+    }
+
+    // concat function taken from http://stackoverflow.com/questions/80476/how-to-concatenate-two-arrays-in-java
+    public byte[] concat(byte[] first, byte[] second) {
+        byte[] result = Arrays.copyOf(first, first.length + second.length);
+        System.arraycopy(second, 0, result, first.length, second.length);
+        return result;
+    }
+
+    private byte[] objectToByteArray(Object object) throws IOException {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutput out = new ObjectOutputStream(bos);
+        out.writeObject(object);
+
+        byte[] objectData = bos.toByteArray();
+        byte[] lengthOfObject = ByteBuffer.allocate(4).putInt(objectData.length).array();
+        byte[] toSend = concat(lengthOfObject, objectData);
+
+        return toSend;
+    }
+
+    // perhaps put TODO Class<T> returnType as a parameter of this function
     private <R extends Response> R receiveResponse() {
         try {
-            Object response = objectInputStream.readObject();
+
+            int length = dataInputStream.readInt();
+            byte[] data = new byte[length];
+            dataInputStream.read(data);
+            Response response = (Response) byteArrayToObject(data);
+
             if (response == null) {
                 throw new MessageProtocolException("Couldn't receive response, probably because a socket" +
                         "got closed!");

@@ -135,5 +135,23 @@ those indexes should be unique and we are going to base ourselves in index-combi
 
 
 Monday (6/10/2014)
+------------------
 1) for reading postgres net messages, use lo0 interface and filter with `tcp.port eq 5432` the port
 where the dbms is running (Wireshark) 
+
+Wednesday(8/10/2014)
+--------------------
+I never close a client's socket! it just stays open till the end.
+That's the way it supposed to be!!!
+
+Friday (10/10/2014)
+-------------------
+Clients for now should work as following
+
+--> put a message in the queue with counter 0 ... remember to whom the message was sent
+---> send a message to a random user in a specific queues [let's say we have N clients]
+
+<--- receive a message if somebody sent you something, increase a counter in it and
+ send it back in the queue
+
+
