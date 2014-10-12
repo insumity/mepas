@@ -7,7 +7,7 @@
   <property name="test.dir"   location="src/test"/>
   <property name="test-output.dir"   location="test-output"/>
 
-  <property name="main-class" value="ch.ethz.inf.asl.middleware.Middleware" />
+  <property name="main-class" value="ch.ethz.inf.asl.main.Main" />
 
   <path id="classpath">
     <fileset dir="${lib.dir}" includes="postgresql-9.3-1102.jdbc41.jar"/>
@@ -26,7 +26,11 @@
 
   <target name="jar" depends="compile" description="generate a jar executable">
     <!-- Put everything in into a executable jar file -->
-    <jar jarfile="${ant.project.name}.jar" basedir="${build.dir}" />
+    <jar jarfile="${ant.project.name}.jar" basedir="${build.dir}">
+      <manifest>
+          <attribute name="Main-Class" value="${main-class}"/>
+      </manifest>
+    </jar>
   </target>
 
   <target name="run" depends="jar" description="execute the jar file" >

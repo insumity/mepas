@@ -52,3 +52,11 @@ Thursday (09/10)
 Friday (10/10)
 --------------
 1) Make messages up to 2000 characters, not 200 and 2000 characters
+
+Sunday (12/10)
+--------------
+1) Middleware receives specific "SHUTDOWN" message to gracefully close
+2) If queues are not created by the user put them in auxiliary_functions file [DONE!! TICK]
+ 
+ 3) You can call SQL functions like this "SELECT function()" you don't 
+ have to do "SELECT * FROM function()" like I used to do? Verify this is not the case
