@@ -103,6 +103,7 @@ public class Client {
 
         int totalClients = Integer.valueOf(args[2]);
         int startingId = Integer.valueOf(args[3]);
+        int runningTimeInMinutes = Integer.valueOf(args[4]);
         // create so many clients int he system
 
         // create queue with id 1
@@ -114,7 +115,7 @@ public class Client {
 
         for (int i = 0; i < totalClients; ++i) {
             clients[i] =
-                    new Thread(new ClientThread(ONE_MINUTE, startingId + i, hostName, portNumber, totalClients));
+                    new Thread(new ClientThread(ONE_MINUTE * runningTimeInMinutes, startingId + i, hostName, portNumber, totalClients));
         }
 
         // gia na arxisoun oloi mazi ... allios ta new creations argoun FIXME
@@ -127,69 +128,4 @@ public class Client {
         }
 
     }
-
-//    public static void main(String[] args) {
-//        String hostName = "localhost";
-//
-//        try {
-//            Socket socket = new Socket(hostName, 6789);
-//
-//            OutputStream os = socket.getOutputStream();
-//            InputStream is = socket.getInputStream();
-//            ObjectOutputStream oos = new ObjectOutputStream(os);
-//            ObjectInputStream ois = new ObjectInputStream(is);
-//
-//            int requestorId = 1;
-//
-//            long startingTime = System.currentTimeMillis();
-//            while (true) {
-//                MessagingProtocol protocol = new ClientMessagingProtocolImpl(requestorId, ois, oos);
-//
-//                int queueId = protocol.createQueue("coolQueue");
-//                protocol.sendMessage(queueId, 1, "hey dude! Everything fine?");
-//
-//                Optional<Message> receivedMessage = protocol.receiveMessage(queueId, false);
-//                if (receivedMessage.isPresent()) {
-//                    System.out.println("Message received: " + receivedMessage);
-//                }
-//                else {
-//                    System.out.println("No message was received!");
-//                }
-//                long endTime = System.currentTimeMillis();
-//
-//                Thread.sleep(10000);
-//                long elapsedSeconds = (endTime - startingTime) / 1000;
-//                if (elapsedSeconds >= 20) {
-//                    break;
-//                }
-//            }
-//
-//            os.close();
-//            oos.close();
-//            is.close();
-//            ois.close();
-//            socket.close();;
-//
-//        } catch (UnknownHostException e) {
-//            e.printStackTrace();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
-//    }
-    /*
-    connect to MW based on configuration
-    send messages
-    ClientProtocol protocol = new ...Protocol(MW_IP_ADDRESS, ...);
-
-    while(true) {
-
-        protocol.sendMessage(); // actually opens the connection with MW and sends
-        a message
-
-        Message msg = protocol.receiveMessage();
-
-    }
-     */
 }

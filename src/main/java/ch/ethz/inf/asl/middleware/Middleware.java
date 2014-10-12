@@ -61,16 +61,18 @@ public class Middleware {
         }
     }
 
-    public static PGPoolingDataSource initiateConnectionPool() throws SQLException {
+    public static PGPoolingDataSource initiateConnectionPool(String host, String username,
+                                                             String password, String db, int size) throws SQLException {
+
         // initialize connection pool (from: http://jdbc.postgresql.org/documentation/head/ds-ds.html)
         PGPoolingDataSource source = new PGPoolingDataSource();
         source.setDataSourceName("connection pool");
-        source.setServerName("localhost");
-        source.setDatabaseName("tryingstuff");
-        source.setUser("bandwitch");
-        source.setPassword("");
-        source.setInitialConnections(10);
-        source.setMaxConnections(10);
+        source.setServerName(host);
+        source.setDatabaseName(db);
+        source.setUser(username);
+        source.setPassword(password);
+        source.setInitialConnections(size);
+        source.setMaxConnections(size);
         source.initialize();
         return source;
     }
@@ -285,14 +287,20 @@ public class Middleware {
     public static void main(String[] args) throws IOException, SQLException {
 
 
-        int portNumber = Integer.valueOf(args[0]);
+        String host = args[0];
+        String username = args[1];
+        String password = args[2];
+        String dbName = args[3];
+
+        int portNumber = Integer.valueOf(args[4]);
+        int numberOfThreads = Integer.valueOf(args[5]);
+        int connectionPoolSize = Integer.valueOf(args[6]);
 
         BlockingQueue<InternalSocket> sockets = new LinkedBlockingQueue<>();
 
-        PGPoolingDataSource source = initiateConnectionPool();
-        int NUMBER_OF_THREADS = 10;
-        Executor executor = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
-        for (int i = 0; i < NUMBER_OF_THREADS; ++i) {
+        PGPoolingDataSource source = initiateConnectionPool(host, username, password, dbName, connectionPoolSize);
+        Executor executor = Executors.newFixedThreadPool(numberOfThreads);
+        for (int i = 0; i < numberOfThreads; ++i) {
             executor.execute(new WorkerThread(sockets, source));
         }
 
