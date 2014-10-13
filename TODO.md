@@ -60,3 +60,4 @@ Sunday (12/10)
  
  3) You can call SQL functions like this "SELECT function()" you don't 
  have to do "SELECT * FROM function()" like I used to do? Verify this is not the case
+4) remove .pyc files 

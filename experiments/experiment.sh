@@ -80,35 +80,6 @@ then
 fi
 
 
-# in case database needs to be initialized (users & queues to be added)
-if [[ $initDatabase == "yes" ]]
-then
-    # in order for the following command to run .pgpass should be added, look at the SQL .txt file for more info
-    psql -U postgres -d message -h $dbMachine -v initNumberOfClients=$initDBClients -v initNumberOfQueues=$initDBQueues -f clear_and_restore_database.sql 1>/dev/null 2>&1
-
-    echo ">> Database was initialized!"
-fi
-
-
-
-# TODO possibly clean database with a simple python script
-
-function copyJarFile()
-{
-    echo -ne "Copying $jarName to $1 machine: $2 ... "
-    scp -i $privateKey $jarPath $remoteUserName@$2:/tmp 1>/dev/null
-    echo "SUCCESS"
-}
-
-if [[ $copyJar == "yes" ]]
-then
-    copyJarFile "server" $serverMachine
-    copyJarFile "client" $clientMachine
-    echo "=========="
-fi
-
-
-
 # Run server
 # e.g. java -jar message.jar server 4444 10 10 message localhost monra monra123
 ssh -i $privateKey $remoteUserName@$serverMachine "java -jar /tmp/$jarName server $port" \
@@ -183,18 +154,6 @@ scp -i $privateKey $remoteUserName@$clientMachine:/tmp/clients* ./$experimentId/
 echo "SUCCESS"
 
 # Cleanup
-echo -ne "Cleaning up files on client and server machines ... "
-ssh -i $privateKey $remoteUserName@$clientMachine "rm /tmp/client*" 1>/dev/null
-ssh -i $privateKey $remoteUserName@$serverMachine "rm /tmp/server*" 1>/dev/null
-echo "SUCCESS"
-
-if [[ $cleanDatabase == "yes" ]]
-then
-    echo -ne "Cleaning up the database ..."
-    psql -U postgres -d message -h $dbMachine -f clean_database.sql 1>/dev/null 2>&1
-    echo "SUCCESS"
-fi
-
 
 # Process the log files from the clients
 echo -ne "Processing log files ... "
