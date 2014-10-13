@@ -4,6 +4,7 @@ import ch.ethz.inf.asl.common.Message;
 import ch.ethz.inf.asl.common.MessageConstants;
 import ch.ethz.inf.asl.exceptions.MessageProtocolException;
 import ch.ethz.inf.asl.common.MessagingProtocol;
+import ch.ethz.inf.asl.logger.MyLogger;
 import ch.ethz.inf.asl.utils.Optional;
 
 import java.sql.*;
@@ -13,6 +14,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static ch.ethz.inf.asl.utils.Helper.hasText;
+import static ch.ethz.inf.asl.utils.Helper.notNull;
 
 public class MWMessagingProtocolImpl extends MessagingProtocol {
 
@@ -27,9 +29,13 @@ public class MWMessagingProtocolImpl extends MessagingProtocol {
     static final String RECEIVE_MESSAGE_FROM_SENDER = "{ call receive_message_from_sender(?, ?, ?) }";
     static final String LIST_QUEUES = "{ call list_queues(?) }";
 
-    public MWMessagingProtocolImpl(int requestingUserId, Connection connection) {
+    private MyLogger logger;
+
+    public MWMessagingProtocolImpl(MyLogger logger, int requestingUserId, Connection connection) {
+        notNull(connection, "Given connection cannot be null");
         this.requestingUserId = requestingUserId;
         this.connection = connection;
+        this.logger = logger;
     }
 
     @Override
@@ -68,7 +74,9 @@ public class MWMessagingProtocolImpl extends MessagingProtocol {
             throw new IllegalArgumentException("Given content has invalid length");
         }
 
+        logger.synchronizedLog(Thread.currentThread().getId(), "before the try in sendMessage");
         try (CallableStatement stmt = connection.prepareCall(SEND_MESSAGE)) {
+            logger.synchronizedLog(Thread.currentThread().getId(), "inside try");
             Date date = new Date();
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
             String formattedDate = simpleDateFormat.format(date);
@@ -85,7 +93,10 @@ public class MWMessagingProtocolImpl extends MessagingProtocol {
             stmt.setInt(3, queueId);
             stmt.setTimestamp(4, arrivalTime); // FIXME .. should be current Time ...  when message was received by the MW
             stmt.setString(5, content);
+            logger.synchronizedLog(Thread.currentThread().getId(), "- before execute");
             stmt.execute();
+            logger.synchronizedLog(Thread.currentThread().getId(), "- after execute");
+
         } catch (SQLException e) {
             throw new MessageProtocolException("failed to send message", e);
         }
@@ -130,24 +141,32 @@ public class MWMessagingProtocolImpl extends MessagingProtocol {
     // TODO FIXME duplicate code ... when reading ResultSet
     @Override
     public Optional<Message> receiveMessage(int queueId, boolean retrieveByArrivalTime) {
+
+        logger.synchronizedLog(Thread.currentThread().getId(), "before try in receiveMessage");
         try (CallableStatement stmt = connection.prepareCall(RECEIVE_MESSAGE)) {
+            logger.synchronizedLog(Thread.currentThread().getId(), "after try in receiveMessage");
+
             stmt.setInt(1, requestingUserId);
             stmt.setInt(2, queueId);
             stmt.setBoolean(3, retrieveByArrivalTime);
-            ResultSet rs = stmt.executeQuery();
 
-            if (!rs.next()) {
-                return Optional.empty();
+            logger.synchronizedLog(Thread.currentThread().getId(), "- before executeQuery");
+            try (ResultSet rs = stmt.executeQuery()) {
+                logger.synchronizedLog(Thread.currentThread().getId(), "- after executeQuery");
+
+                if (!rs.next()) {
+                    return Optional.empty();
+                }
+
+                Message readMessage = getMessageFromResultSet(rs);
+
+                if (rs.next()) {
+                    // FIXME
+                    throw new MessageProtocolException("more than 2 messages received");
+                }
+
+                return Optional.of(readMessage);
             }
-
-            Message readMessage = getMessageFromResultSet(rs);
-
-            if (rs.next()) {
-                // FIXME
-                throw new MessageProtocolException("more than 2 messages received");
-            }
-
-            return Optional.of(readMessage);
         } catch (SQLException e) {
             throw new MessageProtocolException("failed to receive message", e);
         }
@@ -159,20 +178,22 @@ public class MWMessagingProtocolImpl extends MessagingProtocol {
             stmt.setInt(1, requestingUserId);
             stmt.setInt(2, senderId);
             stmt.setBoolean(3, retrieveByArrivalTime);
-            ResultSet rs = stmt.executeQuery();
 
-            if (!rs.next()) {
-                return Optional.empty();
+            try (ResultSet rs = stmt.executeQuery()) {
+
+                if (!rs.next()) {
+                    return Optional.empty();
+                }
+
+                Message readMessage = getMessageFromResultSet(rs);
+
+                if (rs.next()) {
+                    // FIXME
+                    throw new MessageProtocolException("more than 2 messages received");
+                }
+
+                return Optional.of(readMessage);
             }
-
-            Message readMessage = getMessageFromResultSet(rs);
-
-            if (rs.next()) {
-                // FIXME
-                throw new MessageProtocolException("more than 2 messages received");
-            }
-
-            return Optional.of(readMessage);
         } catch (SQLException e) {
             throw new MessageProtocolException("failed to receive message", e);
         }
@@ -219,14 +240,15 @@ public class MWMessagingProtocolImpl extends MessagingProtocol {
     public int[] listQueues() {
         try (CallableStatement stmt = connection.prepareCall(LIST_QUEUES)) {
             stmt.setInt(1, requestingUserId);
-            ResultSet rs = stmt.executeQuery();
 
-            List<Integer> queues = new LinkedList<>();
-            while (rs.next()) {
-                queues.add(rs.getInt(1));
+            try (ResultSet rs = stmt.executeQuery()) {
+                List<Integer> queues = new LinkedList<>();
+                while (rs.next()) {
+                    queues.add(rs.getInt(1));
+                }
+
+                return makeIntegerListToPrimitiveIntArray(queues);
             }
-
-            return makeIntegerListToPrimitiveIntArray(queues);
         } catch (SQLException e) {
             throw new MessageProtocolException("failed to list queues", e);
         }

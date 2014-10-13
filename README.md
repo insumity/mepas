@@ -154,4 +154,7 @@ Clients for now should work as following
 <--- receive a message if somebody sent you something, increase a counter in it and
  send it back in the queue
 
-
+Monday(13/10/2014)
+------------------
+Use ... system calls from python to avoid slow python functions (e.g. sed ... for
+removing warm up and cool down)

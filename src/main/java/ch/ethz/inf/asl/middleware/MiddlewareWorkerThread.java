@@ -7,7 +7,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.sql.Connection;
 
-public class MiddlewareWorkerThread implements Runnable {
+public class MiddlewareWorkerThread {//} implements Runnable {
 
     private Socket socket;
     private Connection connectionToDatabase;
@@ -17,30 +17,30 @@ public class MiddlewareWorkerThread implements Runnable {
         this.connectionToDatabase = connectionToDatabase;
     }
 
-    @Override
-    public void run() {
-        while (true) {
-            try {
-                // read request
-
-
-                // based on request execute method from
-                int userId = 5;
-                MWMessagingProtocolImpl messagingProtocol = new MWMessagingProtocolImpl(userId, connectionToDatabase);
-
-//                    int queueId = messagingProtocol.createQueue();
-                    // blah blah blah
-
-                // create response
-                // send back reepsonse
-
-                PrintWriter out =
-                        new PrintWriter(socket.getOutputStream(), true);
-                BufferedReader in = new BufferedReader(
-                        new InputStreamReader(socket.getInputStream()));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
+//    @Override
+//    public void run() {
+//        while (true) {
+//            try {
+//                // read request
+//
+//
+//                // based on request execute method from
+//                int userId = 5;
+//                MWMessagingProtocolImpl messagingProtocol = new MWMessagingProtocolImpl(userId, connectionToDatabase);
+//
+////                    int queueId = messagingProtocol.createQueue();
+//                    // blah blah blah
+//
+//                // create response
+//                // send back reepsonse
+//
+//                PrintWriter out =
+//                        new PrintWriter(socket.getOutputStream(), true);
+//                BufferedReader in = new BufferedReader(
+//                        new InputStreamReader(socket.getInputStream()));
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//    }
 }

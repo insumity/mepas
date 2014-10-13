@@ -5,11 +5,13 @@ from os.path import isfile
 from os import system
 from utilities import clean_machine, scp_to, scp_from, start_machine, start_client, execute_command
 from time import sleep
+from read_experimental_results import get_data
 
 #FIXME ... sto client.out exo >> eno sto server.out exo >
 
-possibleValues = [1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 80, 90, 100]
-possibleValues = [8]
+system("mkdir " + "increasingNumberOfClients")
+
+possibleValues = [4, 5, 6]
 for totalClients in possibleValues:
 
     print "Doing it for totalClients: " + str(totalClients)
@@ -23,7 +25,7 @@ for totalClients in possibleValues:
     print dbHost
 
     recreate_database(dbHost, dbName, dbUsername, dbPassword)
-    initialize_database(dbHost, dbName, dbUsername, dbPassword, 5, 1, "../src/main/resources/auxiliary_functions.sql",
+    initialize_database(dbHost, dbName, dbUsername, dbPassword, totalClients, 1, "../src/main/resources/auxiliary_functions.sql",
                         "../src/main/resources/read_committed_basic_functions.sql")
     print ">>> Database was cleaned and initialized!"
 
@@ -89,7 +91,7 @@ for totalClients in possibleValues:
     # verify they started
 
     # wait until clients finish fIXME
-    sleep(60 + 20)  # for 1 minutes + 20seconds more to be sure FIXME
+    sleep(60 + 30)  # for 1 minutes + 20seconds more to be sure FIXME
     for client in get_clients():
         execute_command(username, client[0], privateKeyFile, "killall java")
 
@@ -108,7 +110,7 @@ for totalClients in possibleValues:
     # create a directory for the experiment
     # TODO ... inform if the directory ealready existsa and if so put
     # it somewhere else
-    experimentName = "experiment_10dbconnections_10threads_" + str(totalClients) + "clients"
+    experimentName = "increasingNumberOfClients/experiment_10dbconnections_10threads_" + str(totalClients) + "clients"
     system("mkdir " + experimentName)
 
     # gather results and put them back somewhere locally
@@ -121,5 +123,6 @@ for totalClients in possibleValues:
 
     # clean clients and MW and verify it's cleaned
 
-    # profit!
+# profit!
+get_data(possibleValues) # will create a file
 

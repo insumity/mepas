@@ -3,6 +3,7 @@ package ch.ethz.inf.asl.middleware;
 import ch.ethz.inf.asl.common.MessagingProtocol;
 import ch.ethz.inf.asl.common.request.Request;
 import ch.ethz.inf.asl.common.response.Response;
+import ch.ethz.inf.asl.logger.MyLogger;
 import org.postgresql.ds.PGPoolingDataSource;
 
 import java.io.*;
@@ -20,46 +21,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class Middleware {
-
-    static class MiddlewareThread implements Runnable {
-
-        private PGPoolingDataSource source;
-        private Socket socket;
-        public MiddlewareThread(Socket socket, PGPoolingDataSource source) {
-            this.socket = socket;
-            this.source = source;
-        }
-
-
-        @Override
-        public void run() {
-            System.err.println("Thread started executing!");
-            try (ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-                 ObjectInputStream ois = new ObjectInputStream(socket.getInputStream())) {
-
-                // read request ..
-                Request request;
-
-                while ((request = (Request) ois.readObject()) != null) {
-                    Connection conn = source.getConnection();
-                    MessagingProtocol protocol = new MWMessagingProtocolImpl(request.getRequestorId(), conn);
-                    System.out.println("Received from client: " + request.getRequestorId()
-                        + " the request: " + request);
-                    Response response = request.execute(protocol);
-                    System.out.println("Got response: " + response + ", to be send to the client!");
-                    out.writeObject(response);
-                    conn.close();
-                }
-
-        } catch (IOException e1) {
-                e1.printStackTrace();
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 
     public static PGPoolingDataSource initiateConnectionPool(String host, String username,
                                                              String password, String db, int size) throws SQLException {
@@ -168,10 +129,12 @@ public class Middleware {
 
         private BlockingQueue<InternalSocket> sockets;
         private PGPoolingDataSource source;
+        private MyLogger logger;
 
-        public WorkerThread(BlockingQueue<InternalSocket> sockets, PGPoolingDataSource source) {
+        public WorkerThread(MyLogger logger, BlockingQueue<InternalSocket> sockets, PGPoolingDataSource source) {
             this.sockets = sockets;
             this.source = source;
+            this.logger = logger;
         }
 
         public Object deserialize(byte[] data) throws IOException, ClassNotFoundException {
@@ -219,44 +182,66 @@ public class Middleware {
 
             while (true) {
                 try {
+                    long id = Thread.currentThread().getId();
+                    logger.synchronizedLog(id, "size: " + sockets.size());
+                    logger.synchronizedLog(id, "I'm here in the beginning of the while loop");
                     InternalSocket internalSocket = sockets.take();
+                    logger.synchronizedLog(id, "I got a socket!");
 
                     // remove closed connections FIXME ...
                     if (internalSocket.getSocket().isClosed()) {
+                        logger.synchronizedLog(id, " A socket was removed because it got closed!");
                         sockets.remove(internalSocket);
+                        continue;
                     }
 
                     DataOutputStream oos = internalSocket.getOutputStream();
                     BufferedInputStream ois = internalSocket.getInputStream();
 
                     int bytesCanReadWithoutBlocking = ois.available();
-
+                    logger.synchronizedLog(id, "Bytes I can read without blocking: " + bytesCanReadWithoutBlocking);
                     if (internalSocket.lengthIsKnown()) {
+                        logger.synchronizedLog(id, "the length of the socket is known!");
                         byte[] data = new byte[bytesCanReadWithoutBlocking];
+                        logger.synchronizedLog(id, "Trying to read data");
                         int bytesActuallyRead = ois.read(data);
+                        logger.synchronizedLog(id, "read data!");
                         internalSocket.addData(data);
-
                         int currentSize = internalSocket.getBytesRead();
                         internalSocket.setBytesRead(currentSize + bytesActuallyRead);
-
+                        logger.synchronizedLog(id, "bytes read: " + internalSocket.getBytesRead());
+                        logger.synchronizedLog(id, "length to be read: " + internalSocket.getLengthOfUpcomingObject());
                         if (internalSocket.readEverything()) {
 
+                            logger.synchronizedLog(id, "I read everything");
                             byte[] objectData = internalSocket.getObjectData();
 
                             Request request = (Request) deserialize(objectData);
+                            logger.synchronizedLog(id, "I deserialized the request");
 
-                            Connection conn = source.getConnection();
-                            MessagingProtocol protocol = new MWMessagingProtocolImpl(request.getRequestorId(), conn);
+                            Connection conn;
+                            synchronized (source) {
+                                conn = source.getConnection();
+                                logger.synchronizedLog(id, "The connection I got: " + conn.hashCode());
+                            }
+
+                            logger.synchronizedLog(id, "I got the connection");
+                            MessagingProtocol protocol = new MWMessagingProtocolImpl(logger, request.getRequestorId(), conn);
+                            logger.synchronizedLog(id, "created the protocol");
 
                             System.out.println("Received from client: " + request.getRequestorId()
                                     + " the request: " + request);
 
 
                             Response response = request.execute(protocol);
+                            logger.synchronizedLog(id, "executed the request!");
                             conn.close();
+                            logger.synchronizedLog(id, "closed the connection");
                             System.out.println("Got response: " + response + ", to be send to the client!");
 
+                            logger.synchronizedLog(id, "writing the response");
                             oos.write(objectToByteArray(response));
+                            logger.synchronizedLog(id, "response was written");
 
                             // clean internal socket
                             internalSocket.clean();
@@ -266,7 +251,10 @@ public class Middleware {
                         if (bytesCanReadWithoutBlocking >= 4) {
                             // is this correct? TODO readint could return less bytes
                             byte[] fourBytes = new byte[4];
-                            int bytesRead = ois.read(fourBytes);
+                            logger.synchronizedLog(id, "going to read length");
+                            int bytesRead = ois.read(fourBytes); // TODO .. should be 4
+                            logger.synchronizedLog(id, "length read");
+
                             int length = ByteBuffer.wrap(fourBytes).getInt();
                             internalSocket.setLengthOfUpcomingObject(length);
                         }
@@ -274,7 +262,11 @@ public class Middleware {
 
                     // put socket back to it's world
                     // TODO ... clients that leave .. should leave also from the sockets list
+                    logger.synchronizedLog(id, "putting socket back with" +
+                    sockets.size());
                     sockets.put(internalSocket);
+                    logger.synchronizedLog(id, "the socket is back with current" +
+                            "size "+ sockets.size());
 
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -291,6 +283,8 @@ public class Middleware {
 
     public static void main(String[] args) throws IOException, SQLException {
 
+        MyLogger logger = new MyLogger("middleware");
+
         System.err.println(Arrays.toString(args));
         String host = args[0];
         String username = args[1];
@@ -306,7 +300,7 @@ public class Middleware {
         PGPoolingDataSource source = initiateConnectionPool(host, username, password, dbName, connectionPoolSize);
         Executor executor = Executors.newFixedThreadPool(numberOfThreads);
         for (int i = 0; i < numberOfThreads; ++i) {
-            executor.execute(new WorkerThread(sockets, source));
+            executor.execute(new WorkerThread(logger, sockets, source));
         }
 
         try (ServerSocket serverSocket = new ServerSocket(portNumber)) {

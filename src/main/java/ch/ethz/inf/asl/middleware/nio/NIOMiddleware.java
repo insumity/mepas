@@ -245,7 +245,8 @@ public class NIOMiddleware {
                             System.err.println("object is: " + x);
 
                             Connection connection = getConnection();
-                            Response response = x.execute(new MWMessagingProtocolImpl(x.getRequestorId(), connection));
+                            // TODO FIXME
+                            Response response = x.execute(new MWMessagingProtocolImpl(null, x.getRequestorId(), connection));
                             connection.close();
 
                             byte[] responseData = objectToByteArray(response);

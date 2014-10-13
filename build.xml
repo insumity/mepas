@@ -32,9 +32,6 @@
       </manifest>
       <!-- include the external libraries in the created JAR -->
       <zipgroupfileset dir="${lib.dir}" includes="**/*.jar" />
-
-      <!-- include source code, it's helpful for debugging -->
-      <fileset dir="${src.dir}" includes="**/*.java"/>
     </jar>
   </target>
 

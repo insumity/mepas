@@ -45,3 +45,10 @@ PLUS
 ----
 
 security group was made ... for EVERYBODY in EC2
+
+
+Postgres
+--------
+
+check the file cat /var/log/postgresql/postgresql-9.3-main.log in the db
+to see if there are any errors

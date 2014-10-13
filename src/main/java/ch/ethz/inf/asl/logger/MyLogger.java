@@ -42,4 +42,9 @@ public class MyLogger {
         logger.severe(String.format("%d\t%s", time, message));
         logger.getHandlers()[0].flush();
     }
+
+    public synchronized void synchronizedLog(long time, String message) {
+        logger.severe(String.format("%d\t%s", time, message));
+        logger.getHandlers()[0].flush();
+    }
 }

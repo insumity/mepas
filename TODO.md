@@ -61,3 +61,12 @@ Sunday (12/10)
  3) You can call SQL functions like this "SELECT function()" you don't 
  have to do "SELECT * FROM function()" like I used to do? Verify this is not the case
 4) remove .pyc files 
+
+5) Write about getting the sam econnection from the pool when running concurrently
+
+Monday(13/10)
+-------------
+1) content of messages can be up to 2000, not in the either 200 or 2000
+2) Verify integrity constaints are being catched by SQL excpetions
+3) CATCH MessageProtocolException in higher levels ... !!! clients were dying!!! [FIXME]
+4) !!!! MAKE sure you don't have any notNull imported from Mockito into non-testing code!!!

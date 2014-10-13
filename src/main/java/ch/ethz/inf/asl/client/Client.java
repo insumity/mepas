@@ -8,6 +8,7 @@ import ch.ethz.inf.asl.utils.Optional;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Random;
 
 class ClientThread implements Runnable {
@@ -64,6 +65,14 @@ class ClientThread implements Runnable {
             long currentTime = System.currentTimeMillis();
             long elapseTimeInSeconds = (currentTime - startingTime) / 1000;
             if (elapseTimeInSeconds >= runningTimeInSeconds) {
+                if (kkSocket != null) {
+                    try {
+                        kkSocket.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
                 break;
             }
             try {
@@ -100,6 +109,7 @@ public class Client {
 
     public static void main(String[] args) throws IOException, InterruptedException {
 
+        System.err.println("Starting time: " + new Date());
         System.err.println(Arrays.toString(args));
         String hostName = args[0];
         int portNumber = Integer.valueOf(args[1]);
@@ -114,6 +124,7 @@ public class Client {
 
         Thread[] clients = new Thread[totalClients];
 
+        // in sceonds FIXME
         int ONE_MINUTE = 60;
 
         for (int i = 0; i < totalClients; ++i) {
@@ -129,6 +140,8 @@ public class Client {
         for (int i = 0; i < totalClients; ++i) {
             clients[i].join();
         }
+
+        System.err.println("Ending time: " + new Date());
 
     }
 }

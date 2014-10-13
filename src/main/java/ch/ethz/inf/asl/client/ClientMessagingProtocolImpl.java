@@ -22,7 +22,6 @@ public class ClientMessagingProtocolImpl extends MessagingProtocol {
     private Socket socket;
     private DataInputStream dataInputStream;
     private DataOutputStream dataOutputStream;
-    private MyLogger logger;
 
 
     public ClientMessagingProtocolImpl(int requestorId, Socket socket) throws IOException {
@@ -30,7 +29,6 @@ public class ClientMessagingProtocolImpl extends MessagingProtocol {
         this.requestorId = requestorId;
         this.socket = socket;
 
-//        this.logger = new MyLogger("Logger for: " + requestorId); // FIXME ... here?
         try {
             dataInputStream = new DataInputStream(socket.getInputStream());
             dataOutputStream = new DataOutputStream(socket.getOutputStream());
@@ -78,7 +76,6 @@ public class ClientMessagingProtocolImpl extends MessagingProtocol {
     // perhaps put TODO Class<T> returnType as a parameter of this function
     private <R extends Response> R receiveResponse() {
         try {
-
             int length = dataInputStream.readInt();
             byte[] data = new byte[length];
             dataInputStream.read(data);
