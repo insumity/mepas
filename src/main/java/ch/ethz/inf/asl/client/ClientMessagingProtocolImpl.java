@@ -13,6 +13,8 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
+import static ch.ethz.inf.asl.utils.Helper.notNull;
+
 public class ClientMessagingProtocolImpl extends MessagingProtocol {
 
     private int requestorId;
@@ -24,8 +26,10 @@ public class ClientMessagingProtocolImpl extends MessagingProtocol {
 
 
     public ClientMessagingProtocolImpl(int requestorId, Socket socket) throws IOException {
+        notNull(socket, "Socket cannot be null");
         this.requestorId = requestorId;
         this.socket = socket;
+
 //        this.logger = new MyLogger("Logger for: " + requestorId); // FIXME ... here?
         try {
             dataInputStream = new DataInputStream(socket.getInputStream());

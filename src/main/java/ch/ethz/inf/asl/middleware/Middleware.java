@@ -221,6 +221,11 @@ public class Middleware {
                 try {
                     InternalSocket internalSocket = sockets.take();
 
+                    // remove closed connections FIXME ...
+                    if (internalSocket.getSocket().isClosed()) {
+                        sockets.remove(internalSocket);
+                    }
+
                     DataOutputStream oos = internalSocket.getOutputStream();
                     BufferedInputStream ois = internalSocket.getInputStream();
 
@@ -286,10 +291,10 @@ public class Middleware {
 
     public static void main(String[] args) throws IOException, SQLException {
 
-
+        System.err.println(Arrays.toString(args));
         String host = args[0];
         String username = args[1];
-        String password = args[2];
+        String password = args[2] + "1$2$3$"; // TODO WTF
         String dbName = args[3];
 
         int portNumber = Integer.valueOf(args[4]);

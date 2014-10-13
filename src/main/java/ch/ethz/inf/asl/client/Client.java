@@ -5,9 +5,9 @@ import ch.ethz.inf.asl.exceptions.MessageProtocolException;
 import ch.ethz.inf.asl.logger.MyLogger;
 import ch.ethz.inf.asl.utils.Optional;
 
-import java.io.*;
+import java.io.IOException;
 import java.net.Socket;
-import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.Random;
 
 class ClientThread implements Runnable {
@@ -36,7 +36,7 @@ class ClientThread implements Runnable {
         this.portNumber = portNumber;
         this.totalClients = totalClients;
 
-        logger = new MyLogger("Client " + userId);
+        logger = new MyLogger("client" + userId);
     }
 
     @Override
@@ -49,6 +49,7 @@ class ClientThread implements Runnable {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
         ClientMessagingProtocolImpl protocol = null;
         try {
             protocol = new ClientMessagingProtocolImpl(userId, kkSocket);
@@ -98,6 +99,8 @@ class ClientThread implements Runnable {
 public class Client {
 
     public static void main(String[] args) throws IOException, InterruptedException {
+
+        System.err.println(Arrays.toString(args));
         String hostName = args[0];
         int portNumber = Integer.valueOf(args[1]);
 

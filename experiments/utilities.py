@@ -18,10 +18,17 @@ def scp_from(file, where, username, host, privateKeyFile):
     system("scp -i " + privateKeyFile + " " + username + "@" + host + ":" + file + " " + where)
 
 # assumes executable JAR is on the home directory with name "mepas.jar" FIXME?
-def start_machine(username, host, privateKeyFile):
-    system("ssh -i " + privateKeyFile + " " + username + "@" + host + " " + "java -jar mepas.jar" + " " +
-           "1>/tmp/server.out 2>>/tmp/server_errors.out &")
+def start_machine(username, host, privateKeyFile, dbHost, dbUsername, dbPassword,
+                  dbName, portNumber, numberOfThreads, numberOfConnectionsToDb):
+    system("ssh -i " + privateKeyFile + " " + username + "@" + host + " " + "java -jar mepas.jar middleware" + " " +
+           dbHost + " " + dbUsername + " " + dbPassword + " " + dbName + " " + portNumber + " " + numberOfThreads + " " + numberOfConnectionsToDb + " "
+                     "1>/tmp/server.out 2>>/tmp/server_errors.out &")
+    print "ssh -i " + privateKeyFile + " " + username + "@" + host + " " + "java -jar mepas.jar middleware" + " " + dbHost + " " + dbUsername + " " + dbPassword + " " + dbName + " " + portNumber + " " + numberOfThreads + " " + numberOfConnectionsToDb + " 1>/tmp/server.out 2>>/tmp/server_errors.out &"
 
-def start_client(username, host, privateKeyFile):
-    system("ssh -i " + privateKeyFile + " " + username + "@" + host + " " + "java -jar mepas.jar" + " " +
+
+def start_client(username, host, privateKeyFile, mwHost, mwPort, totalClients, startingId, runningTime):
+    system("ssh -i " + privateKeyFile + " " + username + "@" + host + " " + "java -jar mepas.jar client" + " " +
+           mwHost + " " + mwPort + " " + totalClients + " " + startingId + " " + runningTime + " " +
            "1>/tmp/client.out 2>>/tmp/client_errors.out &")
+    print "ssh -i " + privateKeyFile + " " + username + "@" + host + " " + "java -jar mepas.jar client" + " " + mwHost + " " + mwPort + " " + totalClients + " " + startingId + " " + runningTime + " " + "1>/tmp/client.out 2>>/tmp/client_errors.out &"
+

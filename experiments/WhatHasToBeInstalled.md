@@ -1,7 +1,11 @@
 What has to be installed in an Amazon instance?
 -----------------------------------------------
 
-openjdk-7-jre-headless [for Java 7]
+[ALL THE MIDDLEWARES connect to the DB so the ned
+the .pgpass file as well!!]
+
+openjdk-7-jdk [for Java 7] VASIKA .. thes kai ton compiler
+ton katarameno gia kalo kai gia kako
 
 postgresql [for the database]
 
@@ -31,3 +35,9 @@ otherwise the file is ignored.
 
 In local computer boto has to be installed for the pyton script
 as well as psycopg2.
+
+
+PLUS
+----
+
+security group was made ... for EVERYBODY in EC2

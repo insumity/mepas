@@ -23,10 +23,11 @@ def recreate_database(host, dbname, user, password):
     conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_READ_COMMITTED)
     return
 
-def initialize_database(host, dbname, user, password, numberOfClients, numberOfQueues, file):
+def initialize_database(host, dbname, user, password, numberOfClients, numberOfQueues, file1, file2):
     # auxiliary_functions.sql // create_client initialize_database
     # read_committed_basic_functions.sql
-    call(["psql", "-h", host, "-U", user, "-d", dbname, "-f", file])
+    call(["psql", "-h", host, "-U", user, "-d", dbname, "-f", file1])
+    call(["psql", "-h", host, "-U", user, "-d", dbname, "-f", file2])
     conn = connect_database(host, dbname, user, password)
     cursor = conn.cursor()
     conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
