@@ -9,8 +9,10 @@ from time import sleep
 #FIXME ... sto client.out exo >> eno sto server.out exo >
 
 possibleValues = [1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 80, 90, 100]
-
+possibleValues = [8]
 for totalClients in possibleValues:
+
+    print "Doing it for totalClients: " + str(totalClients)
     # clean database
     databases = get_databases()
     dbHost = databases[0][0]
@@ -88,6 +90,8 @@ for totalClients in possibleValues:
 
     # wait until clients finish fIXME
     sleep(60 + 20)  # for 1 minutes + 20seconds more to be sure FIXME
+    for client in get_clients():
+        execute_command(username, client[0], privateKeyFile, "killall java")
 
     print ">>> clients have finished"
 

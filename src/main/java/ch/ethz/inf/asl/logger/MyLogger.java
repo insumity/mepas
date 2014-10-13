@@ -32,7 +32,7 @@ public class MyLogger {
         logger = Logger.getLogger(name);
         logger.setUseParentHandlers(false);
 
-        Handler handler = new FileHandler("logs/" + name + ".log", true);
+        FileHandler handler = new FileHandler("logs/" + name + ".log", true);
         handler.setLevel(Level.INFO);
         handler.setFormatter(new MyFormatter());
         logger.addHandler(handler);
@@ -40,6 +40,6 @@ public class MyLogger {
 
     public void log(long time, String message) {
         logger.severe(String.format("%d\t%s", time, message));
+        logger.getHandlers()[0].flush();
     }
-
 }

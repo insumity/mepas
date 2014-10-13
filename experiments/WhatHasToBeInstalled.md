@@ -7,6 +7,10 @@ the .pgpass file as well!!]
 openjdk-7-jdk [for Java 7] VASIKA .. thes kai ton compiler
 ton katarameno gia kalo kai gia kako
 
+INSTALL htop everywhere as well..
+
+**TODO** make new image
+
 postgresql [for the database]
 
 sudo -i -u postgres --> to login as postgres user
