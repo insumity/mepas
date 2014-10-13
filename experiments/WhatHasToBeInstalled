@@ -28,3 +28,6 @@ In your local computer you have to create a .pgpass [in your home directory] fil
 so you can issue a psql command without aving to provide a password
 (file should have stric permission, issue  chmod 0600 ~/.pgpass)
 otherwise the file is ignored.
+
+In local computer boto has to be installed for the pyton script
+as well as psycopg2.

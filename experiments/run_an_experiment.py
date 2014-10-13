@@ -1,9 +1,9 @@
 from retrieve_ec2_instances import *
 from clean_database import *
 from subprocess import call
-
-get_clients()
-get_middlewares()
+from os.path import isfile
+from os import system
+from utilities import clean_machine, scp, start_machine
 
 # clean database
 databases = get_databases()
@@ -15,6 +15,52 @@ dbname = "mepas"
 #recreate_database(host, dbname, username, password)
 #initialize_database(host, dbname, username, password, 5, 5, "../src/main/resources/auxiliary_functions.sql")
 
+# clean the directory with ant
+#call(["ant", "-buildfile", "..", "clean"])
+
 # create the jar
-call(["cd", "..", ";", "ant", "jar"])
+#call(["ant", "-buildfile", "..", "jar"])
+#if isfile("../mepas.jar"):
+#    print "It was created"
+
+
+privateKeyFile = "/Users/bandwitch/Desktop/mepas.pem"
+file = "../mepas.jar"
+
+# transfer the jar to the clients & middlewares
+for client in get_clients():
+    scp(file, username, client[0], privateKeyFile)
+
+for middleware in get_middlewares():
+    scp(file, username, middleware[0], privateKeyFile)
+
+
+# clean the clients & MW from possible logs (?)
+# assumes file exists "~/logs" in the corresponding machines
+for client in get_clients():
+    clean_machine(username, client[0], privateKeyFile)
+
+for middleware in get_middlewares():
+    clean_machine(username, middleware[0], privateKeyFile)
+
+
+# start the MW
+for middleware in get_middlewares():
+    start_machine(username, middleware[0], privateKeyFile)
+
+# verify they started
+
+# start the clients
+
+# verify they started
+
+# wait ...
+
+# gracefully close MW
+
+# clean clients and MW and verify it's cleaned
+
+# gather results and put them back somewhere locally
+
+# profit!
 
