@@ -12,6 +12,8 @@ def get_data(possibleValues):
         # for removing warm up and cool down
         experimentName = "increasingNumberOfClients/experiment_10dbconnections_10threads_" + str(totalClients) + "clients"
         onlyfiles = [f for f in listdir(experimentName) if isfile(join(experimentName, f))]
+
+        total_lines = 0
         for f in onlyfiles:
             # delete 5% of top and 5% bottom of the file
             num_lines = sum(1 for line in open(experimentName + "/" + f))
@@ -34,10 +36,11 @@ def get_data(possibleValues):
 
             average += float(avg)
             deviation += float(std)
+            total_lines += num_lines
 
         average /= totalClients
         deviation /= totalClients
 
         f = open(resultFile, 'a')
-        f.write(str(average) + "\t" + str(deviation) + "\n")
+        f.write(str(totalClients) + "\t" + str(average) + "\t" + str(deviation) + "\t" + str(total_lines) + "\n")
         f.close()

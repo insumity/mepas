@@ -1,3 +1,4 @@
+from plot_data import plot_data
 from retrieve_ec2_instances import *
 from clean_database import *
 from subprocess import call
@@ -9,9 +10,13 @@ from read_experimental_results import get_data
 
 #FIXME ... sto client.out exo >> eno sto server.out exo >
 
-system("mkdir " + "increasingNumberOfClients")
+system("mkdir " + "increasingNumberOfClientsJustOnce")
 
-possibleValues = [4, 5, 6]
+# TODO : experiments names .. config file for running shitt ...
+# TODO For java also use configuration file, probably better than arguments
+
+# possibleValues = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100, 150, 200]
+possibleValues = [200]
 for totalClients in possibleValues:
 
     print "Doing it for totalClients: " + str(totalClients)
@@ -32,7 +37,7 @@ for totalClients in possibleValues:
 
     # clean the directory with ant
     call(["ant", "-buildfile", "..", "clean"])
-    call(["ant", "-buildfile", "..", "compile"])
+    call(["ant", "-buildfile", "..", "compile"]) #TODO Remove
 
     # create the jar
     call(["ant", "-buildfile", "..", "jar"])
@@ -67,8 +72,8 @@ for totalClients in possibleValues:
 
     # FIXME ... ERROR MESSAGES ARE SAVED in the local computer
     # start the MW
-    numberOfThreads = 10
-    numberOfConnectionsToDb = 10
+    numberOfThreads = 50
+    numberOfConnectionsToDb = 50
     for middleware in get_middlewares():
         start_machine(username, middleware[0], privateKeyFile, dbHost, dbUsername, dbPassword,
                       dbName, str(6789), str(numberOfThreads), str(numberOfConnectionsToDb))
@@ -114,7 +119,7 @@ for totalClients in possibleValues:
     system("mkdir " + experimentName)
 
     # gather results and put them back somewhere locally
-    #for middleware in get_middlewares():
+    #for middleware in get_middlewares()
     #    scp_from("logs/*", experimentName + "/", username, middleware[0], privateKeyFile)
 
     for client in get_clients():
@@ -125,4 +130,5 @@ for totalClients in possibleValues:
 
 # profit!
 get_data(possibleValues) # will create a file
+plot_data("increasingNumberOfClients/plot_data.csv", 210)
 
