@@ -8,7 +8,6 @@ import ch.ethz.inf.asl.exceptions.MessageProtocolException;
 import ch.ethz.inf.asl.utils.Optional;
 
 import java.io.*;
-import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.Arrays;
@@ -208,5 +207,10 @@ public class NIOClientMessagingProtocolImpl extends MessagingProtocol {
         sendRequest(request);
         ListQueuesResponse response = receiveResponse();
         return response.getQueues();
+    }
+
+    @Override
+    public void sayGoodbye() {
+
     }
 }

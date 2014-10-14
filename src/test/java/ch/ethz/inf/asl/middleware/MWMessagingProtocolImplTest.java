@@ -1,17 +1,10 @@
 package ch.ethz.inf.asl.middleware;
 
-import ch.ethz.inf.asl.common.Message;
-import ch.ethz.inf.asl.exceptions.MessageProtocolException;
-import ch.ethz.inf.asl.utils.Optional;
-import ch.ethz.inf.asl.utils.Utilities;
 import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
 
 import java.sql.*;
 
-import static ch.ethz.inf.asl.middleware.MWMessagingProtocolImpl.CREATE_QUEUE;
-import static ch.ethz.inf.asl.middleware.MWMessagingProtocolImpl.DELETE_QUEUE;
-import static ch.ethz.inf.asl.middleware.MWMessagingProtocolImpl.SEND_MESSAGE;
+import static ch.ethz.inf.asl.middleware.MiddlewareMessagingProtocolImpl.SEND_MESSAGE;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;

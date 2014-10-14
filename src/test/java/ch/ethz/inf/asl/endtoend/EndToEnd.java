@@ -2,7 +2,6 @@ package ch.ethz.inf.asl.endtoend;
 
 import ch.ethz.inf.asl.common.Message;
 import ch.ethz.inf.asl.middleware.Middleware;
-import ch.ethz.inf.asl.middleware.MiddlewareWorkerThread;
 import ch.ethz.inf.asl.utils.Optional;
 import org.testng.annotations.Test;
 

@@ -3,15 +3,18 @@ package ch.ethz.inf.asl.client;
 import ch.ethz.inf.asl.common.Message;
 import ch.ethz.inf.asl.common.MessagingProtocol;
 import ch.ethz.inf.asl.common.request.*;
-import ch.ethz.inf.asl.common.response.*;
+import ch.ethz.inf.asl.common.response.CreateQueueResponse;
+import ch.ethz.inf.asl.common.response.ListQueuesResponse;
+import ch.ethz.inf.asl.common.response.ReceiveMessageResponse;
+import ch.ethz.inf.asl.common.response.Response;
 import ch.ethz.inf.asl.exceptions.MessageProtocolException;
-import ch.ethz.inf.asl.logger.MyLogger;
+import ch.ethz.inf.asl.utils.Helper;
 import ch.ethz.inf.asl.utils.Optional;
 
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.net.Socket;
-import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 import static ch.ethz.inf.asl.utils.Helper.notNull;
 
@@ -39,7 +42,7 @@ public class ClientMessagingProtocolImpl extends MessagingProtocol {
 
     private void sendRequest(Request request) {
         try {
-            byte[] data = objectToByteArray(request);
+            byte[] data = Helper.serialize(request);
 
             dataOutputStream.write(data);
             dataOutputStream.flush(); //FIXME
@@ -48,38 +51,13 @@ public class ClientMessagingProtocolImpl extends MessagingProtocol {
         }
     }
 
-    private Object byteArrayToObject(byte[] data) throws IOException, ClassNotFoundException {
-        ByteArrayInputStream bari = new ByteArrayInputStream(data);
-        ObjectInputStream ois = new ObjectInputStream(bari);
-        return ois.readObject();
-    }
-
-    // concat function taken from http://stackoverflow.com/questions/80476/how-to-concatenate-two-arrays-in-java
-    public byte[] concat(byte[] first, byte[] second) {
-        byte[] result = Arrays.copyOf(first, first.length + second.length);
-        System.arraycopy(second, 0, result, first.length, second.length);
-        return result;
-    }
-
-    private byte[] objectToByteArray(Object object) throws IOException {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutput out = new ObjectOutputStream(bos);
-        out.writeObject(object);
-
-        byte[] objectData = bos.toByteArray();
-        byte[] lengthOfObject = ByteBuffer.allocate(4).putInt(objectData.length).array();
-        byte[] toSend = concat(lengthOfObject, objectData);
-
-        return toSend;
-    }
-
     // perhaps put TODO Class<T> returnType as a parameter of this function
     private <R extends Response> R receiveResponse() {
         try {
             int length = dataInputStream.readInt();
             byte[] data = new byte[length];
             dataInputStream.read(data);
-            Response response = (Response) byteArrayToObject(data);
+            Response response = (Response) Helper.deserialize(data);
 
             if (response == null) {
                 throw new MessageProtocolException("Couldn't receive response, probably because a socket" +
@@ -172,5 +150,12 @@ public class ClientMessagingProtocolImpl extends MessagingProtocol {
         sendRequest(request);
         ListQueuesResponse response = receiveResponse();
         return response.getQueues();
+    }
+
+    @Override
+    public void sayGoodbye() {
+        Request request = new GoodbyeRequest(requestorId);
+        sendRequest(request);
+        receiveResponse();
     }
 }

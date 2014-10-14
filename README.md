@@ -158,3 +158,10 @@ Monday(13/10/2014)
 ------------------
 Use ... system calls from python to avoid slow python functions (e.g. sed ... for
 removing warm up and cool down)
+
+Tuesday(14/10/2014)
+-------------------
+Changed the constraint having only 200, 2000 characters to <= 2000. This made
+my life easier ... and is what the xercise meant
+
+Talk about try() and automatic close in Java 7. Always done it

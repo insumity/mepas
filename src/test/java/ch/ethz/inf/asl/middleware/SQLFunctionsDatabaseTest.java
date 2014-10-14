@@ -2,7 +2,9 @@ package ch.ethz.inf.asl.middleware;
 
 import ch.ethz.inf.asl.utils.Utilities;
 import org.postgresql.util.PSQLException;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 import java.io.IOException;
 import java.sql.*;
@@ -10,11 +12,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
+import static ch.ethz.inf.asl.common.MessageConstants.MAXIMUM_MESSAGE_LENGTH;
 import static ch.ethz.inf.asl.middleware.IntegrationTest.getConnection;
-import static ch.ethz.inf.asl.middleware.MWMessagingProtocolImpl.*;
-import static ch.ethz.inf.asl.middleware.MWMessagingProtocolImpl.CREATE_QUEUE;
-import static ch.ethz.inf.asl.middleware.MWMessagingProtocolImpl.DELETE_QUEUE;
-import static ch.ethz.inf.asl.utils.TestConstants.INTEGRATION;
+import static ch.ethz.inf.asl.middleware.MiddlewareMessagingProtocolImpl.*;
+import static ch.ethz.inf.asl.utils.TestConstants.DATABASE;
 import static org.testng.Assert.*;
 
 /**
@@ -22,7 +23,7 @@ import static org.testng.Assert.*;
  * an actual database which is initially populated and then functions are called and the returned results
  * are verified.
  */
-public class SQLFunctionsIntegrationTest {
+public class SQLFunctionsDatabaseTest {
 
     // constants of the database
     private static final String DB_NAME = "integrationtest";
@@ -79,17 +80,17 @@ public class SQLFunctionsIntegrationTest {
         }
     }
 
-    @BeforeMethod(groups = INTEGRATION)
+    @BeforeMethod(groups = DATABASE)
     public void initialize() throws ClassNotFoundException, SQLException, IOException, InterruptedException {
         IntegrationTest.initialize(false, true);
     }
 
-    @AfterMethod(groups = INTEGRATION)
+    @AfterMethod(groups = DATABASE)
     public void tearDown() throws SQLException, ClassNotFoundException {
         IntegrationTest.tearDown();
     }
 
-    @Test(groups = INTEGRATION)
+    @Test(groups = DATABASE)
     public void testCreateClient() throws SQLException, ClassNotFoundException {
         try (Connection connection = getConnection(DB_NAME);
              CallableStatement stmt = connection.prepareCall(CREATE_CLIENT)) {
@@ -104,7 +105,7 @@ public class SQLFunctionsIntegrationTest {
         assertEquals(numberOfClients, NUMBER_OF_CLIENTS + 1);
     }
 
-    @Test(groups = INTEGRATION)
+    @Test(groups = DATABASE)
     public void testDeleteClient() throws SQLException, ClassNotFoundException {
         try (Connection connection = getConnection(DB_NAME);
              CallableStatement stmt = connection.prepareCall(DELETE_CLIENT)) {
@@ -118,7 +119,7 @@ public class SQLFunctionsIntegrationTest {
         assertEquals(numberOfClients, NUMBER_OF_CLIENTS - 1);
     }
 
-    @Test(groups = INTEGRATION, expectedExceptions = PSQLException.class,
+    @Test(groups = DATABASE, expectedExceptions = PSQLException.class,
             expectedExceptionsMessageRegExp = ".*DELETE_CLIENT: trying to delete a non existent client.*")
     public void testDeleteClientWithNonExistentClientId() throws SQLException, ClassNotFoundException {
         try (Connection connection = getConnection(DB_NAME);
@@ -130,7 +131,7 @@ public class SQLFunctionsIntegrationTest {
         }
     }
 
-    @Test(groups = INTEGRATION, expectedExceptions = PSQLException.class,
+    @Test(groups = DATABASE, expectedExceptions = PSQLException.class,
             expectedExceptionsMessageRegExp = "(?s).*ERROR: update or delete on .*")
     public void testDeleteClientWithQueueIdUsedByAMessage() throws SQLException, ClassNotFoundException {
         try (Connection connection = getConnection(DB_NAME);
@@ -142,7 +143,7 @@ public class SQLFunctionsIntegrationTest {
         }
     }
 
-    @Test(groups = INTEGRATION)
+    @Test(groups = DATABASE)
     public void testCreateQueue() throws SQLException, ClassNotFoundException {
         try (Connection connection = getConnection(DB_NAME);
              CallableStatement stmt = connection.prepareCall(CREATE_QUEUE)) {
@@ -157,7 +158,7 @@ public class SQLFunctionsIntegrationTest {
         assertEquals(numberOfQueues, NUMBER_OF_QUEUES + 1);
     }
 
-    @Test(groups = INTEGRATION)
+    @Test(groups = DATABASE)
     public void testDeleteQueue() throws SQLException, ClassNotFoundException {
         try (Connection connection = getConnection(DB_NAME);
              CallableStatement stmt = connection.prepareCall(DELETE_QUEUE)) {
@@ -171,7 +172,7 @@ public class SQLFunctionsIntegrationTest {
         assertEquals(numberOfQueues, NUMBER_OF_QUEUES - 1);
     }
 
-    @Test(groups = INTEGRATION, expectedExceptions = PSQLException.class,
+    @Test(groups = DATABASE, expectedExceptions = PSQLException.class,
             expectedExceptionsMessageRegExp = ".*DELETE_QUEUE: trying to delete a non existent queue.*")
     public void testDeleteQueueWithNonExistentQueueId() throws SQLException, ClassNotFoundException {
         try (Connection connection = getConnection(DB_NAME);
@@ -183,7 +184,7 @@ public class SQLFunctionsIntegrationTest {
         }
     }
 
-    @Test(groups = INTEGRATION, expectedExceptions = PSQLException.class,
+    @Test(groups = DATABASE, expectedExceptions = PSQLException.class,
             expectedExceptionsMessageRegExp = "(?s).*ERROR: update or delete on .*")
     public void testDeleteQueueWithQueueIdUsedByAMessage() throws SQLException, ClassNotFoundException {
         try (Connection connection = getConnection(DB_NAME);
@@ -195,7 +196,7 @@ public class SQLFunctionsIntegrationTest {
         }
     }
 
-    @Test(groups = INTEGRATION)
+    @Test(groups = DATABASE)
     public void testSendMessage() throws SQLException, ClassNotFoundException {
         try (Connection connection = getConnection(DB_NAME);
              CallableStatement stmt = connection.prepareCall(SEND_MESSAGE)) {
@@ -204,7 +205,7 @@ public class SQLFunctionsIntegrationTest {
             int receiverId = 3;
             int queueId = 5;
             Timestamp arrivalTime = Timestamp.valueOf("2014-12-12 12:34:12");
-            String message = Utilities.createStringWith(200, 'A');
+            String message = Utilities.createStringWith(MAXIMUM_MESSAGE_LENGTH, 'A');
             stmt.setInt(1, senderId);
             stmt.setInt(2, receiverId);
             stmt.setInt(3, queueId);
@@ -221,7 +222,7 @@ public class SQLFunctionsIntegrationTest {
 
     }
 
-    @Test(groups = INTEGRATION)
+    @Test(groups = DATABASE)
     public void testSendMessageWithNullReceiverId() throws SQLException, ClassNotFoundException {
         try (Connection connection = getConnection(DB_NAME);
              CallableStatement stmt = connection.prepareCall(SEND_MESSAGE)) {
@@ -229,7 +230,7 @@ public class SQLFunctionsIntegrationTest {
             int senderId = 4;
             int queueId = 2;
             Timestamp arrivalTime = Timestamp.valueOf("2014-12-12 12:34:12");
-            String message = Utilities.createStringWith(2000, 'A');
+            String message = Utilities.createStringWith(MAXIMUM_MESSAGE_LENGTH, 'A');
             stmt.setInt(1, senderId);
             stmt.setNull(2, Types.INTEGER);
             stmt.setInt(3, queueId);
@@ -246,7 +247,7 @@ public class SQLFunctionsIntegrationTest {
 
     }
 
-    @Test(groups = INTEGRATION, expectedExceptions = PSQLException.class,
+    @Test(groups = DATABASE, expectedExceptions = PSQLException.class,
             expectedExceptionsMessageRegExp = "(?s).*column \"sender_id\" violates not-null.*")
     public void testSendMessageWithNullSenderId() throws SQLException, ClassNotFoundException {
         try (Connection connection = getConnection(DB_NAME);
@@ -255,7 +256,7 @@ public class SQLFunctionsIntegrationTest {
             int receiverId = 4;
             int queueId = 2;
             Timestamp arrivalTime = Timestamp.valueOf("2014-12-12 12:34:12");
-            String message = Utilities.createStringWith(2000, 'A');
+            String message = Utilities.createStringWith(MAXIMUM_MESSAGE_LENGTH, 'A');
             stmt.setNull(1, Types.INTEGER);
             stmt.setInt(2, receiverId);
             stmt.setInt(3, queueId);
@@ -265,7 +266,7 @@ public class SQLFunctionsIntegrationTest {
         }
     }
 
-    @Test(groups = INTEGRATION, expectedExceptions = PSQLException.class,
+    @Test(groups = DATABASE, expectedExceptions = PSQLException.class,
             expectedExceptionsMessageRegExp = "(?s).*column \"queue_id\" violates not-null.*")
     public void testSendMessageWithNullQueueId() throws SQLException, ClassNotFoundException {
         try (Connection connection = getConnection(DB_NAME);
@@ -274,7 +275,7 @@ public class SQLFunctionsIntegrationTest {
             int senderId = 1;
             int receiverId = 4;
             Timestamp arrivalTime = Timestamp.valueOf("2014-12-12 12:34:12");
-            String message = Utilities.createStringWith(2000, 'A');
+            String message = Utilities.createStringWith(MAXIMUM_MESSAGE_LENGTH, 'A');
             stmt.setInt(1, senderId);
             stmt.setInt(2, receiverId);
             stmt.setNull(3, Types.INTEGER);
@@ -284,7 +285,7 @@ public class SQLFunctionsIntegrationTest {
         }
     }
 
-    @Test(groups = INTEGRATION, expectedExceptions = PSQLException.class,
+    @Test(groups = DATABASE, expectedExceptions = PSQLException.class,
             expectedExceptionsMessageRegExp = "(?s).*column \"arrival_time\" violates not-null.*")
     public void testSendMessageWithNullArrivalTime() throws SQLException, ClassNotFoundException {
         try (Connection connection = getConnection(DB_NAME);
@@ -293,7 +294,7 @@ public class SQLFunctionsIntegrationTest {
             int senderId = 1;
             int receiverId = 4;
             int queueId = 3;
-            String message = Utilities.createStringWith(2000, 'A');
+            String message = Utilities.createStringWith(MAXIMUM_MESSAGE_LENGTH, 'A');
             stmt.setInt(1, senderId);
             stmt.setInt(2, receiverId);
             stmt.setInt(3, queueId);
@@ -303,7 +304,7 @@ public class SQLFunctionsIntegrationTest {
         }
     }
 
-    @Test(groups = INTEGRATION, expectedExceptions = PSQLException.class,
+    @Test(groups = DATABASE, expectedExceptions = PSQLException.class,
             expectedExceptionsMessageRegExp = "(?s).*column \"message\" violates not-null.*")
     public void testSendMessageWithNullMessage() throws SQLException, ClassNotFoundException {
         try (Connection connection = getConnection(DB_NAME);
@@ -321,7 +322,7 @@ public class SQLFunctionsIntegrationTest {
         }
     }
 
-    @Test(groups = INTEGRATION, expectedExceptions = PSQLException.class,
+    @Test(groups = DATABASE, expectedExceptions = PSQLException.class,
             expectedExceptionsMessageRegExp = "(?s).*violates check constraint \"check_cannot_send_to_itself\".*")
     public void testSendMessageWithSenderIdEqualToReceiverId() throws SQLException, ClassNotFoundException {
         try (Connection connection = getConnection(DB_NAME);
@@ -331,12 +332,51 @@ public class SQLFunctionsIntegrationTest {
             int receiverId = 2;
             int queueId = 3;
             Timestamp arrivalTime = Timestamp.valueOf("2014-12-12 12:34:12");
-            String message = Utilities.createStringWith(200, 'A');
+            String message = Utilities.createStringWith(MAXIMUM_MESSAGE_LENGTH, 'A');
             stmt.setInt(1, senderId);
             stmt.setInt(2, receiverId);
             stmt.setInt(3, queueId);
             stmt.setTimestamp(4, arrivalTime);
             stmt.setString(5, message);
+            stmt.execute();
+        }
+    }
+
+    @Test(groups = DATABASE, expectedExceptions = PSQLException.class,
+            expectedExceptionsMessageRegExp = "(?s).*violates check constraint \"check_length\".*")
+    public void testSendMessageWithInvalidContentLength() throws SQLException, ClassNotFoundException {
+        try (Connection connection = getConnection(DB_NAME);
+             CallableStatement stmt = connection.prepareCall(SEND_MESSAGE)) {
+
+            int senderId = 2;
+            int receiverId = 5;
+            int queueId = 3;
+            Timestamp arrivalTime = Timestamp.valueOf("2014-12-12 12:34:12");
+            String message = Utilities.createStringWith(MAXIMUM_MESSAGE_LENGTH + 1, 'A');
+            stmt.setInt(1, senderId);
+            stmt.setInt(2, receiverId);
+            stmt.setInt(3, queueId);
+            stmt.setTimestamp(4, arrivalTime);
+            stmt.setString(5, message);
+            stmt.execute();
+        }
+    }
+
+
+    @Test(groups = DATABASE)
+    public void testSendMessageWithEmptyContent() throws SQLException, ClassNotFoundException {
+        try (Connection connection = getConnection(DB_NAME);
+             CallableStatement stmt = connection.prepareCall(SEND_MESSAGE)) {
+
+            int senderId = 2;
+            int receiverId = 5;
+            int queueId = 3;
+            Timestamp arrivalTime = Timestamp.valueOf("2014-12-12 12:34:12");
+            stmt.setInt(1, senderId);
+            stmt.setInt(2, receiverId);
+            stmt.setInt(3, queueId);
+            stmt.setTimestamp(4, arrivalTime);
+            stmt.setString(5, "");
             stmt.execute();
         }
     }
@@ -408,7 +448,7 @@ public class SQLFunctionsIntegrationTest {
         return new DbMessage(readRowId, readSenderId, readReceiverId, readQueueId, readArrivalTime, readMessage);
     }
 
-    @Test(groups = INTEGRATION)
+    @Test(groups = DATABASE)
     public void testReceiveMessage() throws SQLException, ClassNotFoundException {
         try (Connection connection = getConnection(DB_NAME);
              CallableStatement stmt = connection.prepareCall(RECEIVE_MESSAGE)) {
@@ -438,7 +478,7 @@ public class SQLFunctionsIntegrationTest {
         }
     }
 
-    @Test(groups = INTEGRATION)
+    @Test(groups = DATABASE)
     public void testReceiveMessageThatHasNullReceiverId() throws SQLException, ClassNotFoundException {
         try (Connection connection = getConnection(DB_NAME);
              CallableStatement stmt = connection.prepareCall(RECEIVE_MESSAGE)) {
@@ -468,7 +508,7 @@ public class SQLFunctionsIntegrationTest {
         }
     }
 
-    @Test(groups = INTEGRATION, expectedExceptions = PSQLException.class,
+    @Test(groups = DATABASE, expectedExceptions = PSQLException.class,
             expectedExceptionsMessageRegExp = "(?s).*RECEIVE_MESSAGE: .* with p_requesting_user_id being NULL.*")
     public void testReceiveMessageWithNullRequestingUserId() throws SQLException, ClassNotFoundException {
         try (Connection connection = getConnection(DB_NAME);
@@ -483,7 +523,7 @@ public class SQLFunctionsIntegrationTest {
         }
     }
 
-    @Test(groups = INTEGRATION)
+    @Test(groups = DATABASE)
     public void testReceiveMessageBasedOnRetrievalTime() throws SQLException, ClassNotFoundException {
 
         int requestingUserId = 2;
@@ -566,7 +606,7 @@ public class SQLFunctionsIntegrationTest {
     }
 
 
-    @Test(groups = INTEGRATION)
+    @Test(groups = DATABASE)
     public void testReceiveMessageUserDoesNotReceiveHisOwnMessage() throws SQLException, ClassNotFoundException {
         try (Connection connection = getConnection(DB_NAME);
             CallableStatement stmt = connection.prepareCall(RECEIVE_MESSAGE)) {
@@ -616,7 +656,7 @@ public class SQLFunctionsIntegrationTest {
         }
     }
 
-    @Test(groups = INTEGRATION)
+    @Test(groups = DATABASE)
     public void testReadMessage() throws SQLException, ClassNotFoundException {
         try (Connection connection = getConnection(DB_NAME);
              CallableStatement stmt = connection.prepareCall(READ_MESSAGE)) {
@@ -646,7 +686,7 @@ public class SQLFunctionsIntegrationTest {
         }
     }
 
-    @Test(groups = INTEGRATION)
+    @Test(groups = DATABASE)
     public void testReadMessageThatHasNullReceiverId() throws SQLException, ClassNotFoundException {
         try (Connection connection = getConnection(DB_NAME);
              CallableStatement stmt = connection.prepareCall(READ_MESSAGE)) {
@@ -676,7 +716,7 @@ public class SQLFunctionsIntegrationTest {
         }
     }
 
-    @Test(groups = INTEGRATION)
+    @Test(groups = DATABASE)
     public void testReadMessageUserDoesNotReadHisOwnMessage() throws SQLException, ClassNotFoundException {
         try (Connection connection = getConnection(DB_NAME);
              CallableStatement stmt = connection.prepareCall(READ_MESSAGE)) {
@@ -695,7 +735,7 @@ public class SQLFunctionsIntegrationTest {
         }
     }
 
-    @Test(groups = INTEGRATION, expectedExceptions = PSQLException.class,
+    @Test(groups = DATABASE, expectedExceptions = PSQLException.class,
             expectedExceptionsMessageRegExp = "(?s).*READ_MESSAGE: .* with p_requesting_user_id being NULL.*")
     public void testReadMessageWithNullRequestingUserId() throws SQLException, ClassNotFoundException {
 
@@ -711,7 +751,7 @@ public class SQLFunctionsIntegrationTest {
         }
     }
 
-    @Test(groups = INTEGRATION)
+    @Test(groups = DATABASE)
     public void testReceiveMessageFromSender() throws SQLException, ClassNotFoundException {
         try (Connection connection = getConnection(DB_NAME);
              CallableStatement stmt = connection.prepareCall(RECEIVE_MESSAGE_FROM_SENDER)) {
@@ -741,7 +781,7 @@ public class SQLFunctionsIntegrationTest {
         }
     }
 
-    @Test(groups = INTEGRATION, expectedExceptions = PSQLException.class,
+    @Test(groups = DATABASE, expectedExceptions = PSQLException.class,
             expectedExceptionsMessageRegExp = "(?s).*RECEIVE_MESSAGE_FROM_SENDER: .* with p_requesting_user_id being NULL.*")
     public void testReceiveMessageFromSenderWithNullRequestingUserId() throws SQLException, ClassNotFoundException {
         try (Connection connection = getConnection(DB_NAME);
@@ -756,7 +796,7 @@ public class SQLFunctionsIntegrationTest {
         }
     }
 
-    @Test(groups = INTEGRATION, expectedExceptions = PSQLException.class,
+    @Test(groups = DATABASE, expectedExceptions = PSQLException.class,
             expectedExceptionsMessageRegExp = "(?s).*RECEIVE_MESSAGE_FROM_SENDER: sender id cannot be the same.*")
     public void testReceiveMessageFromSenderWithRequestingUserIdEqualToSenderId() throws SQLException, ClassNotFoundException {
         try (Connection connection = getConnection(DB_NAME);
@@ -772,7 +812,7 @@ public class SQLFunctionsIntegrationTest {
         }
     }
 
-    @Test(groups = INTEGRATION)
+    @Test(groups = DATABASE)
     public void testListQueues() throws SQLException, ClassNotFoundException {
         try (Connection connection = getConnection(DB_NAME);
              CallableStatement stmt = connection.prepareCall(LIST_QUEUES)) {
@@ -794,7 +834,7 @@ public class SQLFunctionsIntegrationTest {
         }
     }
 
-    @Test(groups = INTEGRATION, expectedExceptions = PSQLException.class,
+    @Test(groups = DATABASE, expectedExceptions = PSQLException.class,
             expectedExceptionsMessageRegExp = "(?s).*LIST_QUEUES: .* with p_requesting_user_id being NULL.*")
     public void testListQueuesWithNullRequestingUserId() throws SQLException, ClassNotFoundException {
         try (Connection connection = getConnection(DB_NAME);

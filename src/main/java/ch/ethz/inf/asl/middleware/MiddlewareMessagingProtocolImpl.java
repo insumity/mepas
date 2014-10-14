@@ -16,7 +16,7 @@ import java.util.List;
 import static ch.ethz.inf.asl.utils.Helper.hasText;
 import static ch.ethz.inf.asl.utils.Helper.notNull;
 
-public class MWMessagingProtocolImpl extends MessagingProtocol {
+public class MiddlewareMessagingProtocolImpl extends MessagingProtocol {
 
     private int requestingUserId;
     private Connection connection;
@@ -31,7 +31,7 @@ public class MWMessagingProtocolImpl extends MessagingProtocol {
 
     private MyLogger logger;
 
-    public MWMessagingProtocolImpl(MyLogger logger, int requestingUserId, Connection connection) {
+    public MiddlewareMessagingProtocolImpl(MyLogger logger, int requestingUserId, Connection connection) {
         notNull(connection, "Given connection cannot be null");
         this.requestingUserId = requestingUserId;
         this.connection = connection;
@@ -70,7 +70,7 @@ public class MWMessagingProtocolImpl extends MessagingProtocol {
     private void sendMessageCommon(Optional<Integer> receiverId, int queueId, String content) {
 
         // TODO use constants, I have them in MessageConstants
-        if (content.length() != 200 && content.length() != 2000) {
+        if (content.length() > 2000) {
             throw new IllegalArgumentException("Given content has invalid length");
         }
 
@@ -252,5 +252,10 @@ public class MWMessagingProtocolImpl extends MessagingProtocol {
         } catch (SQLException e) {
             throw new MessageProtocolException("failed to list queues", e);
         }
+    }
+
+    @Override
+    public void sayGoodbye() {
+
     }
 }

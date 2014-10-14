@@ -1,10 +1,8 @@
 package ch.ethz.inf.asl.middleware.nio;
 
-import ch.ethz.inf.asl.common.MessagingProtocol;
 import ch.ethz.inf.asl.common.request.Request;
 import ch.ethz.inf.asl.common.response.Response;
-import ch.ethz.inf.asl.middleware.MWMessagingProtocolImpl;
-import org.postgresql.ds.PGPoolingDataSource;
+import ch.ethz.inf.asl.middleware.MiddlewareMessagingProtocolImpl;
 
 import java.io.*;
 import java.net.InetSocketAddress;
@@ -246,7 +244,7 @@ public class NIOMiddleware {
 
                             Connection connection = getConnection();
                             // TODO FIXME
-                            Response response = x.execute(new MWMessagingProtocolImpl(null, x.getRequestorId(), connection));
+                            Response response = x.execute(new MiddlewareMessagingProtocolImpl(null, x.getRequestorId(), connection));
                             connection.close();
 
                             byte[] responseData = objectToByteArray(response);

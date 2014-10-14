@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
-import static ch.ethz.inf.asl.common.MessageConstants.POSSIBLE_MESSAGE_LENGTHS;
+import static ch.ethz.inf.asl.common.MessageConstants.MAXIMUM_MESSAGE_LENGTH;
 import static ch.ethz.inf.asl.utils.Helper.notNull;
 import static ch.ethz.inf.asl.utils.Helper.verifyTrue;
 
@@ -24,8 +24,8 @@ public class Message implements Serializable {
     public Message(int senderId, int queueId, Timestamp arrivalTime, String content) {
         notNull(arrivalTime, "arrivalTime cannot be null");
         notNull(content, "content cannot be null");
-        verifyTrue(Arrays.asList(POSSIBLE_MESSAGE_LENGTHS).contains(content.length()),
-                "content length should be one of: " + Arrays.toString(POSSIBLE_MESSAGE_LENGTHS));
+        verifyTrue(content.length() <= MAXIMUM_MESSAGE_LENGTH,
+                "content length cannot be greater than: " + MAXIMUM_MESSAGE_LENGTH);
 
         this.senderId = senderId;
         this.receiverId = null;

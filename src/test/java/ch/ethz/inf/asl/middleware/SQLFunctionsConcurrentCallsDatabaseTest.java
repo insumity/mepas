@@ -3,8 +3,6 @@ package ch.ethz.inf.asl.middleware;
 
 import ch.ethz.inf.asl.utils.Utilities;
 import org.postgresql.util.PSQLException;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -12,17 +10,17 @@ import java.io.IOException;
 import java.sql.*;
 
 import static ch.ethz.inf.asl.middleware.IntegrationTest.getConnection;
-import static ch.ethz.inf.asl.middleware.MWMessagingProtocolImpl.RECEIVE_MESSAGE;
-import static ch.ethz.inf.asl.middleware.MWMessagingProtocolImpl.RECEIVE_MESSAGE_FROM_SENDER;
-import static ch.ethz.inf.asl.middleware.MWMessagingProtocolImpl.SEND_MESSAGE;
-import static ch.ethz.inf.asl.utils.TestConstants.INTEGRATION;
+import static ch.ethz.inf.asl.middleware.MiddlewareMessagingProtocolImpl.RECEIVE_MESSAGE;
+import static ch.ethz.inf.asl.middleware.MiddlewareMessagingProtocolImpl.RECEIVE_MESSAGE_FROM_SENDER;
+import static ch.ethz.inf.asl.middleware.MiddlewareMessagingProtocolImpl.SEND_MESSAGE;
+import static ch.ethz.inf.asl.utils.TestConstants.DATABASE;
 import static org.testng.Assert.assertEquals;
 
 /**
  * Tests for testing that when the stored procedures of the basic functionality of the system
  * are being called concurrently everything works as expected.
  */
-public class SQLFunctionsConcurrentCallsIntegrationTest {
+public class SQLFunctionsConcurrentCallsDatabaseTest {
 
     // the state code is handling serialization failures (which always return with a SQLSTATE value of '40001'), becau
     // you retrieve the errorMessage and then get compare it to "40001" from there. Cha cha :)
@@ -64,7 +62,7 @@ public class SQLFunctionsConcurrentCallsIntegrationTest {
     }
 
 
-    @Test(groups = INTEGRATION, dataProvider = "trueAndFalse",
+    @Test(groups = DATABASE, dataProvider = "trueAndFalse",
             description = "The idea of the test is to fill the system with " +
             "many messages, e.g. X messages, with receiver id being NULL and then create some concurrent readers " +
             "that try to read these messages. In total the concurrent readers should have only read X messages. ")

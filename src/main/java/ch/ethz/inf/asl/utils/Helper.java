@@ -1,5 +1,9 @@
 package ch.ethz.inf.asl.utils;
 
+import java.io.*;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
+
 public class Helper {
 
     /**
@@ -24,5 +28,31 @@ public class Helper {
         if (value != true) {
             throw new IllegalArgumentException(message);
         }
+    }
+
+
+    // taken from http://stackoverflow.com/questions/80476/how-to-concatenate-two-arrays-in-java
+    public static byte[] concat(byte[] first, byte[] second) {
+        byte[] result = Arrays.copyOf(first, first.length + second.length);
+        System.arraycopy(second, 0, result, first.length, second.length);
+        return result;
+    }
+
+    public static byte[] serialize(Object object) throws IOException {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutput out = new ObjectOutputStream(bos);
+        out.writeObject(object);
+
+        byte[] objectData = bos.toByteArray();
+        byte[] lengthOfObject = ByteBuffer.allocate(4).putInt(objectData.length).array();
+        byte[] toSend = concat(lengthOfObject, objectData);
+
+        return toSend;
+    }
+
+    public static Object deserialize(byte[] data) throws IOException, ClassNotFoundException {
+        ByteArrayInputStream in = new ByteArrayInputStream(data);
+        ObjectInputStream is = new ObjectInputStream(in);
+        return is.readObject();
     }
 }

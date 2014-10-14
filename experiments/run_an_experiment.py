@@ -1,22 +1,24 @@
+import os
+from os.path import isfile
+from time import sleep
+
 from plot_data import plot_data
 from retrieve_ec2_instances import *
 from clean_database import *
-from subprocess import call
-from os.path import isfile
-from os import system
-from utilities import clean_machine, scp_to, scp_from, start_machine, start_client, execute_command
-from time import sleep
+from utilities import *
 from read_experimental_results import get_data
 
-#FIXME ... sto client.out exo >> eno sto server.out exo >
+# FIXME ... sto client.out exo >> eno sto server.out exo >
 
-system("mkdir " + "increasingNumberOfClientsJustOnce")
+nameOfTheExperiment = "someExperiment"
+# verify this experiment has not yet been created
+
+os.mkdir(nameOfTheExperiment)
 
 # TODO : experiments names .. config file for running shitt ...
 # TODO For java also use configuration file, probably better than arguments
 
-# possibleValues = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100, 150, 200]
-possibleValues = [200]
+possibleValues = [10]
 for totalClients in possibleValues:
 
     print "Doing it for totalClients: " + str(totalClients)
@@ -28,16 +30,20 @@ for totalClients in possibleValues:
     dbName = "mepas"
 
     print dbHost
+    numberOfQueues = 1
 
     recreate_database(dbHost, dbName, dbUsername, dbPassword)
-    initialize_database(dbHost, dbName, dbUsername, dbPassword, totalClients, 1, "../src/main/resources/auxiliary_functions.sql",
-                        "../src/main/resources/read_committed_basic_functions.sql")
+
+    auxiliaryFunctionsFilePath = "../src/main/resources/auxiliary_functions.sql"
+    basicFunctionsFilePath = "../src/main/resources/read_committed_basic_functions.sql"
+    initialize_database(dbHost, dbName, dbUsername, dbPassword, totalClients, numberOfQueues,
+                        auxiliaryFunctionsFilePath,
+                        basicFunctionsFilePath)
     print ">>> Database was cleaned and initialized!"
 
 
     # clean the directory with ant
     call(["ant", "-buildfile", "..", "clean"])
-    call(["ant", "-buildfile", "..", "compile"]) #TODO Remove
 
     # create the jar
     call(["ant", "-buildfile", "..", "jar"])
@@ -68,7 +74,6 @@ for totalClients in possibleValues:
         execute_command(username, middleware[0], privateKeyFile, "mkdir logs")
 
     print ">>> clients & middlewares were cleaned from previous experiments"
-
 
     # FIXME ... ERROR MESSAGES ARE SAVED in the local computer
     # start the MW
@@ -113,22 +118,22 @@ for totalClients in possibleValues:
     sleep(10)
 
     # create a directory for the experiment
-    # TODO ... inform if the directory ealready existsa and if so put
+    # TODO ... inform if the directory already existsa and if so put
     # it somewhere else
-    experimentName = "increasingNumberOfClients/experiment_10dbconnections_10threads_" + str(totalClients) + "clients"
-    system("mkdir " + experimentName)
+    experimentName = nameOfTheExperiment + "/experiment_10dbconnections_10threads_" + str(totalClients) + "clients"
+    os.mkdir(experimentName)
 
     # gather results and put them back somewhere locally
-    #for middleware in get_middlewares()
-    #    scp_from("logs/*", experimentName + "/", username, middleware[0], privateKeyFile)
+    # for middleware in get_middlewares()
+    # scp_from("logs/*", experimentName + "/", username, middleware[0], privateKeyFile)
 
     for client in get_clients():
         scp_from("logs/*", experimentName + "/", username, client[0], privateKeyFile)
 
 
-    # clean clients and MW and verify it's cleaned
+        # clean clients and MW and verify it's cleaned
 
 # profit!
-get_data(possibleValues) # will create a file
-plot_data("increasingNumberOfClients/plot_data.csv", 210)
+get_data(possibleValues)  # will create a file
+plot_data(nameOfTheExperiment + "/plot_data.csv", 210, "someExperiment.png", "1:2:3")
 

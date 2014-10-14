@@ -1,18 +1,19 @@
 package ch.ethz.inf.asl.common;
 
-import ch.ethz.inf.asl.common.Message;
 import org.testng.annotations.Test;
 
 import java.sql.Timestamp;
 import java.util.NoSuchElementException;
 
+import static ch.ethz.inf.asl.common.MessageConstants.MAXIMUM_MESSAGE_LENGTH;
 import static ch.ethz.inf.asl.utils.TestConstants.SMALL;
 import static org.testng.Assert.*;
 import static org.testng.AssertJUnit.assertEquals;
 
 public class MessageTest {
 
-    private String STRING_OF_200_CHARACTERS = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+    private static final String MESSAGE_CONTENT = "this is the content of a message! Let's include some more characters" +
+            "just for the fun of it: Αυτοί είναι ελληνικοί χαρακτήρες!";
 
     // should be NullPointerException ?? TODO FIXME or Ille
     @Test(groups = SMALL, expectedExceptions = NullPointerException.class)
@@ -25,73 +26,88 @@ public class MessageTest {
         new Message(11, 34, 2, Timestamp.valueOf("2012-03-03 11:22:12"), null);
     }
 
-    @Test(groups = SMALL, expectedExceptions = IllegalArgumentException.class)
-    public void testCannotCreateMessageWithEmptyContent() {
-        new Message(11, 34, 2, Timestamp.valueOf("2012-03-03 11:22:12"), "");
+    @Test(groups = SMALL)
+    public void testCanCreateMessageWithMaximumLength() {
+        // create message content with length greater than maximum possible length
+        StringBuffer content = new StringBuffer();
+        for (int i = 0; i < MAXIMUM_MESSAGE_LENGTH; ++i) {
+            content = content.append("a");
+        }
+
+        Message msg = new Message(11, 34, 2, Timestamp.valueOf("2012-03-03 11:22:12"), content.toString());
+        assertNotNull(msg);
+        assertEquals(msg.getContent(), content.toString());
     }
 
     @Test(groups = SMALL, expectedExceptions = IllegalArgumentException.class)
-    public void testCannotCreateMessageWithContentOfInvalidLength() {
-        new Message(11, 34, 2, Timestamp.valueOf("2012-03-03 11:22:12"), "some content");
+    public void testCannotCreateMessageWithInvalidLength() {
+        // create message content with length greater than maximum possible length
+        StringBuffer content = new StringBuffer();
+        for (int i = 0; i < MAXIMUM_MESSAGE_LENGTH; ++i) {
+            content = content.append("a");
+        }
+        content.append("B");
+
+        new Message(11, 34, 2, Timestamp.valueOf("2012-03-03 11:22:12"), content.toString());
     }
 
     @Test(groups = SMALL)
     public void testGetSenderId() {
-        Message msg =  new Message(11, 34, 2, Timestamp.valueOf("2012-03-03 11:22:12"), STRING_OF_200_CHARACTERS);
+        Message msg =  new Message(11, 34, 2, Timestamp.valueOf("2012-03-03 11:22:12"), MESSAGE_CONTENT);
         assertEquals(msg.getSenderId(), 11);
     }
 
     @Test(groups = SMALL)
     public void testGetReceiverId() {
-        Message msg =  new Message(11, 34, 2, Timestamp.valueOf("2012-03-03 11:22:12"), STRING_OF_200_CHARACTERS);
+        Message msg =  new Message(11, 34, 2, Timestamp.valueOf("2012-03-03 11:22:12"), MESSAGE_CONTENT);
         assertEquals(msg.getReceiverId(), 34);
     }
     @Test(groups = SMALL, expectedExceptions = NoSuchElementException.class)
     public void testGetReceiverIdWhenNull() {
-        Message msg =  new Message(11, 2, Timestamp.valueOf("2012-03-03 11:22:12"), STRING_OF_200_CHARACTERS);
+        Message msg =  new Message(11, 2, Timestamp.valueOf("2012-03-03 11:22:12"), MESSAGE_CONTENT);
         msg.getReceiverId();
     }
 
     @Test(groups = SMALL)
     public void testHasReceiverWhenThereIsOne() {
-        Message msg =  new Message(211, 34, 2, Timestamp.valueOf("2012-03-03 11:22:12"), STRING_OF_200_CHARACTERS);
+        Message msg =  new Message(211, 34, 2, Timestamp.valueOf("2012-03-03 11:22:12"), MESSAGE_CONTENT);
         assertTrue(msg.hasReceiver());
     }
 
     @Test(groups = SMALL)
     public void testHasReceiverWhenThereIsNotOne() {
-        Message msg =  new Message(11, 2, Timestamp.valueOf("2012-03-03 11:22:12"), STRING_OF_200_CHARACTERS);
+        Message msg =  new Message(11, 2, Timestamp.valueOf("2012-03-03 11:22:12"), MESSAGE_CONTENT);
         assertFalse(msg.hasReceiver());
     }
 
     @Test(groups = SMALL)
     public void testGetQueueId() {
-        Message msg =  new Message(11, 2, Timestamp.valueOf("2012-03-03 11:22:12"), STRING_OF_200_CHARACTERS);
+        Message msg =  new Message(11, 2, Timestamp.valueOf("2012-03-03 11:22:12"), MESSAGE_CONTENT);
         assertEquals(msg.getQueueId(), 2);
     }
 
     @Test(groups = SMALL)
     public void testGetArrivalTime() {
-        Message msg =  new Message(11, 2, Timestamp.valueOf("2012-03-03 11:22:12"), STRING_OF_200_CHARACTERS);
+        Message msg =  new Message(11, 2, Timestamp.valueOf("2012-03-03 11:22:12"), MESSAGE_CONTENT);
         assertEquals(msg.getArrivalTime(), Timestamp.valueOf("2012-03-03 11:22:12"));
     }
 
     @Test(groups = SMALL)
     public void testGetContent() {
-        Message msg =  new Message(11,  2, Timestamp.valueOf("2012-03-03 11:22:12"), STRING_OF_200_CHARACTERS);
-        assertEquals(msg.getContent(), STRING_OF_200_CHARACTERS);
+        Message msg =  new Message(11,  2, Timestamp.valueOf("2012-03-03 11:22:12"), MESSAGE_CONTENT);
+        assertEquals(msg.getContent(), MESSAGE_CONTENT);
     }
 
     @Test(groups = SMALL)
     public void testEquals() {
-        Message msg1 = new Message(11, 2, Timestamp.valueOf("2012-03-03 11:22:12"), STRING_OF_200_CHARACTERS);
-        Message msg2 = new Message(11, 2, Timestamp.valueOf("2012-03-03 11:22:12"), STRING_OF_200_CHARACTERS);
+        Message msg1 = new Message(11, 2, Timestamp.valueOf("2012-03-03 11:22:12"), MESSAGE_CONTENT);
+        Message msg2 = new Message(11, 2, Timestamp.valueOf("2012-03-03 11:22:12"), MESSAGE_CONTENT);
 
         assertEquals(msg1, msg2);
         assertEquals(msg2, msg1);
 
-        msg1 = new Message(11, 2314234, 2, Timestamp.valueOf("2012-03-03 11:22:12"), STRING_OF_200_CHARACTERS);
-        msg2 = new Message(11, 2314234, 2, Timestamp.valueOf("2012-03-03 11:22:12"), STRING_OF_200_CHARACTERS);
+        msg1 = new Message(11, 2314234, 2, Timestamp.valueOf("2012-03-03 11:22:12"), MESSAGE_CONTENT);
+        msg2 = new Message(11, 2314234, 2, Timestamp.valueOf("2012-03-03 11:22:12"), MESSAGE_CONTENT);
 
         assertEquals(msg1, msg2);
         assertEquals(msg2, msg1);
@@ -102,41 +118,41 @@ public class MessageTest {
 
     @Test(groups = SMALL)
     public void testEqualsWithDifferentMesages() {
-        Message msg1 =  new Message(11, 3, 2, Timestamp.valueOf("2012-03-03 21:22:12"), STRING_OF_200_CHARACTERS);
-        Message msg2 =  new Message(12, 3, 2, Timestamp.valueOf("2012-03-03 21:22:12"), STRING_OF_200_CHARACTERS);
+        Message msg1 =  new Message(11, 3, 2, Timestamp.valueOf("2012-03-03 21:22:12"), MESSAGE_CONTENT);
+        Message msg2 =  new Message(12, 3, 2, Timestamp.valueOf("2012-03-03 21:22:12"), MESSAGE_CONTENT);
         assertNotEquals(msg1, msg2);
 
-        msg1 =  new Message(11, 3, 2, Timestamp.valueOf("2012-03-03 21:22:12"), STRING_OF_200_CHARACTERS);
-        msg2 =  new Message(11, 2, Timestamp.valueOf("2012-03-03 21:22:12"), STRING_OF_200_CHARACTERS);
+        msg1 =  new Message(11, 3, 2, Timestamp.valueOf("2012-03-03 21:22:12"), MESSAGE_CONTENT);
+        msg2 =  new Message(11, 2, Timestamp.valueOf("2012-03-03 21:22:12"), MESSAGE_CONTENT);
         assertNotEquals(msg1, msg2);
 
-        msg1 =  new Message(11, 2, Timestamp.valueOf("2012-03-03 21:22:12"), STRING_OF_200_CHARACTERS);
-        msg2 =  new Message(11, 5, 2, Timestamp.valueOf("2012-03-03 21:22:12"), STRING_OF_200_CHARACTERS);
+        msg1 =  new Message(11, 2, Timestamp.valueOf("2012-03-03 21:22:12"), MESSAGE_CONTENT);
+        msg2 =  new Message(11, 5, 2, Timestamp.valueOf("2012-03-03 21:22:12"), MESSAGE_CONTENT);
         assertNotEquals(msg1, msg2);
 
-        msg1 =  new Message(-211, 10132, 2, Timestamp.valueOf("2012-03-03 21:22:12"), STRING_OF_200_CHARACTERS);
-        msg2 =  new Message(-211, 10132, 5, Timestamp.valueOf("2012-03-03 21:22:12"), STRING_OF_200_CHARACTERS);
+        msg1 =  new Message(-211, 10132, 2, Timestamp.valueOf("2012-03-03 21:22:12"), MESSAGE_CONTENT);
+        msg2 =  new Message(-211, 10132, 5, Timestamp.valueOf("2012-03-03 21:22:12"), MESSAGE_CONTENT);
         assertNotEquals(msg1, msg2);
 
-        msg1 =  new Message(-211, 10132, 5, Timestamp.valueOf("2012-03-03 22:22:12"), STRING_OF_200_CHARACTERS);
-        msg2 =  new Message(-211, 10132, 5, Timestamp.valueOf("2012-03-03 22:22:11"), STRING_OF_200_CHARACTERS);
+        msg1 =  new Message(-211, 10132, 5, Timestamp.valueOf("2012-03-03 22:22:12"), MESSAGE_CONTENT);
+        msg2 =  new Message(-211, 10132, 5, Timestamp.valueOf("2012-03-03 22:22:11"), MESSAGE_CONTENT);
         assertNotEquals(msg1, msg2);
 
-        msg1 =  new Message(-211, 10132, 5, Timestamp.valueOf("2012-03-03 22:22:12"), STRING_OF_200_CHARACTERS);
-        msg2 =  new Message(-211, 10132, 5, Timestamp.valueOf("2012-03-03 22:22:11"), STRING_OF_200_CHARACTERS.replace('a', 'b'));
+        msg1 =  new Message(-211, 10132, 5, Timestamp.valueOf("2012-03-03 22:22:12"), MESSAGE_CONTENT);
+        msg2 =  new Message(-211, 10132, 5, Timestamp.valueOf("2012-03-03 22:22:11"), MESSAGE_CONTENT.replace('a', 'b'));
         assertNotEquals(msg1, msg2);
     }
 
     @Test(groups = SMALL)
     public void testHashCode() {
-        Message msg1 = new Message(2341, 24324110, 5695461, Timestamp.valueOf("2014-09-08 23:12:59"), STRING_OF_200_CHARACTERS);
-        Message msg2 = new Message(2341, 24324110, 5695461, Timestamp.valueOf("2014-09-08 23:12:59"), STRING_OF_200_CHARACTERS);
+        Message msg1 = new Message(2341, 24324110, 5695461, Timestamp.valueOf("2014-09-08 23:12:59"), MESSAGE_CONTENT);
+        Message msg2 = new Message(2341, 24324110, 5695461, Timestamp.valueOf("2014-09-08 23:12:59"), MESSAGE_CONTENT);
 
         assertEquals(msg1, msg2);
         assertEquals(msg1.hashCode(), msg2.hashCode());
 
-        msg1 = new Message(112391, 9912, Timestamp.valueOf("2014-10-03 11:02:12"), STRING_OF_200_CHARACTERS);
-        msg2 = new Message(112391, 9912, Timestamp.valueOf("2014-10-03 11:02:12"), STRING_OF_200_CHARACTERS);
+        msg1 = new Message(112391, 9912, Timestamp.valueOf("2014-10-03 11:02:12"), MESSAGE_CONTENT);
+        msg2 = new Message(112391, 9912, Timestamp.valueOf("2014-10-03 11:02:12"), MESSAGE_CONTENT);
 
         assertEquals(msg1, msg2);
         assertEquals(msg1.hashCode(), msg2.hashCode());

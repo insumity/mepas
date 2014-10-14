@@ -27,7 +27,7 @@ BEGIN
                         arrival_time timestamp NOT NULL, /* message always arrives at the queuing system */
 
                         /* a message can only contain 200 or 2000 characters */
-                        message text NOT NULL CONSTRAINT check_length CHECK (LENGTH(message) IN (200, 2000)),
+                        message text NOT NULL CONSTRAINT check_length CHECK (LENGTH(message) <= 2000),
 
                         /* it doesn't make sense to send a message to yourself */
                         CONSTRAINT check_cannot_send_to_itself CHECK (sender_id != receiver_id)

@@ -9,7 +9,7 @@ import java.util.Arrays;
 
 public class Main {
 
-    public static void main(String[] args) throws IOException, SQLException, InterruptedException {
+    public static void main(String[] args) {
 
         String type = args[0];
         if (type.equals("middleware")) {
@@ -21,7 +21,7 @@ public class Main {
             Client.main(newArgs);
         }
         else {
-            throw new IllegalArgumentException("What do you think you are doing?");
+            System.out.println("Please check the provided arguments!");
         }
     }
 }

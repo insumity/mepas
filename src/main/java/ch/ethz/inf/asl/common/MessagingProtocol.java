@@ -65,4 +65,9 @@ public abstract class MessagingProtocol {
      * the request exists.
      */
     public abstract int[] listQueues();
+
+
+    /* why this messages is need is explained in the "OnTheBlockingSolution" */
+    public abstract void sayGoodbye();
+
 }

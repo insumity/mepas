@@ -7,10 +7,10 @@ import java.io.IOException;
 import java.sql.*;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.Callable;
 
 import static org.testng.Assert.assertTrue;
 
+// Where is this class needed? This shouldn't be herre for so many reasons!!!
 public class InitSystem {
     private static final String USERNAME = "postgres";
     private static final String PASSWORD = "";

@@ -51,7 +51,7 @@ Thursday (09/10)
 
 Friday (10/10)
 --------------
-1) Make messages up to 2000 characters, not 200 and 2000 characters
+1) Make messages up to 2000 characters, not 200 and 2000 characters [DONE]
 
 Sunday (12/10)
 --------------
@@ -66,7 +66,17 @@ Sunday (12/10)
 
 Monday(13/10)
 -------------
-1) content of messages can be up to 2000, not in the either 200 or 2000
+1) content of messages can be up to 2000, not in the either 200 or 2000 [DONE]
 2) Verify integrity constaints are being catched by SQL excpetions
 3) CATCH MessageProtocolException in higher levels ... !!! clients were dying!!! [FIXME]
 4) !!!! MAKE sure you don't have any notNull imported from Mockito into non-testing code!!!
+
+Tuesday(14/10)
+--------------
+1) Try to make classes immutable
+2) Make sure `main` methods don't throw exceptions [DONE]
+3) Check about the properties in java and use a configuration file instead
+4) make middleware close when receiving appropriate shutdown message
+5) verify all classes have equals & hashCode implemented
+6) Always have an else ... ALWAyS!!
+7) messages need to contain SUCCESS, ERROR response for all of them
