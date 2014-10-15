@@ -14,7 +14,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class Middleware {
 
 
-    public static void main(String[] args) {
+    public Middleware(String[] args) {
 
         MyLogger logger = null;
         try {
@@ -35,7 +35,7 @@ public class Middleware {
 
         BlockingQueue<InternalSocket> sockets = new LinkedBlockingQueue<>();
 
-        ConnectionPool connectionPool  = new ConnectionPool(host, username, password, dbName, connectionPoolSize, connectionPoolSize);
+        ConnectionPool connectionPool  = new ConnectionPool(host, portNumber, username, password, dbName, connectionPoolSize, connectionPoolSize);
 
         Executor threadPool = new ThreadPool(numberOfThreads);
         for (int i = 0; i < numberOfThreads; ++i) {

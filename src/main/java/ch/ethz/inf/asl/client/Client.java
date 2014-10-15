@@ -6,7 +6,7 @@ import java.util.Date;
 
 public class Client {
 
-    public static void main(String[] args)  {
+    public Client(String[] args)  {
 
         System.err.println("Starting time: " + new Date());
         System.err.println(Arrays.toString(args));
