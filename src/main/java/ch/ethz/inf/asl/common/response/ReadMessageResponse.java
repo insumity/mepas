@@ -1,12 +1,31 @@
 package ch.ethz.inf.asl.common.response;
 
 import ch.ethz.inf.asl.common.Message;
-import ch.ethz.inf.asl.common.request.CreateQueueRequest;
-import ch.ethz.inf.asl.common.request.ReceiveMessageRequest;
-import ch.ethz.inf.asl.utils.Optional;
 
-// same as RECEIVE_MESSAGE! What's the difference bro?? FIXME TODO
-public class ReadMessageResponse extends Response {
-    public ReadMessageResponse(Optional<Message> message) {
+public class ReadMessageResponse extends GetMessageResponse {
+
+    public ReadMessageResponse() {
+        super();
+    }
+
+    public ReadMessageResponse(Message message) {
+        super(message);
+    }
+
+    @Override
+    public String toString() {
+        if (!isSuccessful()) {
+            return String.format("(READ_MESSAGE FAILED: %s)", getFailedMessage());
+        }
+
+        // the request was successful but there are two cases: a message
+        // was received or a message wasn't received
+        Message message = getMessage();
+        if (message != null) {
+            return String.format("(READ_MESSAGE SUCCESS: %s)", message);
+        }
+        else {
+            return "(READ_MESSAGE SUCCESS: NO MESSAGE)";
+        }
     }
 }

@@ -6,9 +6,8 @@ import java.sql.Timestamp;
 import java.util.NoSuchElementException;
 
 import static ch.ethz.inf.asl.common.MessageConstants.MAXIMUM_MESSAGE_LENGTH;
-import static ch.ethz.inf.asl.utils.TestConstants.SMALL;
+import static ch.ethz.inf.asl.testutils.TestConstants.SMALL;
 import static org.testng.Assert.*;
-import static org.testng.AssertJUnit.assertEquals;
 
 public class MessageTest {
 
@@ -117,7 +116,7 @@ public class MessageTest {
     }
 
     @Test(groups = SMALL)
-    public void testEqualsWithDifferentMesages() {
+         public void testEqualsWithDifferentMesages() {
         Message msg1 =  new Message(11, 3, 2, Timestamp.valueOf("2012-03-03 21:22:12"), MESSAGE_CONTENT);
         Message msg2 =  new Message(12, 3, 2, Timestamp.valueOf("2012-03-03 21:22:12"), MESSAGE_CONTENT);
         assertNotEquals(msg1, msg2);
@@ -141,6 +140,12 @@ public class MessageTest {
         msg1 =  new Message(-211, 10132, 5, Timestamp.valueOf("2012-03-03 22:22:12"), MESSAGE_CONTENT);
         msg2 =  new Message(-211, 10132, 5, Timestamp.valueOf("2012-03-03 22:22:11"), MESSAGE_CONTENT.replace('a', 'b'));
         assertNotEquals(msg1, msg2);
+    }
+
+    @Test(groups = SMALL)
+    public void testEqualsWithDifferentTypes() {
+        Message msg =  new Message(11, 3, 2, Timestamp.valueOf("2012-03-03 21:22:12"), MESSAGE_CONTENT);
+        assertFalse(msg.equals(new Object()));
     }
 
     @Test(groups = SMALL)

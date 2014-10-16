@@ -4,6 +4,9 @@ public class CreateQueueResponse extends Response {
 
     private int queueId;
 
+    protected CreateQueueResponse() {}
+
+    // needed for creating failedResponse in Response class
     public CreateQueueResponse(int queueId) {
         this.queueId = queueId;
     }
@@ -14,6 +17,10 @@ public class CreateQueueResponse extends Response {
 
     @Override
     public String toString() {
-        return "(CREATE_QUEUE: " + queueId + ")";
+        if (!isSuccessful()) {
+            return String.format("(CREATE_QUEUE FAILED: %s)", getFailedMessage());
+        }
+
+        return String.format("(CREATE_QUEUE SUCCESS: %d)", queueId);
     }
 }

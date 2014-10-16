@@ -1,8 +1,8 @@
 package ch.ethz.inf.asl.middleware;
 
-import ch.ethz.inf.asl.utils.Utilities;
+import ch.ethz.inf.asl.testutils.InitializeDatabase;
+import ch.ethz.inf.asl.testutils.Utilities;
 import org.postgresql.util.PSQLException;
-import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -13,9 +13,9 @@ import java.util.List;
 import java.util.Objects;
 
 import static ch.ethz.inf.asl.common.MessageConstants.MAXIMUM_MESSAGE_LENGTH;
-import static ch.ethz.inf.asl.middleware.IntegrationTest.getConnection;
 import static ch.ethz.inf.asl.middleware.MiddlewareMessagingProtocolImpl.*;
-import static ch.ethz.inf.asl.utils.TestConstants.DATABASE;
+import static ch.ethz.inf.asl.testutils.InitializeDatabase.getConnection;
+import static ch.ethz.inf.asl.testutils.TestConstants.*;
 import static org.testng.Assert.*;
 
 /**
@@ -24,9 +24,6 @@ import static org.testng.Assert.*;
  * are verified.
  */
 public class SQLFunctionsDatabaseTest {
-
-    // constants of the database
-    private static final String DB_NAME = "integrationtest";
 
     // for testing `auxiliary_functions`
     private static final String CREATE_CLIENT = "{ ? = call create_client(?) }";
@@ -57,7 +54,7 @@ public class SQLFunctionsDatabaseTest {
                     + arrivalTime + "' AND message = '" + message + "'";
         }
 
-        try (Connection connection = getConnection(DB_NAME);
+        try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD);
              Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery(command)) {
 
@@ -70,7 +67,7 @@ public class SQLFunctionsDatabaseTest {
     /* returns the number of rows the given table has in the given database */
     private int numberOfRows(String database, String table) throws SQLException, ClassNotFoundException {
 
-        try (Connection connection = getConnection(database);
+        try (Connection connection = getConnection(HOST, PORT_NUMBER, database, USERNAME, PASSWORD);
              Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM " + table)) {
 
@@ -82,17 +79,14 @@ public class SQLFunctionsDatabaseTest {
 
     @BeforeMethod(groups = DATABASE)
     public void initialize() throws ClassNotFoundException, SQLException, IOException, InterruptedException {
-        IntegrationTest.initialize(false, true);
-    }
-
-    @AfterMethod(groups = DATABASE)
-    public void tearDown() throws SQLException, ClassNotFoundException {
-        IntegrationTest.tearDown();
+        String populateDatabaseCode = "src/test/resources/populate_database.sql";
+        InitializeDatabase.initialize(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD,
+                Connection.TRANSACTION_READ_COMMITTED,new String[] {populateDatabaseCode});
     }
 
     @Test(groups = DATABASE)
     public void testCreateClient() throws SQLException, ClassNotFoundException {
-        try (Connection connection = getConnection(DB_NAME);
+        try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD);
              CallableStatement stmt = connection.prepareCall(CREATE_CLIENT)) {
 
             stmt.registerOutParameter(1, Types.INTEGER);
@@ -101,13 +95,13 @@ public class SQLFunctionsDatabaseTest {
             assertEquals(stmt.getInt(1), NUMBER_OF_CLIENTS + 1);
         }
 
-        int numberOfClients = numberOfRows(DB_NAME, "client");
+        int numberOfClients = numberOfRows(DATABASE_NAME, "client");
         assertEquals(numberOfClients, NUMBER_OF_CLIENTS + 1);
     }
 
     @Test(groups = DATABASE)
     public void testDeleteClient() throws SQLException, ClassNotFoundException {
-        try (Connection connection = getConnection(DB_NAME);
+        try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD);
              CallableStatement stmt = connection.prepareCall(DELETE_CLIENT)) {
 
             int unusedClientId = 6; // this client is not used in any message
@@ -115,14 +109,14 @@ public class SQLFunctionsDatabaseTest {
             stmt.execute();
         }
 
-        int numberOfClients = numberOfRows(DB_NAME, "client");
+        int numberOfClients = numberOfRows(DATABASE_NAME, "client");
         assertEquals(numberOfClients, NUMBER_OF_CLIENTS - 1);
     }
 
     @Test(groups = DATABASE, expectedExceptions = PSQLException.class,
             expectedExceptionsMessageRegExp = ".*DELETE_CLIENT: trying to delete a non existent client.*")
     public void testDeleteClientWithNonExistentClientId() throws SQLException, ClassNotFoundException {
-        try (Connection connection = getConnection(DB_NAME);
+        try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD);
              CallableStatement stmt = connection.prepareCall(DELETE_CLIENT)) {
 
             int nonExistentClientId = 100;
@@ -134,7 +128,7 @@ public class SQLFunctionsDatabaseTest {
     @Test(groups = DATABASE, expectedExceptions = PSQLException.class,
             expectedExceptionsMessageRegExp = "(?s).*ERROR: update or delete on .*")
     public void testDeleteClientWithQueueIdUsedByAMessage() throws SQLException, ClassNotFoundException {
-        try (Connection connection = getConnection(DB_NAME);
+        try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD);
              CallableStatement stmt = connection.prepareCall(DELETE_CLIENT)) {
 
             int clientIdUsedByAMessage = 4;
@@ -145,7 +139,7 @@ public class SQLFunctionsDatabaseTest {
 
     @Test(groups = DATABASE)
     public void testCreateQueue() throws SQLException, ClassNotFoundException {
-        try (Connection connection = getConnection(DB_NAME);
+        try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD);
              CallableStatement stmt = connection.prepareCall(CREATE_QUEUE)) {
 
             stmt.registerOutParameter(1, Types.INTEGER);
@@ -154,13 +148,13 @@ public class SQLFunctionsDatabaseTest {
             assertEquals(stmt.getInt(1), NUMBER_OF_QUEUES + 1);
         }
 
-        int numberOfQueues = numberOfRows(DB_NAME, "queue");
+        int numberOfQueues = numberOfRows(DATABASE_NAME, "queue");
         assertEquals(numberOfQueues, NUMBER_OF_QUEUES + 1);
     }
 
     @Test(groups = DATABASE)
     public void testDeleteQueue() throws SQLException, ClassNotFoundException {
-        try (Connection connection = getConnection(DB_NAME);
+        try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD);
              CallableStatement stmt = connection.prepareCall(DELETE_QUEUE)) {
 
             int unusedQueueId = 6; // this queue is not used in any message
@@ -168,14 +162,14 @@ public class SQLFunctionsDatabaseTest {
             stmt.execute();
         }
 
-        int numberOfQueues = numberOfRows(DB_NAME, "queue");
+        int numberOfQueues = numberOfRows(DATABASE_NAME, "queue");
         assertEquals(numberOfQueues, NUMBER_OF_QUEUES - 1);
     }
 
     @Test(groups = DATABASE, expectedExceptions = PSQLException.class,
             expectedExceptionsMessageRegExp = ".*DELETE_QUEUE: trying to delete a non existent queue.*")
     public void testDeleteQueueWithNonExistentQueueId() throws SQLException, ClassNotFoundException {
-        try (Connection connection = getConnection(DB_NAME);
+        try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD);
              CallableStatement stmt = connection.prepareCall(DELETE_QUEUE)) {
 
             int nonExistentQueueId = 100;
@@ -187,7 +181,7 @@ public class SQLFunctionsDatabaseTest {
     @Test(groups = DATABASE, expectedExceptions = PSQLException.class,
             expectedExceptionsMessageRegExp = "(?s).*ERROR: update or delete on .*")
     public void testDeleteQueueWithQueueIdUsedByAMessage() throws SQLException, ClassNotFoundException {
-        try (Connection connection = getConnection(DB_NAME);
+        try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD);
              CallableStatement stmt = connection.prepareCall(DELETE_QUEUE)) {
 
             int queueIdUsedByAMessage = 4;
@@ -198,7 +192,7 @@ public class SQLFunctionsDatabaseTest {
 
     @Test(groups = DATABASE)
     public void testSendMessage() throws SQLException, ClassNotFoundException {
-        try (Connection connection = getConnection(DB_NAME);
+        try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD);
              CallableStatement stmt = connection.prepareCall(SEND_MESSAGE)) {
 
             int senderId = 2;
@@ -217,14 +211,14 @@ public class SQLFunctionsDatabaseTest {
             assertTrue(messageExists);
         }
 
-        int numberOfQueues = numberOfRows(DB_NAME, "message");
+        int numberOfQueues = numberOfRows(DATABASE_NAME, "message");
         assertEquals(numberOfQueues, NUMBER_OF_MESSAGES + 1);
 
     }
 
     @Test(groups = DATABASE)
     public void testSendMessageWithNullReceiverId() throws SQLException, ClassNotFoundException {
-        try (Connection connection = getConnection(DB_NAME);
+        try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD);
              CallableStatement stmt = connection.prepareCall(SEND_MESSAGE)) {
 
             int senderId = 4;
@@ -242,7 +236,7 @@ public class SQLFunctionsDatabaseTest {
             assertTrue(messageExists);
         }
 
-        int numberOfQueues = numberOfRows(DB_NAME, "message");
+        int numberOfQueues = numberOfRows(DATABASE_NAME, "message");
         assertEquals(numberOfQueues, NUMBER_OF_MESSAGES + 1);
 
     }
@@ -250,7 +244,7 @@ public class SQLFunctionsDatabaseTest {
     @Test(groups = DATABASE, expectedExceptions = PSQLException.class,
             expectedExceptionsMessageRegExp = "(?s).*column \"sender_id\" violates not-null.*")
     public void testSendMessageWithNullSenderId() throws SQLException, ClassNotFoundException {
-        try (Connection connection = getConnection(DB_NAME);
+        try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD);
              CallableStatement stmt = connection.prepareCall(SEND_MESSAGE)) {
 
             int receiverId = 4;
@@ -269,7 +263,7 @@ public class SQLFunctionsDatabaseTest {
     @Test(groups = DATABASE, expectedExceptions = PSQLException.class,
             expectedExceptionsMessageRegExp = "(?s).*column \"queue_id\" violates not-null.*")
     public void testSendMessageWithNullQueueId() throws SQLException, ClassNotFoundException {
-        try (Connection connection = getConnection(DB_NAME);
+        try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD);
              CallableStatement stmt = connection.prepareCall(SEND_MESSAGE)) {
 
             int senderId = 1;
@@ -288,7 +282,7 @@ public class SQLFunctionsDatabaseTest {
     @Test(groups = DATABASE, expectedExceptions = PSQLException.class,
             expectedExceptionsMessageRegExp = "(?s).*column \"arrival_time\" violates not-null.*")
     public void testSendMessageWithNullArrivalTime() throws SQLException, ClassNotFoundException {
-        try (Connection connection = getConnection(DB_NAME);
+        try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD);
              CallableStatement stmt = connection.prepareCall(SEND_MESSAGE)) {
 
             int senderId = 1;
@@ -307,7 +301,7 @@ public class SQLFunctionsDatabaseTest {
     @Test(groups = DATABASE, expectedExceptions = PSQLException.class,
             expectedExceptionsMessageRegExp = "(?s).*column \"message\" violates not-null.*")
     public void testSendMessageWithNullMessage() throws SQLException, ClassNotFoundException {
-        try (Connection connection = getConnection(DB_NAME);
+        try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD);
              CallableStatement stmt = connection.prepareCall(SEND_MESSAGE)) {
             int senderId = 1;
             int receiverId = 4;
@@ -325,7 +319,7 @@ public class SQLFunctionsDatabaseTest {
     @Test(groups = DATABASE, expectedExceptions = PSQLException.class,
             expectedExceptionsMessageRegExp = "(?s).*violates check constraint \"check_cannot_send_to_itself\".*")
     public void testSendMessageWithSenderIdEqualToReceiverId() throws SQLException, ClassNotFoundException {
-        try (Connection connection = getConnection(DB_NAME);
+        try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD);
              CallableStatement stmt = connection.prepareCall(SEND_MESSAGE)) {
 
             int senderId = 2;
@@ -345,7 +339,7 @@ public class SQLFunctionsDatabaseTest {
     @Test(groups = DATABASE, expectedExceptions = PSQLException.class,
             expectedExceptionsMessageRegExp = "(?s).*violates check constraint \"check_length\".*")
     public void testSendMessageWithInvalidContentLength() throws SQLException, ClassNotFoundException {
-        try (Connection connection = getConnection(DB_NAME);
+        try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD);
              CallableStatement stmt = connection.prepareCall(SEND_MESSAGE)) {
 
             int senderId = 2;
@@ -365,7 +359,7 @@ public class SQLFunctionsDatabaseTest {
 
     @Test(groups = DATABASE)
     public void testSendMessageWithEmptyContent() throws SQLException, ClassNotFoundException {
-        try (Connection connection = getConnection(DB_NAME);
+        try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD);
              CallableStatement stmt = connection.prepareCall(SEND_MESSAGE)) {
 
             int senderId = 2;
@@ -382,7 +376,7 @@ public class SQLFunctionsDatabaseTest {
     }
 
     /* corresponds to a message retrieved from the database */
-    private class DbMessage {
+    private class DatabaseMessage {
         private int rowId;
         private int senderId;
         private Integer receiverId;
@@ -390,7 +384,7 @@ public class SQLFunctionsDatabaseTest {
         private Timestamp arrivalTime;
         private String message;
 
-        public DbMessage(int rowId, int senderId, Integer receiverId, int queueId, Timestamp arrivalTime, String message) {
+        public DatabaseMessage(int rowId, int senderId, Integer receiverId, int queueId, Timestamp arrivalTime, String message) {
             this.rowId = rowId;
             this.senderId = senderId;
             this.receiverId = receiverId;
@@ -401,8 +395,8 @@ public class SQLFunctionsDatabaseTest {
 
         @Override
         public boolean equals(Object obj) {
-            if (obj instanceof DbMessage) {
-                DbMessage other = (DbMessage) obj;
+            if (obj instanceof DatabaseMessage) {
+                DatabaseMessage other = (DatabaseMessage) obj;
 
                 boolean sameReceivers = false;
 
@@ -432,7 +426,7 @@ public class SQLFunctionsDatabaseTest {
     }
 
     /* creates a db message based on the given result set */
-    public DbMessage createMessage(ResultSet rs) throws SQLException {
+    public DatabaseMessage createMessage(ResultSet rs) throws SQLException {
         int readRowId = rs.getInt(1);
         int readSenderId = rs.getInt(2);
 
@@ -445,12 +439,12 @@ public class SQLFunctionsDatabaseTest {
         Timestamp readArrivalTime = rs.getTimestamp(5);
         String readMessage = rs.getString(6);
 
-        return new DbMessage(readRowId, readSenderId, readReceiverId, readQueueId, readArrivalTime, readMessage);
+        return new DatabaseMessage(readRowId, readSenderId, readReceiverId, readQueueId, readArrivalTime, readMessage);
     }
 
     @Test(groups = DATABASE)
     public void testReceiveMessage() throws SQLException, ClassNotFoundException {
-        try (Connection connection = getConnection(DB_NAME);
+        try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD);
              CallableStatement stmt = connection.prepareCall(RECEIVE_MESSAGE)) {
 
             int requestingUserId = 5;
@@ -465,11 +459,11 @@ public class SQLFunctionsDatabaseTest {
 
             assertTrue(thereAreRows);
 
-            int numberOfQueues = numberOfRows(DB_NAME, "message");
+            int numberOfQueues = numberOfRows(DATABASE_NAME, "message");
             assertEquals(numberOfQueues, NUMBER_OF_MESSAGES - 1);
 
-            DbMessage actualMessage = createMessage(rs);
-            DbMessage expectedMessage = new DbMessage(5, 4, 5, 4, Timestamp.valueOf("1999-01-08 04:05:06"), MESSAGE_CONSTANT);
+            DatabaseMessage actualMessage = createMessage(rs);
+            DatabaseMessage expectedMessage = new DatabaseMessage(5, 4, 5, 4, Timestamp.valueOf("1999-01-08 04:05:06"), MESSAGE_CONSTANT);
 
             assertEquals(actualMessage, expectedMessage);
 
@@ -480,7 +474,7 @@ public class SQLFunctionsDatabaseTest {
 
     @Test(groups = DATABASE)
     public void testReceiveMessageThatHasNullReceiverId() throws SQLException, ClassNotFoundException {
-        try (Connection connection = getConnection(DB_NAME);
+        try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD);
              CallableStatement stmt = connection.prepareCall(RECEIVE_MESSAGE)) {
 
             int requestingUserId = 2;
@@ -495,11 +489,11 @@ public class SQLFunctionsDatabaseTest {
 
             assertTrue(thereAreRows);
 
-            int numberOfMessages = numberOfRows(DB_NAME, "message");
+            int numberOfMessages = numberOfRows(DATABASE_NAME, "message");
             assertEquals(numberOfMessages, NUMBER_OF_MESSAGES - 1);
 
-            DbMessage actualMessage = createMessage(rs);
-            DbMessage expectedMessage = new DbMessage(11, 5, null, 3, Timestamp.valueOf("1999-01-08 04:15:23"), MESSAGE_CONSTANT);
+            DatabaseMessage actualMessage = createMessage(rs);
+            DatabaseMessage expectedMessage = new DatabaseMessage(11, 5, null, 3, Timestamp.valueOf("1999-01-08 04:15:23"), MESSAGE_CONSTANT);
 
             assertEquals(actualMessage, expectedMessage);
 
@@ -511,7 +505,7 @@ public class SQLFunctionsDatabaseTest {
     @Test(groups = DATABASE, expectedExceptions = PSQLException.class,
             expectedExceptionsMessageRegExp = "(?s).*RECEIVE_MESSAGE: .* with p_requesting_user_id being NULL.*")
     public void testReceiveMessageWithNullRequestingUserId() throws SQLException, ClassNotFoundException {
-        try (Connection connection = getConnection(DB_NAME);
+        try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD);
              CallableStatement stmt = connection.prepareCall(RECEIVE_MESSAGE)) {
 
             int queueId = 3;
@@ -537,7 +531,7 @@ public class SQLFunctionsDatabaseTest {
         // there are 3 messages for user 2 in queue 1
         // we are going to receive them all one after the other and make sure they are received based
         // on their arrival time
-        try (Connection connection = getConnection(DB_NAME);
+        try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD);
              CallableStatement stmt = connection.prepareCall(RECEIVE_MESSAGE)) {
 
             stmt.setInt(1, requestingUserId);
@@ -548,8 +542,8 @@ public class SQLFunctionsDatabaseTest {
             boolean thereAreRows = rs.next();
             assertTrue(thereAreRows);
 
-            DbMessage actualMessage = createMessage(rs);
-            DbMessage expectedMessage = new DbMessage(8, 5, 2, queueId, Timestamp.valueOf("2001-01-08 04:05:06"), MESSAGE_CONSTANT);
+            DatabaseMessage actualMessage = createMessage(rs);
+            DatabaseMessage expectedMessage = new DatabaseMessage(8, 5, 2, queueId, Timestamp.valueOf("2001-01-08 04:05:06"), MESSAGE_CONSTANT);
 
             assertEquals(actualMessage, expectedMessage);
 
@@ -557,7 +551,7 @@ public class SQLFunctionsDatabaseTest {
             assertFalse(hasMoreRows);
         }
 
-        try (Connection connection = getConnection(DB_NAME);
+        try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD);
              CallableStatement stmt = connection.prepareCall(RECEIVE_MESSAGE)) {
 
             stmt.setInt(1, requestingUserId);
@@ -568,11 +562,11 @@ public class SQLFunctionsDatabaseTest {
             boolean thereAreRows = rs.next();
             assertTrue(thereAreRows);
 
-            int numberOfQueues = numberOfRows(DB_NAME, "message");
+            int numberOfQueues = numberOfRows(DATABASE_NAME, "message");
             assertEquals(numberOfQueues, NUMBER_OF_MESSAGES - 2);
 
-            DbMessage actualMessage = createMessage(rs);
-            DbMessage expectedMessage = new DbMessage(9, 3, 2, queueId, Timestamp.valueOf("2000-01-08 04:05:06"), MESSAGE_CONSTANT);
+            DatabaseMessage actualMessage = createMessage(rs);
+            DatabaseMessage expectedMessage = new DatabaseMessage(9, 3, 2, queueId, Timestamp.valueOf("2000-01-08 04:05:06"), MESSAGE_CONSTANT);
 
             assertEquals(actualMessage, expectedMessage);
 
@@ -581,7 +575,7 @@ public class SQLFunctionsDatabaseTest {
         }
 
 
-        try (Connection connection = getConnection(DB_NAME);
+        try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD);
              CallableStatement stmt = connection.prepareCall(RECEIVE_MESSAGE)) {
 
             stmt.setInt(1, requestingUserId);
@@ -592,8 +586,8 @@ public class SQLFunctionsDatabaseTest {
             boolean thereAreRows = rs.next();
             assertTrue(thereAreRows);
 
-            DbMessage actualMessage = createMessage(rs);
-            DbMessage expectedMessage = new DbMessage(1, 1, 2, queueId, Timestamp.valueOf("1999-01-08 04:05:06"), MESSAGE_CONSTANT);
+            DatabaseMessage actualMessage = createMessage(rs);
+            DatabaseMessage expectedMessage = new DatabaseMessage(1, 1, 2, queueId, Timestamp.valueOf("1999-01-08 04:05:06"), MESSAGE_CONSTANT);
 
             assertEquals(actualMessage, expectedMessage);
 
@@ -608,7 +602,7 @@ public class SQLFunctionsDatabaseTest {
 
     @Test(groups = DATABASE)
     public void testReceiveMessageUserDoesNotReceiveHisOwnMessage() throws SQLException, ClassNotFoundException {
-        try (Connection connection = getConnection(DB_NAME);
+        try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD);
             CallableStatement stmt = connection.prepareCall(RECEIVE_MESSAGE)) {
 
             int requestingUserId = 5;
@@ -625,7 +619,7 @@ public class SQLFunctionsDatabaseTest {
         }
 
         // verify that the message in queue with id 3 can be received by some other user
-        try (Connection connection = getConnection(DB_NAME);
+        try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD);
              CallableStatement stmt = connection.prepareCall(RECEIVE_MESSAGE)) {
 
             int requestingUserId = 4;
@@ -640,8 +634,8 @@ public class SQLFunctionsDatabaseTest {
             boolean thereAreRows = rs.next();
             assertTrue(thereAreRows);
 
-            DbMessage actualMessage = createMessage(rs);
-            DbMessage expectedMessage = new DbMessage(11, 5, null, queueId, Timestamp.valueOf("1999-01-08 04:15:23"), MESSAGE_CONSTANT);
+            DatabaseMessage actualMessage = createMessage(rs);
+            DatabaseMessage expectedMessage = new DatabaseMessage(11, 5, null, queueId, Timestamp.valueOf("1999-01-08 04:15:23"), MESSAGE_CONSTANT);
 
             assertEquals(actualMessage, expectedMessage);
 
@@ -651,14 +645,14 @@ public class SQLFunctionsDatabaseTest {
             boolean hasMoreRows = rs.next();
             assertFalse(hasMoreRows);
 
-            int numberOfQueues = numberOfRows(DB_NAME, "message");
+            int numberOfQueues = numberOfRows(DATABASE_NAME, "message");
             assertEquals(numberOfQueues, NUMBER_OF_MESSAGES - 1);
         }
     }
 
     @Test(groups = DATABASE)
     public void testReadMessage() throws SQLException, ClassNotFoundException {
-        try (Connection connection = getConnection(DB_NAME);
+        try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD);
              CallableStatement stmt = connection.prepareCall(READ_MESSAGE)) {
 
             int requestingUserId = 1;
@@ -673,11 +667,11 @@ public class SQLFunctionsDatabaseTest {
 
             assertTrue(thereAreRows);
 
-            int numberOfQueues = numberOfRows(DB_NAME, "message");
+            int numberOfQueues = numberOfRows(DATABASE_NAME, "message");
             assertEquals(numberOfQueues, NUMBER_OF_MESSAGES);
 
-            DbMessage actualMessage = createMessage(rs);
-            DbMessage expectedMessage = new DbMessage(7, 2, 1, 1, Timestamp.valueOf("1999-01-08 04:05:06"), MESSAGE_CONSTANT);
+            DatabaseMessage actualMessage = createMessage(rs);
+            DatabaseMessage expectedMessage = new DatabaseMessage(7, 2, 1, 1, Timestamp.valueOf("1999-01-08 04:05:06"), MESSAGE_CONSTANT);
 
             assertEquals(actualMessage, expectedMessage);
 
@@ -688,7 +682,7 @@ public class SQLFunctionsDatabaseTest {
 
     @Test(groups = DATABASE)
     public void testReadMessageThatHasNullReceiverId() throws SQLException, ClassNotFoundException {
-        try (Connection connection = getConnection(DB_NAME);
+        try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD);
              CallableStatement stmt = connection.prepareCall(READ_MESSAGE)) {
 
             int requestingUserId = 4;
@@ -703,11 +697,11 @@ public class SQLFunctionsDatabaseTest {
 
             assertTrue(thereAreRows);
 
-            int numberOfQueues = numberOfRows(DB_NAME, "message");
+            int numberOfQueues = numberOfRows(DATABASE_NAME, "message");
             assertEquals(numberOfQueues, NUMBER_OF_MESSAGES);
 
-            DbMessage actualMessage = createMessage(rs);
-            DbMessage expectedMessage = new DbMessage(11, 5, null, 3, Timestamp.valueOf("1999-01-08 04:15:23"), MESSAGE_CONSTANT);
+            DatabaseMessage actualMessage = createMessage(rs);
+            DatabaseMessage expectedMessage = new DatabaseMessage(11, 5, null, 3, Timestamp.valueOf("1999-01-08 04:15:23"), MESSAGE_CONSTANT);
 
             assertEquals(actualMessage, expectedMessage);
 
@@ -718,7 +712,7 @@ public class SQLFunctionsDatabaseTest {
 
     @Test(groups = DATABASE)
     public void testReadMessageUserDoesNotReadHisOwnMessage() throws SQLException, ClassNotFoundException {
-        try (Connection connection = getConnection(DB_NAME);
+        try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD);
              CallableStatement stmt = connection.prepareCall(READ_MESSAGE)) {
 
             int requestingUserId = 5;
@@ -739,7 +733,7 @@ public class SQLFunctionsDatabaseTest {
             expectedExceptionsMessageRegExp = "(?s).*READ_MESSAGE: .* with p_requesting_user_id being NULL.*")
     public void testReadMessageWithNullRequestingUserId() throws SQLException, ClassNotFoundException {
 
-        try (Connection connection = getConnection(DB_NAME);
+        try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD);
              CallableStatement stmt = connection.prepareCall(READ_MESSAGE)) {
 
             int queueId = 3;
@@ -753,7 +747,7 @@ public class SQLFunctionsDatabaseTest {
 
     @Test(groups = DATABASE)
     public void testReceiveMessageFromSender() throws SQLException, ClassNotFoundException {
-        try (Connection connection = getConnection(DB_NAME);
+        try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD);
              CallableStatement stmt = connection.prepareCall(RECEIVE_MESSAGE_FROM_SENDER)) {
 
             int requestingUserId = 5;
@@ -768,11 +762,11 @@ public class SQLFunctionsDatabaseTest {
 
             assertTrue(thereAreRows);
 
-            int numberOfQueues = numberOfRows(DB_NAME, "message");
+            int numberOfQueues = numberOfRows(DATABASE_NAME, "message");
             assertEquals(numberOfQueues, NUMBER_OF_MESSAGES - 1);
 
-            DbMessage actualMessage = createMessage(rs);
-            DbMessage expectedMessage = new DbMessage(5, senderId, requestingUserId, 4, Timestamp.valueOf("1999-01-08 04:05:06"), MESSAGE_CONSTANT);
+            DatabaseMessage actualMessage = createMessage(rs);
+            DatabaseMessage expectedMessage = new DatabaseMessage(5, senderId, requestingUserId, 4, Timestamp.valueOf("1999-01-08 04:05:06"), MESSAGE_CONSTANT);
 
             assertEquals(actualMessage, expectedMessage);
 
@@ -784,7 +778,7 @@ public class SQLFunctionsDatabaseTest {
     @Test(groups = DATABASE, expectedExceptions = PSQLException.class,
             expectedExceptionsMessageRegExp = "(?s).*RECEIVE_MESSAGE_FROM_SENDER: .* with p_requesting_user_id being NULL.*")
     public void testReceiveMessageFromSenderWithNullRequestingUserId() throws SQLException, ClassNotFoundException {
-        try (Connection connection = getConnection(DB_NAME);
+        try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD);
              CallableStatement stmt = connection.prepareCall(RECEIVE_MESSAGE_FROM_SENDER)) {
 
             int senderId = 4;
@@ -799,7 +793,7 @@ public class SQLFunctionsDatabaseTest {
     @Test(groups = DATABASE, expectedExceptions = PSQLException.class,
             expectedExceptionsMessageRegExp = "(?s).*RECEIVE_MESSAGE_FROM_SENDER: sender id cannot be the same.*")
     public void testReceiveMessageFromSenderWithRequestingUserIdEqualToSenderId() throws SQLException, ClassNotFoundException {
-        try (Connection connection = getConnection(DB_NAME);
+        try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD);
              CallableStatement stmt = connection.prepareCall(RECEIVE_MESSAGE_FROM_SENDER)) {
 
             int requestingUserId = 3;
@@ -814,7 +808,7 @@ public class SQLFunctionsDatabaseTest {
 
     @Test(groups = DATABASE)
     public void testListQueues() throws SQLException, ClassNotFoundException {
-        try (Connection connection = getConnection(DB_NAME);
+        try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD);
              CallableStatement stmt = connection.prepareCall(LIST_QUEUES)) {
 
             int requestingUserId = 5;
@@ -837,7 +831,7 @@ public class SQLFunctionsDatabaseTest {
     @Test(groups = DATABASE, expectedExceptions = PSQLException.class,
             expectedExceptionsMessageRegExp = "(?s).*LIST_QUEUES: .* with p_requesting_user_id being NULL.*")
     public void testListQueuesWithNullRequestingUserId() throws SQLException, ClassNotFoundException {
-        try (Connection connection = getConnection(DB_NAME);
+        try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD);
              CallableStatement stmt = connection.prepareCall(LIST_QUEUES)) {
 
             stmt.setNull(1, Types.INTEGER);

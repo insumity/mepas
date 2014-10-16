@@ -1,7 +1,8 @@
 package ch.ethz.inf.asl.middleware;
 
 
-import ch.ethz.inf.asl.utils.Utilities;
+import ch.ethz.inf.asl.testutils.InitializeDatabase;
+import ch.ethz.inf.asl.testutils.Utilities;
 import org.postgresql.util.PSQLException;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -9,12 +10,14 @@ import org.testng.annotations.Test;
 import java.io.IOException;
 import java.sql.*;
 
-import static ch.ethz.inf.asl.middleware.IntegrationTest.getConnection;
 import static ch.ethz.inf.asl.middleware.MiddlewareMessagingProtocolImpl.RECEIVE_MESSAGE;
 import static ch.ethz.inf.asl.middleware.MiddlewareMessagingProtocolImpl.RECEIVE_MESSAGE_FROM_SENDER;
 import static ch.ethz.inf.asl.middleware.MiddlewareMessagingProtocolImpl.SEND_MESSAGE;
-import static ch.ethz.inf.asl.utils.TestConstants.DATABASE;
+import static ch.ethz.inf.asl.testutils.InitializeDatabase.getConnection;
+import static ch.ethz.inf.asl.testutils.TestConstants.*;
+import static ch.ethz.inf.asl.testutils.TestConstants.PASSWORD;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 /**
  * Tests for testing that when the stored procedures of the basic functionality of the system
@@ -22,23 +25,11 @@ import static org.testng.Assert.assertEquals;
  */
 public class SQLFunctionsConcurrentCallsDatabaseTest {
 
-    // the state code is handling serialization failures (which always return with a SQLSTATE value of '40001'), becau
-    // you retrieve the errorMessage and then get compare it to "40001" from there. Cha cha :)
-    // constants of the database
-    private static final String USERNAME = "postgres";
-    private static final String PASSWORD = "";
-    private static final String HOST = "localhost";
-    private static final Integer PORT_NUMBER = 5432;
-    private static final String DB_NAME = "integrationtest";
-
-
-    private static final String INITIALIZE_DATABASE = "{ call initialize_database() }";
-
     private void addMessagesWithNullReceiverToTheSystem(int numberOfMessages, int senderId, int queueId)
             throws SQLException, ClassNotFoundException {
 
         for (int i = 0; i < numberOfMessages; ++i) {
-            try (Connection connection = getConnection(DB_NAME);
+            try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD);
                 CallableStatement stmt = connection.prepareCall(SEND_MESSAGE)) {
 
                 Timestamp arrivalTime = Timestamp.valueOf("2014-12-12 12:34:12");
@@ -53,38 +44,71 @@ public class SQLFunctionsConcurrentCallsDatabaseTest {
         }
     }
 
-    @DataProvider(name = "trueAndFalse")
-    public static Object[][] trueAndFalse() {
+    @DataProvider(name = "twoIsolationLevels")
+    public static Object[][] twoIsolationLevels() {
         return new Object[][] {
-                {true, true}, {true, false},
-                {false, true}, {false, false}
+                {Connection.TRANSACTION_READ_COMMITTED, true},
+                {Connection.TRANSACTION_READ_COMMITTED, false},
+                {Connection.TRANSACTION_REPEATABLE_READ, true},
+                {Connection.TRANSACTION_REPEATABLE_READ, false}
         };
     }
 
 
-    @Test(groups = DATABASE, dataProvider = "trueAndFalse",
+    @Test(groups = DATABASE, dataProvider = "twoIsolationLevels",
             description = "The idea of the test is to fill the system with " +
             "many messages, e.g. X messages, with receiver id being NULL and then create some concurrent readers " +
             "that try to read these messages. In total the concurrent readers should have only read X messages. ")
-    public void testMessagesAreReceivedOnlyOnce(final boolean readCommitted, final boolean fromSender)
+    public void testMessagesAreReceivedOnlyOnce(final int isolationLevel, final boolean fromSender)
             throws SQLException, ClassNotFoundException, InterruptedException, IOException {
-        IntegrationTest.initialize(readCommitted, false);
 
+        InitializeDatabase.initialize(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD,
+                Connection.TRANSACTION_READ_COMMITTED, new String[]{});
+
+        // serialization failures return an SQL_STATE value of '40001'
         final String CONCURRENT_UPDATE_ERROR_SQL_STATE = "40001";
+
         final int NUMBER_OF_MESSAGES = 2000;
 
         final int NUMBER_OF_CONCURRENT_READERS = 4;
 
+        final String CREATE_CLIENT = "{ ? = call create_client(?) }";
+        final String CREATE_QUEUE = "{ ? = call create_queue(?) }";
+
+        // add NUMBER_OF_CONCURRENT_READERS + 1 clients in the system
+        // the + 1 is for having one more client that corresponds to the sender of all the initial messages
+        // found in the system
+        for (int client = 1; client <= NUMBER_OF_CONCURRENT_READERS + 1; client++) {
+            try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD)) {
+                CallableStatement statement = connection.prepareCall(CREATE_CLIENT);
+                statement.registerOutParameter(1, Types.INTEGER);
+                statement.setString(2, "some name");
+                statement.execute();
+
+                assertEquals(statement.getInt(1), client);
+            }
+        }
+
+        // create one queue
+        try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD)) {
+            CallableStatement statement = connection.prepareCall(CREATE_QUEUE);
+            statement.registerOutParameter(1, Types.INTEGER);
+            statement.setString(2, "some name");
+            statement.execute();
+
+            int queueId = 1;
+            assertEquals(statement.getInt(1), queueId);
+        }
+
         // readMessagesByReader[i] contains the messages the i-th reader read
         final int[] readMessagesByReader = new int[NUMBER_OF_CONCURRENT_READERS];
 
-        final int senderId = 6;
-        // should always be greater than NUMBER_OF_CONCURRENT_READERS since a reader doesn't read messages
-        // he sent. TODO .. not really -1 or something??
-        assert(NUMBER_OF_CONCURRENT_READERS < senderId);
+        // the sender of the messages in the system
+        final int senderId = NUMBER_OF_CONCURRENT_READERS + 1;
 
         int queueId = 1;
         addMessagesWithNullReceiverToTheSystem(NUMBER_OF_MESSAGES, senderId, queueId);
+
 
         class ConcurrentReader implements Runnable {
             private int id;
@@ -97,22 +121,23 @@ public class SQLFunctionsConcurrentCallsDatabaseTest {
             public void run() {
                 // at maximum you are going to read NUMBER_OF_MESSAGES messages
                 for (int i = 0; i < NUMBER_OF_MESSAGES; ++i) {
-                    try (Connection connection = getConnection(DB_NAME)) {
-                        if (!readCommitted) {
+                    try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD)) {
+                        if (isolationLevel == Connection.TRANSACTION_REPEATABLE_READ) {
                             connection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
                         }
-
-
-                        String callToPrepate = RECEIVE_MESSAGE;
-                        if (fromSender) {
-                            callToPrepate = RECEIVE_MESSAGE_FROM_SENDER;
+                        else {
+                            assertTrue(isolationLevel == Connection.TRANSACTION_READ_COMMITTED);
                         }
 
-                        try (CallableStatement stmt = connection.prepareCall(callToPrepate)) {
+
+                        String callToPrepare = RECEIVE_MESSAGE;
+                        if (fromSender) {
+                            callToPrepare = RECEIVE_MESSAGE_FROM_SENDER;
+                        }
+
+                        try (CallableStatement stmt = connection.prepareCall(callToPrepare)) {
 
                             boolean retrieveByArrivalTime = false;
-                            // TODO this is buggy ... should I verify requestingUserId is in the valid range
-                            // ???
                             stmt.setInt(1, (id + 1));
 
                             if (fromSender) {
@@ -128,10 +153,15 @@ public class SQLFunctionsConcurrentCallsDatabaseTest {
                             try {
                                 rs = stmt.executeQuery();
                             } catch (PSQLException e) {
-                                if (e.getServerErrorMessage().getSQLState().equals(CONCURRENT_UPDATE_ERROR_SQL_STATE)) {
-                                    stmt.close();
-                                    connection.close();
-                                    continue;
+
+                                // only repeat the read if you are in REPEATABLE_READ isolation level
+                                // in READ_COMMITTED there is no repeat needed
+                                if (isolationLevel == Connection.TRANSACTION_REPEATABLE_READ) {
+                                    String errorSQLState = e.getServerErrorMessage().getSQLState();
+
+                                    if (errorSQLState.equals(CONCURRENT_UPDATE_ERROR_SQL_STATE)) {
+                                        continue;
+                                    }
                                 }
                             }
                             boolean thereAreRows = rs.next();
@@ -168,8 +198,8 @@ public class SQLFunctionsConcurrentCallsDatabaseTest {
             totalReadMessages += readMessagesByReader[i];
         }
 
+        // verify that the messages read by the concurrent readers are actually the messages
+        // that were in the system
         assertEquals(totalReadMessages, NUMBER_OF_MESSAGES);
-
-        IntegrationTest.tearDown();
     }
 }

@@ -25,7 +25,7 @@ public class NIOClientMessagingProtocolImpl extends MessagingProtocol {
         this.socketChannel = socketChannel;
     }
 
-    // concat function taken from http://stackoverflow.com/questions/80476/how-to-concatenate-two-arrays-in-java
+    // concatenate function taken from http://stackoverflow.com/questions/80476/how-to-concatenate-two-arrays-in-java
     public static byte[] concat(byte[] first, byte[] second) {
         byte[] result = Arrays.copyOf(first, first.length + second.length);
         System.arraycopy(second, 0, result, first.length, second.length);
@@ -207,6 +207,11 @@ public class NIOClientMessagingProtocolImpl extends MessagingProtocol {
         sendRequest(request);
         ListQueuesResponse response = receiveResponse();
         return response.getQueues();
+    }
+
+    @Override
+    public int sayHello(String clientName) {
+        return 0;
     }
 
     @Override

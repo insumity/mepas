@@ -2,11 +2,17 @@ package ch.ethz.inf.asl.common.response;
 
 import java.util.Arrays;
 
+import static ch.ethz.inf.asl.utils.Verifier.notNull;
+
 public class ListQueuesResponse extends Response {
 
     private int[] queueIds;
 
+    // needed for creating failedResponse in Response class
+    protected ListQueuesResponse() {}
+
     public ListQueuesResponse(int[] queues) {
+        notNull(queues, "Given queues cannot be null");
         queueIds = queues;
     }
 
@@ -16,6 +22,10 @@ public class ListQueuesResponse extends Response {
 
     @Override
     public String toString() {
-        return "(LIST_QUEUES: " + Arrays.toString(queueIds) + ")";
+        if (!isSuccessful()) {
+            return String.format("(LIST_QUEUES FAILED: %s)", getFailedMessage());
+        }
+
+        return String.format("(LIST_QUEUES SUCCESS: " + Arrays.toString(queueIds));
     }
 }

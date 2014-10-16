@@ -4,10 +4,8 @@ import org.testng.annotations.Test;
 
 import java.util.NoSuchElementException;
 
-import static ch.ethz.inf.asl.utils.TestConstants.SMALL;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertTrue;
+import static ch.ethz.inf.asl.testutils.TestConstants.SMALL;
+import static org.testng.Assert.*;
 
 public class OptionalTest {
 
@@ -30,7 +28,7 @@ public class OptionalTest {
 
     @Test(groups = SMALL)
     public void testIsPresentWhenThereIsSomething() {
-        Optional<String> optional = Optional.of("Sfdsf");
+        Optional<String> optional = Optional.of("This is madness!");
         assertTrue(optional.isPresent());
     }
 
@@ -38,5 +36,25 @@ public class OptionalTest {
     public void testIsPresentWhenItIsEmpty() {
         Optional<String> optional = Optional.empty();
         assertFalse(optional.isPresent());
+    }
+
+    @Test(groups = SMALL)
+    public void testEquals() {
+        Optional<Integer> a = Optional.of(234);
+        Optional<Integer> b = Optional.of(234);
+        assertEquals(a, b);
+
+        a = Optional.of(243);
+        b = Optional.of(23434);
+        assertNotEquals(a, b);
+
+        Optional<Integer> empty1 = Optional.empty();
+        Optional<Integer> empty2 = Optional.empty();
+        assertEquals(empty1, empty2);
+    }
+
+    @Test(groups = SMALL)
+    public void testEqualsWithDifferentType() {
+        assertFalse(Optional.of(324).equals(new Object()));
     }
 }

@@ -11,11 +11,11 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 import static org.testng.Assert.assertEquals;
 
-import static ch.ethz.inf.asl.utils.TestConstants.SMALL;
+import static ch.ethz.inf.asl.testutils.TestConstants.SMALL;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
-public class MWMessagingProtocolImplTest {
+public class MiddlewareMessagingProtocolImplTest {
 
     private Connection mockedConnection;
     private CallableStatement mockedStatement;

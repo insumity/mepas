@@ -3,10 +3,7 @@ package ch.ethz.inf.asl.client;
 import ch.ethz.inf.asl.common.Message;
 import ch.ethz.inf.asl.common.MessagingProtocol;
 import ch.ethz.inf.asl.common.request.*;
-import ch.ethz.inf.asl.common.response.CreateQueueResponse;
-import ch.ethz.inf.asl.common.response.ListQueuesResponse;
-import ch.ethz.inf.asl.common.response.ReceiveMessageResponse;
-import ch.ethz.inf.asl.common.response.Response;
+import ch.ethz.inf.asl.common.response.*;
 import ch.ethz.inf.asl.exceptions.MessageProtocolException;
 import ch.ethz.inf.asl.utils.Helper;
 import ch.ethz.inf.asl.utils.Optional;
@@ -15,21 +12,36 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.util.LinkedList;
+import java.util.List;
 
-import static ch.ethz.inf.asl.utils.Helper.notNull;
+import static ch.ethz.inf.asl.utils.Verifier.notNull;
 
 public class ClientMessagingProtocolImpl extends MessagingProtocol {
 
+    private boolean clientIsInTheSystem = false;
     private int requestorId;
 
     private Socket socket;
     private DataInputStream dataInputStream;
     private DataOutputStream dataOutputStream;
 
+    // for end-to-end testing
+    private List<Request> sentRequests;
+    private List<Response> receivedResponses;
+    private boolean saveEverything = false;
 
-    public ClientMessagingProtocolImpl(int requestorId, Socket socket) throws IOException {
-        notNull(socket, "Socket cannot be null");
-        this.requestorId = requestorId;
+    public List<Request> getSentRequests() {
+        return sentRequests;
+    }
+
+    public List<Response> getReceivedResponses() {
+        return receivedResponses;
+    }
+
+    public ClientMessagingProtocolImpl(Socket socket, boolean saveEverything) throws IOException {
+        notNull(socket, "Given socket cannot be null!");
         this.socket = socket;
 
         try {
@@ -38,14 +50,27 @@ public class ClientMessagingProtocolImpl extends MessagingProtocol {
         } catch (IOException e) {
             throw new MessageProtocolException("Client protocol couldn't be initialized", e);
         }
+
+
+        sentRequests = new LinkedList<>();
+        receivedResponses = new LinkedList<>();
+        this.saveEverything = saveEverything;
     }
 
     private void sendRequest(Request request) {
+        if (!(request instanceof SayHelloRequest) && !clientIsInTheSystem) {
+            // TODO have a nicer exeption
+            throw new IllegalArgumentException("The client is not in the system yet! Try saying hello first!");
+        }
         try {
             byte[] data = Helper.serialize(request);
 
             dataOutputStream.write(data);
             dataOutputStream.flush(); //FIXME
+
+            if (saveEverything) {
+                sentRequests.add(request);
+            }
         } catch (IOException e) {
             throw new MessageProtocolException("Request couldn't be sent", e);
         }
@@ -56,8 +81,16 @@ public class ClientMessagingProtocolImpl extends MessagingProtocol {
         try {
             int length = dataInputStream.readInt();
             byte[] data = new byte[length];
+            // FIXME might return less bytes
+            // hacky fix
+            byte[] lengthToByteArray = ByteBuffer.allocate(4).putInt(length).array();
             dataInputStream.read(data);
-            Response response = (Response) Helper.deserialize(data);
+            byte[] concatented = Helper.concatenate(lengthToByteArray, data);
+            Response response = (Response) Helper.deserialize(concatented);
+
+            if (saveEverything) {
+                receivedResponses.add(response);
+            }
 
             if (response == null) {
                 throw new MessageProtocolException("Couldn't receive response, probably because a socket" +
@@ -69,6 +102,28 @@ public class ClientMessagingProtocolImpl extends MessagingProtocol {
         } catch (ClassNotFoundException e) {
             throw new MessageProtocolException("Response wasn't of the appropriate type", e);
         }
+    }
+
+    private void setRequestorId(int requestorId) {
+        this.requestorId = requestorId;
+        this.clientIsInTheSystem = true;
+    }
+
+    @Override
+    public int sayHello(String clientName) {
+        Request request = new SayHelloRequest(clientName);
+        sendRequest(request);
+        SayHelloResponse response = receiveResponse();
+        int requestorId = response.getClientId();
+        setRequestorId(requestorId);
+        return requestorId;
+    }
+
+    @Override
+    public void sayGoodbye() {
+        Request request = new GoodbyeRequest(requestorId);
+        sendRequest(request);
+        receiveResponse();
     }
 
     @Override
@@ -152,10 +207,4 @@ public class ClientMessagingProtocolImpl extends MessagingProtocol {
         return response.getQueues();
     }
 
-    @Override
-    public void sayGoodbye() {
-        Request request = new GoodbyeRequest(requestorId);
-        sendRequest(request);
-        receiveResponse();
-    }
 }

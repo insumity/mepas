@@ -1,28 +1,32 @@
 package ch.ethz.inf.asl.common.response;
 
 import ch.ethz.inf.asl.common.Message;
-import ch.ethz.inf.asl.utils.Optional;
 
-public class ReceiveMessageResponse extends Response {
+public class ReceiveMessageResponse extends GetMessageResponse {
 
-    private Message message;
-
-    public ReceiveMessageResponse(Optional<Message> message) {
-        if (message.isPresent()) {
-            this.message = message.get();
-        }
-        else {
-            this.message = null;
-        }
+    public ReceiveMessageResponse() {
+        super();
     }
 
-    // FIXME .. should return OPTIONAL MESSAGE?
-    public Message getMessage() {
-        return message;
+    public ReceiveMessageResponse(Message message) {
+        super(message);
     }
 
     @Override
     public String toString() {
-        return "(RECEIVE_MESSAGE: " + String.valueOf(message) + ")";
+        if (!isSuccessful()) {
+            return String.format("(RECEIVE_MESSAGE FAILED: %s)", getFailedMessage());
+        }
+
+        // the request was successful but there are two cases: a message
+        // was received or a message wasn't received
+        Message message = getMessage();
+        if (message != null) {
+            return String.format("(RECEIVE_MESSAGE SUCCESS: %s)", message);
+        }
+        else {
+            return "(RECEIVE_MESSAGE SUCCESS: NO MESSAGE)";
+        }
     }
+
 }

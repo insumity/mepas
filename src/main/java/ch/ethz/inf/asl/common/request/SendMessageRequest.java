@@ -1,9 +1,13 @@
 package ch.ethz.inf.asl.common.request;
 
 import ch.ethz.inf.asl.common.MessagingProtocol;
-import ch.ethz.inf.asl.common.response.SendMesageResponse;
+import ch.ethz.inf.asl.common.response.Response;
+import ch.ethz.inf.asl.common.response.SendMessageResponse;
+import ch.ethz.inf.asl.exceptions.MessageProtocolException;
 
-public class SendMessageRequest extends Request {
+import static ch.ethz.inf.asl.utils.Verifier.notNull;
+
+public class SendMessageRequest extends Request<SendMessageResponse> {
 
     private Integer receiverId;
     private int queueId;
@@ -11,37 +15,40 @@ public class SendMessageRequest extends Request {
 
     public SendMessageRequest(int requestorId, int queueId, String content) {
         super(requestorId);
+        notNull(content, "Given content cannot be null");
+
         this.receiverId = null;
         this.queueId = queueId;
         this.content = content;
     }
 
     public SendMessageRequest(int requestorId, int receiverId, int queueId, String content) {
-        super(requestorId);
-        this.receiverId = new Integer(receiverId);
-        this.queueId = queueId;
-        this.content = content;
+        this(requestorId, queueId, content);
+        this.receiverId = receiverId;
     }
 
     @Override
-    public SendMesageResponse execute(MessagingProtocol protocol) {
+    public SendMessageResponse execute(MessagingProtocol protocol) {
+        notNull(protocol, "Given protocol cannot be null!");
 
-        if (receiverId == null) {
-            protocol.sendMessage(queueId, content);
+        try {
+            if (receiverId == null) {
+                protocol.sendMessage(queueId, content);
+            }
+            else {
+                protocol.sendMessage(receiverId, queueId, content);
+            }
+
+            return new SendMessageResponse();
         }
-        else {
-            protocol.sendMessage(receiverId, queueId, content);
+        catch (MessageProtocolException mpe) {
+                return Response.createFailedResponse(mpe.getMessage(), SendMessageResponse.class);
         }
-        return new SendMesageResponse();
     }
 
     @Override
     public String toString() {
-        if (receiverId == null) {
-            return "(SEND_MESSAGE: " + queueId + ", " + content + ")";
-        }
-        else {
-            return "(SEND_MESSAGE: " + receiverId + ", " + queueId + ", " + content + ")";
-        }
+        return super.toString() + String.format("(SEND_MESSAGE: [receiverId: %d], [queueId: %d], [content: \"%s\"])",
+                receiverId, queueId, content);
     }
 }

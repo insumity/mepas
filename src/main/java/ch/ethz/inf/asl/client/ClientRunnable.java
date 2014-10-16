@@ -1,18 +1,21 @@
 package ch.ethz.inf.asl.client;
 
 import ch.ethz.inf.asl.common.Message;
+import ch.ethz.inf.asl.common.request.Request;
+import ch.ethz.inf.asl.common.response.Response;
 import ch.ethz.inf.asl.exceptions.MessageProtocolException;
 import ch.ethz.inf.asl.logger.MyLogger;
 import ch.ethz.inf.asl.utils.Optional;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.net.SocketException;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Random;
 
-import static ch.ethz.inf.asl.utils.Helper.hasText;
+import static ch.ethz.inf.asl.utils.Verifier.hasText;
 
-public class ClientThread implements Runnable {
+public class ClientRunnable implements Runnable {
 
     private int userId;
     private String hostName;
@@ -21,7 +24,20 @@ public class ClientThread implements Runnable {
     private MyLogger logger;
     private int runningTimeInSeconds;
 
-    public ClientThread(int runningTimeInSeconds, int userId, String hostName, int portNumber, int totalClients) throws IOException {
+    private ClientMessagingProtocolImpl protocol;
+
+    private boolean saveEverything;
+
+    public List<Request> getSentRequets() {
+        return protocol.getSentRequests();
+    }
+
+    public List<Response> getReceivedResponse() {
+        return protocol.getReceivedResponses();
+    }
+
+    public ClientRunnable(int runningTimeInSeconds, int userId, String hostName, int portNumber, int totalClients,
+                          boolean saveEverything) throws IOException {
         hasText(hostName , "hostName cannot be empty or null");
 
         this.runningTimeInSeconds = runningTimeInSeconds;
@@ -33,6 +49,8 @@ public class ClientThread implements Runnable {
 
         String loggersName = String.format("client%03d", userId);
         logger = new MyLogger(loggersName);
+
+        this.saveEverything = saveEverything;
     }
 
     @Override
@@ -46,12 +64,15 @@ public class ClientThread implements Runnable {
             e.printStackTrace();
         }
 
-        ClientMessagingProtocolImpl protocol = null;
+        protocol = null;
         try {
-            protocol = new ClientMessagingProtocolImpl(userId, kkSocket);
+            protocol = new ClientMessagingProtocolImpl(kkSocket, saveEverything);
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        int myId = protocol.sayHello("my name");
+        System.err.println("This is my id");
 
         boolean send = true;
         long startingTime = System.currentTimeMillis();
@@ -61,13 +82,14 @@ public class ClientThread implements Runnable {
             long elapseTimeInSeconds = (currentTime - startingTime) / 1000;
             if (elapseTimeInSeconds >= runningTimeInSeconds) {
                 if (kkSocket != null) {
-                    try {
+//                    try {
                         System.out.println("Client socket got closed!");
                         protocol.sayGoodbye();
-                        kkSocket.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+//                        throw new IllegalAccessError("shit");
+//                        kkSocket.close();
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
                 }
 
                 break;

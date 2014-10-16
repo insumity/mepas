@@ -1,4 +1,4 @@
-package ch.ethz.inf.asl.utils;
+package ch.ethz.inf.asl.testutils;
 
 public class Utilities {
 

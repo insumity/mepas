@@ -5,6 +5,7 @@ import ch.ethz.inf.asl.common.MessageConstants;
 import ch.ethz.inf.asl.exceptions.MessageProtocolException;
 import ch.ethz.inf.asl.common.MessagingProtocol;
 import ch.ethz.inf.asl.logger.MyLogger;
+import ch.ethz.inf.asl.utils.Helper;
 import ch.ethz.inf.asl.utils.Optional;
 
 import java.sql.*;
@@ -13,14 +14,16 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
-import static ch.ethz.inf.asl.utils.Helper.hasText;
-import static ch.ethz.inf.asl.utils.Helper.notNull;
+import static ch.ethz.inf.asl.utils.Verifier.hasText;
+import static ch.ethz.inf.asl.utils.Verifier.notNull;
 
 public class MiddlewareMessagingProtocolImpl extends MessagingProtocol {
 
     private int requestingUserId;
     private Connection connection;
 
+    static final String CREATE_CLIENT = "{ ? = call create_client(?) }";
+    static final String DELETE_CLIENT = "{ call delete_client(?) }";
     static final String CREATE_QUEUE = "{ ? = call create_queue(?) }";
     static final String DELETE_QUEUE = "{ call delete_queue(?) }";
     static final String SEND_MESSAGE = "{ call send_message(?, ?, ?, ?, ?) }";
@@ -32,10 +35,41 @@ public class MiddlewareMessagingProtocolImpl extends MessagingProtocol {
     private MyLogger logger;
 
     public MiddlewareMessagingProtocolImpl(MyLogger logger, int requestingUserId, Connection connection) {
-        notNull(connection, "Given connection cannot be null");
+        notNull(logger, "Given logger cannot be null!");
+        notNull(connection, "Given connection cannot be null!");
+
         this.requestingUserId = requestingUserId;
         this.connection = connection;
         this.logger = logger;
+    }
+
+    @Override
+    public int sayHello(String clientName) {
+        hasText(clientName, "clientName cannot be null or empty");
+
+        if (clientName.length() > MessageConstants.MAXIMUM_CLIENT_NAME_LENGTH) {
+            throw new IllegalArgumentException("clientName exceed max queue name length of: "
+                    + MessageConstants.MAXIMUM_CLIENT_NAME_LENGTH);
+        }
+
+        try (CallableStatement stmt = connection.prepareCall(CREATE_CLIENT)) {
+            stmt.registerOutParameter(1, Types.INTEGER);
+            stmt.setString(2, clientName);
+            stmt.execute();
+            return stmt.getInt(1);
+        } catch (SQLException e) {
+            throw new MessageProtocolException("failed to create client", e);
+        }
+    }
+
+    @Override
+    public void sayGoodbye() {
+        try (CallableStatement stmt = connection.prepareCall(DELETE_CLIENT)) {
+            stmt.setInt(1, requestingUserId);
+            stmt.execute();
+        } catch (SQLException e) {
+            throw new MessageProtocolException("failed to delete client", e);
+        }
     }
 
     @Override
@@ -142,17 +176,13 @@ public class MiddlewareMessagingProtocolImpl extends MessagingProtocol {
     @Override
     public Optional<Message> receiveMessage(int queueId, boolean retrieveByArrivalTime) {
 
-        logger.synchronizedLog(Thread.currentThread().getId(), "before try in receiveMessage");
         try (CallableStatement stmt = connection.prepareCall(RECEIVE_MESSAGE)) {
-            logger.synchronizedLog(Thread.currentThread().getId(), "after try in receiveMessage");
 
             stmt.setInt(1, requestingUserId);
             stmt.setInt(2, queueId);
             stmt.setBoolean(3, retrieveByArrivalTime);
 
-            logger.synchronizedLog(Thread.currentThread().getId(), "- before executeQuery");
             try (ResultSet rs = stmt.executeQuery()) {
-                logger.synchronizedLog(Thread.currentThread().getId(), "- after executeQuery");
 
                 if (!rs.next()) {
                     return Optional.empty();
@@ -224,18 +254,6 @@ public class MiddlewareMessagingProtocolImpl extends MessagingProtocol {
         }
     }
 
-    // FIXME move up or put to Utilities. I don't like it here!
-    private int[] makeIntegerListToPrimitiveIntArray(List<Integer> list) {
-        int[] array = new int[list.size()];
-        int index = 0;
-        for (Integer i: list) {
-            array[index] = i;
-            index++;
-        }
-
-        return array;
-    }
-
     @Override
     public int[] listQueues() {
         try (CallableStatement stmt = connection.prepareCall(LIST_QUEUES)) {
@@ -247,15 +265,11 @@ public class MiddlewareMessagingProtocolImpl extends MessagingProtocol {
                     queues.add(rs.getInt(1));
                 }
 
-                return makeIntegerListToPrimitiveIntArray(queues);
+                return Helper.makeIntegerListToPrimitiveIntArray(queues);
             }
         } catch (SQLException e) {
             throw new MessageProtocolException("failed to list queues", e);
         }
     }
 
-    @Override
-    public void sayGoodbye() {
-
-    }
 }

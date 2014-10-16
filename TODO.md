@@ -80,3 +80,14 @@ Tuesday(14/10)
 5) verify all classes have equals & hashCode implemented
 6) Always have an else ... ALWAyS!!
 7) messages need to contain SUCCESS, ERROR response for all of them
+
+Wednesday(15/10)
+----------------
+1) Console Manager, refresh buttons not on the correct position
+
+Thursday(16/10)
+---------------
+1) Make sure the client graacefully terminates if he never gets a response
+2) Implement equals & hashCode in all Request and responses
+3) extra constraint, trying to receive a message from a user that doesn't exist
+4) should we verify the id when asked for a receive message or so is in a valid range?

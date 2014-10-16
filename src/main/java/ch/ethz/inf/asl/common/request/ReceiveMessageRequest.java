@@ -3,9 +3,13 @@ package ch.ethz.inf.asl.common.request;
 import ch.ethz.inf.asl.common.Message;
 import ch.ethz.inf.asl.common.MessagingProtocol;
 import ch.ethz.inf.asl.common.response.ReceiveMessageResponse;
+import ch.ethz.inf.asl.common.response.Response;
+import ch.ethz.inf.asl.exceptions.MessageProtocolException;
 import ch.ethz.inf.asl.utils.Optional;
 
-public class ReceiveMessageRequest extends Request {
+import static ch.ethz.inf.asl.utils.Verifier.notNull;
+
+public class ReceiveMessageRequest extends Request<ReceiveMessageResponse> {
 
     private Integer senderId;
     private int queueId;
@@ -19,33 +23,44 @@ public class ReceiveMessageRequest extends Request {
     }
 
     public ReceiveMessageRequest(int requestorId, int senderId, int queueId, boolean retrieveByArrivalTime) {
-        super(requestorId); // FIXME duplicate code in the constructors
-        this.senderId = new Integer(senderId);
-        this.queueId = queueId;
-        this.retrieveByArrivalTime = retrieveByArrivalTime;
+        this(requestorId, queueId, retrieveByArrivalTime);
+        this.senderId = senderId;
+    }
+
+    private boolean receiveMessageFromSender() {
+        return senderId != null;
     }
 
     @Override
     public ReceiveMessageResponse execute(MessagingProtocol protocol) {
+        notNull(protocol, "Given protocol cannot be null!");
 
-        // FIXME .. I don't like if-else
-        Optional<Message> message;
-        if (senderId == null) {
-            message = protocol.receiveMessage(queueId, retrieveByArrivalTime);
+        try {
+            Optional<Message> message;
+            if (receiveMessageFromSender()) {
+                message = protocol.receiveMessage(senderId, queueId, retrieveByArrivalTime);
+            }
+            else {
+                message = protocol.receiveMessage(queueId, retrieveByArrivalTime);
+            }
+
+            // check if there was a message in the received optional
+            if (message.isPresent()) {
+                return new ReceiveMessageResponse(message.get());
+            }
+            else {
+                return new ReceiveMessageResponse();
+            }
         }
-        else {
-            message = protocol.receiveMessage(senderId, queueId, retrieveByArrivalTime);
+        catch (MessageProtocolException mpe) {
+            return Response.createFailedResponse(mpe.getMessage(), ReceiveMessageResponse.class);
         }
-        return new ReceiveMessageResponse(message);
     }
 
     @Override
     public String toString() {
-        if (senderId == null) {
-            return "(RECEIVE_MESSAGE: " + queueId + ", " + retrieveByArrivalTime + ")";
-        }
-        else {
-            return "(RECEIVE_MESSAGE: " + senderId + ", " + queueId + ", " + retrieveByArrivalTime + ")";
-        }
+        return super.toString()
+                + String.format("(RECEIVE_MESSAGE: [senderId: %s], [queueId:%d], [retrieveByArrivalTime: %b])",
+                    senderId, queueId, retrieveByArrivalTime);
     }
 }

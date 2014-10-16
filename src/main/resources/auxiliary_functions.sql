@@ -48,10 +48,9 @@ $$ LANGUAGE plpgsql;
 CREATE FUNCTION clear_database() RETURNS void AS $$
 BEGIN
   DROP TABLE client, queue, message;
-  /* FIXME are indexes closes? */
+  /* FIXME are indexed removed? */
 END
 $$ LANGUAGE plpgsql;
-
 
 -- create a client and return the id of the newly created client
 CREATE FUNCTION create_client(p_name varchar(20))

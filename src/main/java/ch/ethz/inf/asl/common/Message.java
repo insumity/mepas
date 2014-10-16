@@ -7,8 +7,8 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 
 import static ch.ethz.inf.asl.common.MessageConstants.MAXIMUM_MESSAGE_LENGTH;
-import static ch.ethz.inf.asl.utils.Helper.notNull;
-import static ch.ethz.inf.asl.utils.Helper.verifyTrue;
+import static ch.ethz.inf.asl.utils.Verifier.notNull;
+import static ch.ethz.inf.asl.utils.Verifier.verifyTrue;
 
 /**
  * Represents a message that is received from the queueing system ... TODO

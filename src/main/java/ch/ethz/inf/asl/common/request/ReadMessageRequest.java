@@ -1,9 +1,16 @@
 package ch.ethz.inf.asl.common.request;
 
+import ch.ethz.inf.asl.common.Message;
 import ch.ethz.inf.asl.common.MessagingProtocol;
 import ch.ethz.inf.asl.common.response.ReadMessageResponse;
+import ch.ethz.inf.asl.common.response.ReceiveMessageResponse;
+import ch.ethz.inf.asl.common.response.Response;
+import ch.ethz.inf.asl.exceptions.MessageProtocolException;
+import ch.ethz.inf.asl.utils.Optional;
 
-public class ReadMessageRequest<ReadMeessageResponse> extends Request {
+import static ch.ethz.inf.asl.utils.Verifier.notNull;
+
+public class ReadMessageRequest extends Request<ReadMessageResponse> {
 
     private int queueId;
     private boolean retrieveByArrivalTime;
@@ -16,12 +23,27 @@ public class ReadMessageRequest<ReadMeessageResponse> extends Request {
 
     @Override
     public ReadMessageResponse execute(MessagingProtocol protocol) {
-        return new ReadMessageResponse(protocol.readMessage(queueId, retrieveByArrivalTime));
+        notNull(protocol, "Given protocol cannot be null!");
+
+        try {
+            Optional<Message> message = protocol.readMessage(queueId, retrieveByArrivalTime);
+
+            // check if there was a message in the received optional
+            if (message.isPresent()) {
+                return new ReadMessageResponse(message.get());
+            }
+            else {
+                return new ReadMessageResponse();
+            }
+        } catch (MessageProtocolException mpe) {
+            return Response.createFailedResponse(mpe.getMessage(), ReadMessageResponse.class);
+        }
     }
 
     @Override
     public String toString() {
-        return "(READ_MESSAGE: " + queueId + ", " + retrieveByArrivalTime + ")";
+        return super.toString() + String.format("(READ_MESSAGE: [queueId: %d],  [retrieveByArrivalTime: %b])",
+                queueId, retrieveByArrivalTime);
     }
 
 }

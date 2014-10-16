@@ -165,3 +165,24 @@ Changed the constraint having only 200, 2000 characters to <= 2000. This made
 my life easier ... and is what the xercise meant
 
 Talk about try() and automatic close in Java 7. Always done it
+
+Wednesday(15/10/2014)
+---------------------
+Verification errors while debugging .. forgotton notNull
+Found the InstantiationException in the newInstance() thing. B/ecause I had
+requests with not a nullable Constructor. (This was found while mocking 
+to get the messages with failed response).
+
+Thusrday(16/10/2014)
+--------------------
+While writing the endtoend test I realized I was immediately closing
+the connection to the clent from the middlware when the client was saying goodbye
+so the user was waiting forever for a response from the middleware. I though
+it was the middleware that wasn't finishing in the test so I Started making
+all the thread daemon threads to see what will happen.
+Found bugs in equals methods ...   
+
+Sta tests sinithos aplos calo ta statements etsi ...  (den kalo ta callable
+statements)
+
+

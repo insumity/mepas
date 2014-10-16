@@ -10,23 +10,32 @@ import ch.ethz.inf.asl.utils.Helper;
 
 import java.io.BufferedInputStream;
 import java.io.DataOutputStream;
-import java.io.EOFException;
 import java.io.IOException;
-import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
-import static ch.ethz.inf.asl.utils.Helper.notNull;
+import static ch.ethz.inf.asl.utils.Verifier.notNull;
 
-public class MiddlewareThread implements Runnable {
+public class MiddlewareRunnable implements Runnable {
 
     private BlockingQueue<InternalSocket> sockets;
     private ConnectionPool connectionPool;
     private MyLogger logger;
 
-    public MiddlewareThread(MyLogger logger, BlockingQueue<InternalSocket> sockets, ConnectionPool connectionPool) {
+    private volatile boolean finished = false;
+
+    // to be used for end-to-end testing
+    private List<Request> receivedRequests;
+    private List<Response> sentResponses;
+    private boolean saveEverything = false;
+
+
+    public MiddlewareRunnable(MyLogger logger, BlockingQueue<InternalSocket> sockets, ConnectionPool connectionPool,
+                              boolean saveEverything) {
         notNull(logger, "Given logger cannot be null");
         notNull(sockets, "Given sockets cannot be null");
         notNull(connectionPool, "Given connectionPool cannot be null");
@@ -34,13 +43,29 @@ public class MiddlewareThread implements Runnable {
         this.sockets = sockets;
         this.connectionPool = connectionPool;
         this.logger = logger;
+
+        this.receivedRequests = new LinkedList<>();
+        this.sentResponses = new LinkedList<>();
+        this.saveEverything = saveEverything;
+    }
+
+    public List<Request> getReceivedRequests() {
+        return receivedRequests;
+    }
+
+    public List<Response> getSentResponses() {
+        return sentResponses;
+    }
+
+    public void stop() {
+        finished = true;
     }
 
 
     @Override
     public void run() {
 
-        while (true) {
+        while (!finished) {
 
             InternalSocket internalSocket = null;
 
@@ -67,22 +92,22 @@ public class MiddlewareThread implements Runnable {
                     internalSocket.setBytesRead(currentSize + bytesActuallyRead);
                     if (internalSocket.readEverything()) {
 
+                        byte[] fourBytesLength = ByteBuffer.allocate(4).putInt(internalSocket.getLength()).array();
                         byte[] objectData = internalSocket.getObjectData();
+                        byte[] concatenatedData = Helper.concatenate(fourBytesLength, objectData);
 
-                        Request request = (Request) Helper.deserialize(objectData);
+                        Request request = (Request) Helper.deserialize(concatenatedData);
 
-                        Response response = null;
+                        if (saveEverything) {
+                            receivedRequests.add(request);
+                        }
+
+                        Response response;
                         try (Connection connection = connectionPool.getConnection()) {
                             MessagingProtocol protocol =
                                     new MiddlewareMessagingProtocolImpl(logger, request.getRequestorId(), connection);
 
                             System.out.println("Received from client: " + request.getRequestorId() + " the request: " + request);
-
-                            if (request instanceof GoodbyeRequest) {
-                                System.err.println("I removed the client!");
-                                sockets.remove(internalSocket);
-                                    continue;
-                            }
 
                             response = request.execute(protocol);
                         }
@@ -91,8 +116,19 @@ public class MiddlewareThread implements Runnable {
 
                         try {
                             oos.write(Helper.serialize(response));
+
+                            if (saveEverything) {
+                                sentResponses.add(response);
+                            }
                         }
                         catch (IOException ioe) {
+                            sockets.remove(internalSocket);
+                            continue;
+                        }
+
+                        if (request instanceof GoodbyeRequest) {
+                            System.err.println("I removed the client!");
+
                             sockets.remove(internalSocket);
                             continue;
                         }
@@ -117,7 +153,7 @@ public class MiddlewareThread implements Runnable {
                     else {
                         // YOU cannot know when your peer closed the socket without blocking
 //                        int x = ois.read(new byte[1]);
-                        System.out.println("I was here: " + bytesCanReadWithoutBlocking + ", ");
+//                        System.out.println("I was here: " + bytesCanReadWithoutBlocking + ", ");
                     }
                 }
 

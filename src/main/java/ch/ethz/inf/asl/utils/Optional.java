@@ -1,18 +1,13 @@
 package ch.ethz.inf.asl.utils;
 
-import java.io.Serializable;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
-// Optional shouldn't be serializble TODO FIXME
-public class Optional<T> implements Serializable {
+public class Optional<T> {
 
     private T value;
 
     private Optional(T value) {
-        if (value == null) {
-            throw new NullPointerException("value cannot be null");
-        }
         this.value = value;
     }
 
@@ -45,7 +40,7 @@ public class Optional<T> implements Serializable {
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof Optional) {
-            Optional<T> other = (Optional<T>) obj;
+            Optional other = (Optional) obj;
             return Objects.equals(this.value, other.value);
         }
         return false;

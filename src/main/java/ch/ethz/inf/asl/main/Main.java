@@ -17,7 +17,7 @@ public class Main {
         }
         else if (type.equals("client")) {
             String[] newArgs = Arrays.copyOfRange(args, 1, args.length);
-            new Client(newArgs);
+            new Client(newArgs, false);
         }
         else if (type.equals("manager")) {
             new Manager();

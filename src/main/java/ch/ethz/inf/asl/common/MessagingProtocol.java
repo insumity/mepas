@@ -4,16 +4,12 @@ import ch.ethz.inf.asl.utils.Optional;
 
 public abstract class MessagingProtocol {
 
-    // FIXME fix java docs
-    private int requestorId;
+    /* why this messages is need is explained in the "OnTheBlockingSolution"
+    * say hello to the middleware and get assigned your uniqie client id for later */
+    public abstract int sayHello(String clientName);
 
-    /**
-     *
-     * @param requestorId the id of the user issuing the request
-     */
-    public void MessagingProtocol(int requestorId) {
-        this.requestorId = requestorId;
-    }
+    /* why this messages is need is explained in the "OnTheBlockingSolution" */
+    public abstract void sayGoodbye();
 
     /**
      * Creates a queue in the system.
@@ -65,9 +61,4 @@ public abstract class MessagingProtocol {
      * the request exists.
      */
     public abstract int[] listQueues();
-
-
-    /* why this messages is need is explained in the "OnTheBlockingSolution" */
-    public abstract void sayGoodbye();
-
 }
