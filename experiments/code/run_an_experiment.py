@@ -36,7 +36,7 @@ runningTimeInSeconds = 120
 # e.g. if (a, b) is in mapping it means that client[a] returned by
 # getClientsIPs() is going to connect to middleware[b] where b is
 # returned by middlewareIPs
-mappings = [(0, 0)]
+mappings = [(0, 0), (1, 0)]
 
 databaseIP = getDatabaseIP()
 clientIPs = getClientsIPs()
@@ -56,36 +56,35 @@ for numberOfClients in possibleValues:
     numberOfQueues = 1
 
     # # FIXME CLEAN ... postgres error messages!
-    #
-    # auxiliaryFunctionsFilePath = "../src/main/resources/auxiliary_functions.sql"
-    # basicFunctionsFilePath = "../src/main/resources/read_committed_basic_functions.sql"
-    #
-    # print ">>> Going to clean and initialize database"
-    # database = Database(databaseHost, databasePortNumber, databaseName, databaseUsername, databasePassword)
-    # database.recreateDatabase()
-    # database.initializeDatabase(numberOfClients, numberOfQueues,
-    #                             [auxiliaryFunctionsFilePath, basicFunctionsFilePath])
-    #
-    # print ">>> Database was cleaned and initialized!"
+    auxiliaryFunctionsFilePath = "../src/main/resources/auxiliary_functions.sql"
+    basicFunctionsFilePath = "../src/main/resources/read_committed_basic_functions.sql"
+
+    print ">>> Going to clean and initialize database"
+    database = Database(databaseHost, databasePortNumber, databaseName, databaseUsername, databasePassword)
+    database.recreateDatabase()
+    database.initializeDatabase(numberOfClients, numberOfQueues,
+                                [auxiliaryFunctionsFilePath, basicFunctionsFilePath])
+
+    print ">>> Database was cleaned and initialized!"
 
 
     # clean the directory with ant
-    # call(["ant", "-buildfile", "..", "clean"])
-    #
-    # # create the jar
-    # call(["ant", "-buildfile", "..", "jar"])
-    # if isfile("../mepas.jar"):
-    #     print ">> executable JAR was created"
+    call(["ant", "-buildfile", "..", "clean"])
+
+    # create the jar
+    call(["ant", "-buildfile", "..", "jar"])
+    if isfile("../mepas.jar"):
+        print ">> executable JAR was created"
 
 
-    # # transfer the jar to the clients & middlewares
-    # print ">>> transferring executable JAR to clients & middlewares"
-    # for client in clientIPs:
-    #     scp_to(jarFile, username, client[0])
-    #
-    # for middleware in middlewareIPs:
-    #     scp_to(jarFile, username, middleware[0])
-    # print ">>> executable JAR was transferred to the clients & middlewares"
+    # transfer the jar to the clients & middlewares
+    print ">>> transferring executable JAR to clients & middlewares"
+    for client in clientIPs:
+        scp_to(jarFile, username, client[0])
+
+    for middleware in middlewareIPs:
+        scp_to(jarFile, username, middleware[0])
+    print ">>> executable JAR was transferred to the clients & middlewares"
 
 
     numberOfThreads = 10
