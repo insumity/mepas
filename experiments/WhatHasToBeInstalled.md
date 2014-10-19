@@ -37,9 +37,17 @@ so you can issue a psql command without aving to provide a password
 (file should have stric permission, issue  chmod 0600 ~/.pgpass)
 otherwise the file is ignored.
 
+For chanianging the password of a postgreSQL user you can do:
+alter user ubuntu with password 'mepas$1$2$3$';
+
+
 In local computer boto has to be installed for the pyton script
 as well as psycopg2.
 
+
+You have to make UBUNTU the super user with
+alter user ubuntu with superuser;
+so he can drop and create a database when he wants
 
 PLUS
 ----

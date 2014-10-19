@@ -41,8 +41,8 @@ public class InitializeDatabase {
     }
 
     /* drops the current database and creates one with the same name to be used by the middleware */
-    public static void initialize(String host, int portNumber, String databaseName, String username, String password,
-                                  int isolationLevel, String[] filePathsToBeExecutedForThisDatabase)
+    public static void initializeDatabase(String host, int portNumber, String databaseName, String username, String password,
+                                          int isolationLevel, String[] filePathsToBeExecutedForThisDatabase)
             throws ClassNotFoundException, SQLException, IOException, InterruptedException {
 
         final String INITIALIZE_DATABASE = "{ call initialize_database() }";
@@ -97,5 +97,39 @@ public class InitializeDatabase {
             loadSQLFile(username, databaseName, filePath);
         }
     }
+
+
+    /* drops the current database and creates one with the same name to be used by the middleware */
+    public static void initializeDatabaseWithClientsAndQueues(String host, int portNumber, String databaseName, String username,
+                                                              String password, int isolationLevel, String[] filePathsToBeExecutedForThisDatabase,
+                                                              int numberOfClients, int numberOfQueues)
+            throws ClassNotFoundException, SQLException, IOException, InterruptedException {
+
+        initializeDatabase(host, portNumber, databaseName, username, password, isolationLevel, filePathsToBeExecutedForThisDatabase);
+
+        final String CREATE_CLIENT = "{ ? = call create_client(?) }";
+        final String CREATE_QUEUE = "{ ? = call create_queue(?) }";
+
+        for (int i = 1; i <= numberOfClients; ++i) {
+            try (Connection connection = getConnection(host, portNumber, databaseName, username, password);
+                 CallableStatement stmt = connection.prepareCall(CREATE_CLIENT)) {
+
+                stmt.registerOutParameter(1, Types.INTEGER);
+                stmt.setString(2, String.format("client%03d", i));
+                stmt.execute();
+            }
+        }
+
+        for (int i = 1; i <= numberOfQueues; ++i) {
+            try (Connection connection = getConnection(host, portNumber, databaseName, username, password);
+                 CallableStatement stmt = connection.prepareCall(CREATE_QUEUE)) {
+
+                stmt.registerOutParameter(1, Types.INTEGER);
+                stmt.setString(2, String.format("queue%03d", i));
+                stmt.execute();
+            }
+        }
+    }
+
 
 }

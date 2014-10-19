@@ -1,4 +1,6 @@
 
+
+
 While doing db integration testing
 
 1) Inside an SQL function I had:
@@ -29,3 +31,16 @@ and receiverId can be null
 5) Arrays.asList(POSSIBLE_MESSAGE_LENGTHS) ... where array is of primitive type will return a list containing only
 one element the array. REad more here (in the comments section): http://stackoverflow.com/questions/1128723/in-java-how-can-i-test-if-an-array-contains-a-certain-value
 yerguds: indeed, this does not work for primitives. In java primitive types can't be generic. asList is declared as <T> List<T> asList(T...). When you pass an int[] into it, the compiler infers T=int[] because it can't infer T=int, because primitives can't be generic.
+
+6) found with end-to-end .. had createQueue instead of sayHello in sayHello request. Ok ... about deleting the client
+when he says Goodbye I had this problem. When the client was about to be deleted there were perhaps stil lmessages from him
+in the system ... and therefore we got a foreign key constraint violation. I could use CASCADE to delete the messages
+but I didn't belive this is correct.
+
+7) About making the users register by themselves .. I had quite some problems ... e.g when creating the clients
+other clients could already start sending messages to their peers but they don't exist yet. So we get failed messages
+although this should never happen, or at least if it never happened it would be easier to test an experiment was correct.
+Also, if the clients create the queues by themselves it could be that other clients already start sending messages
+to the queue. If many clients try to create a qeueu, with the current API we could end up with multiple queues.
+For these reasons and for th ereason afforementioned in 6) I chose not to let the clients to regiester when the
+get in the middleware.

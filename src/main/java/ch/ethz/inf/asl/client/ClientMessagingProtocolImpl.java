@@ -20,10 +20,8 @@ import static ch.ethz.inf.asl.utils.Verifier.notNull;
 
 public class ClientMessagingProtocolImpl extends MessagingProtocol {
 
-    private boolean clientIsInTheSystem = false;
     private int requestorId;
 
-    private Socket socket;
     private DataInputStream dataInputStream;
     private DataOutputStream dataOutputStream;
 
@@ -40,9 +38,10 @@ public class ClientMessagingProtocolImpl extends MessagingProtocol {
         return receivedResponses;
     }
 
-    public ClientMessagingProtocolImpl(Socket socket, boolean saveEverything) throws IOException {
+    public ClientMessagingProtocolImpl(Socket socket, int requestorId, boolean saveEverything) throws IOException {
         notNull(socket, "Given socket cannot be null!");
-        this.socket = socket;
+
+        this.requestorId = requestorId;
 
         try {
             dataInputStream = new DataInputStream(socket.getInputStream());
@@ -58,10 +57,6 @@ public class ClientMessagingProtocolImpl extends MessagingProtocol {
     }
 
     private void sendRequest(Request request) {
-        if (!(request instanceof SayHelloRequest) && !clientIsInTheSystem) {
-            // TODO have a nicer exeption
-            throw new IllegalArgumentException("The client is not in the system yet! Try saying hello first!");
-        }
         try {
             byte[] data = Helper.serialize(request);
 
@@ -85,8 +80,8 @@ public class ClientMessagingProtocolImpl extends MessagingProtocol {
             // hacky fix
             byte[] lengthToByteArray = ByteBuffer.allocate(4).putInt(length).array();
             dataInputStream.read(data);
-            byte[] concatented = Helper.concatenate(lengthToByteArray, data);
-            Response response = (Response) Helper.deserialize(concatented);
+            byte[] concatenated = Helper.concatenate(lengthToByteArray, data);
+            Response response = (Response) Helper.deserialize(concatenated);
 
             if (saveEverything) {
                 receivedResponses.add(response);
@@ -96,6 +91,12 @@ public class ClientMessagingProtocolImpl extends MessagingProtocol {
                 throw new MessageProtocolException("Couldn't receive response, probably because a socket" +
                         "got closed!");
             }
+
+            // INFORM Client there was a problem
+            if (!response.isSuccessful()) {
+                throw new MessageProtocolException(response.getFailedMessage());
+            }
+
             return (R) response;
         } catch (IOException e) {
             throw new MessageProtocolException("Response couldn't be received", e);
@@ -104,39 +105,31 @@ public class ClientMessagingProtocolImpl extends MessagingProtocol {
         }
     }
 
-    private void setRequestorId(int requestorId) {
-        this.requestorId = requestorId;
-        this.clientIsInTheSystem = true;
-    }
-
     @Override
     public int sayHello(String clientName) {
-        Request request = new SayHelloRequest(clientName);
-        sendRequest(request);
-        SayHelloResponse response = receiveResponse();
-        int requestorId = response.getClientId();
-        setRequestorId(requestorId);
-        return requestorId;
+//
+        return -1;
     }
 
     @Override
     public void sayGoodbye() {
-        Request request = new GoodbyeRequest(requestorId);
-        sendRequest(request);
-        receiveResponse();
+//        Request request = new GoodbyeRequest(requestorId);
+//        sendRequest(request);
+//        receiveResponse();
     }
 
     @Override
     public int createQueue(String queueName) {
-        Request request = new CreateQueueRequest(requestorId, queueName);
-        sendRequest(request);
-        CreateQueueResponse response = receiveResponse();
-        return response.getQueueId();
+//        Request request = new CreateQueueRequest(requestorId, queueName);
+//        sendRequest(request);
+//        CreateQueueResponse response = receiveResponse();
+//        return response.getQueueId();
+        return 4;
     }
 
     @Override
     public void deleteQueue(int queueId) {
-
+// FIXME and above
     }
 
     @Override
@@ -144,58 +137,55 @@ public class ClientMessagingProtocolImpl extends MessagingProtocol {
         // receiverId == 0 inside request .. this is shit
         Request request = new SendMessageRequest(requestorId, queueId, content);
         sendRequest(request);
-        Response response = receiveResponse();
-        // what if there is an error in the response?
-        // how do I know if the message was successfully sent? // TODO fixme
-        return;
+        receiveResponse();
     }
 
     @Override
     public void sendMessage(int receiverId, int queueId, String content) {
         Request request = new SendMessageRequest(requestorId, receiverId, queueId, content);
         sendRequest(request);
-        Response response = receiveResponse();
-        return;
+        receiveResponse();
+    }
+
+    private Optional<Message> receiveMessageCommon(Integer senderId, int queueId, boolean retrieveByArrivalTime) {
+        Request request;
+        if (senderId == null) {
+            request = new ReceiveMessageRequest(requestorId, queueId, retrieveByArrivalTime);
+        }
+        else {
+            request = new ReceiveMessageRequest(requestorId, senderId, queueId, retrieveByArrivalTime);
+        }
+
+        sendRequest(request);
+        ReceiveMessageResponse response = receiveResponse();
+        if (response.getMessage() == null) {
+            return Optional.empty();
+        }
+        else {
+            return Optional.of(response.getMessage());
+        }
     }
 
     @Override
     public Optional<Message> receiveMessage(int queueId, boolean retrieveByArrivalTime) {
-        Request request = new ReceiveMessageRequest(requestorId, queueId, retrieveByArrivalTime);
-        sendRequest(request);
-        ReceiveMessageResponse response = receiveResponse();
-        if (response.getMessage() == null) {
-            return Optional.empty();
-        }
-        else {
-            return Optional.of(response.getMessage()); // FIXME, it;s all because optonal is not serializable
-        }
+        return receiveMessageCommon(null, queueId, retrieveByArrivalTime);
     }
 
     @Override
     public Optional<Message> receiveMessage(int senderId, int queueId, boolean retrieveByArrivalTime) {
-        Request request = new ReceiveMessageRequest(requestorId, senderId, queueId, retrieveByArrivalTime);
-        sendRequest(request);
-        ReceiveMessageResponse response = receiveResponse();
-        if (response.getMessage() == null) {
-            return Optional.empty();
-        }
-        else {
-            return Optional.of(response.getMessage()); // FIXME, it;s all because optonal is not serializable
-        }
+        return receiveMessageCommon(senderId, queueId, retrieveByArrivalTime);
     }
 
     @Override
     public Optional<Message> readMessage(int queueId, boolean retrieveByArrivalTime) {
         Request request = new ReadMessageRequest(requestorId, queueId, retrieveByArrivalTime);
         sendRequest(request);
-
-        // TODO fixeme .. doesn't use ReadMessageResponse
-        ReceiveMessageResponse response = receiveResponse();
+        ReadMessageResponse response = receiveResponse();
         if (response.getMessage() == null) {
             return Optional.empty();
         }
         else {
-            return Optional.of(response.getMessage()); // FIXME, it;s all because optonal is not serializable
+            return Optional.of(response.getMessage());
         }
     }
 

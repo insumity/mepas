@@ -17,37 +17,38 @@ import static ch.ethz.inf.asl.utils.Verifier.hasText;
 
 public class ClientRunnable implements Runnable {
 
-    private int userId;
+//    private int userId;
     private String hostName;
     private int portNumber;
     private int totalClients;
     private MyLogger logger;
     private int runningTimeInSeconds;
 
+    private int userId;
+
     private ClientMessagingProtocolImpl protocol;
 
     private boolean saveEverything;
 
-    public List<Request> getSentRequets() {
+    public List<Request> getSentRequests() {
         return protocol.getSentRequests();
     }
 
-    public List<Response> getReceivedResponse() {
+    public List<Response> getReceivedResponses() {
         return protocol.getReceivedResponses();
     }
 
-    public ClientRunnable(int runningTimeInSeconds, int userId, String hostName, int portNumber, int totalClients,
+    public ClientRunnable(int userId, int runningTimeInSeconds, String hostName, int portNumber, int totalClients,
                           boolean saveEverything) throws IOException {
         hasText(hostName , "hostName cannot be empty or null");
 
         this.runningTimeInSeconds = runningTimeInSeconds;
-        System.out.println(runningTimeInSeconds + "seconds");
         this.userId = userId;
         this.hostName = hostName;
         this.portNumber = portNumber;
         this.totalClients = totalClients;
 
-        String loggersName = String.format("client%03d", userId);
+        String loggersName = String.format("logs/client%03d.csv", userId);
         logger = new MyLogger(loggersName);
 
         this.saveEverything = saveEverything;
@@ -66,13 +67,10 @@ public class ClientRunnable implements Runnable {
 
         protocol = null;
         try {
-            protocol = new ClientMessagingProtocolImpl(kkSocket, saveEverything);
+            protocol = new ClientMessagingProtocolImpl(kkSocket, userId, saveEverything);
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        int myId = protocol.sayHello("my name");
-        System.err.println("This is my id");
 
         boolean send = true;
         long startingTime = System.currentTimeMillis();
@@ -82,14 +80,8 @@ public class ClientRunnable implements Runnable {
             long elapseTimeInSeconds = (currentTime - startingTime) / 1000;
             if (elapseTimeInSeconds >= runningTimeInSeconds) {
                 if (kkSocket != null) {
-//                    try {
-                        System.out.println("Client socket got closed!");
-                        protocol.sayGoodbye();
-//                        throw new IllegalAccessError("shit");
-//                        kkSocket.close();
-//                    } catch (IOException e) {
-//                        e.printStackTrace();
-//                    }
+                    System.out.println("Client socket got closed!");
+                    protocol.sayGoodbye();
                 }
 
                 break;
@@ -108,7 +100,6 @@ public class ClientRunnable implements Runnable {
 
                     send = !send;
                 } else {
-
                     long startTime = System.currentTimeMillis();
                     Optional<Message> message = protocol.receiveMessage(1, true);
                     logger.log(System.currentTimeMillis() - startTime, "RECEIVE_MESSAGE\t" + message.isPresent());
@@ -119,6 +110,8 @@ public class ClientRunnable implements Runnable {
                 break;
             }
         }
+
+        System.out.println("CLOSED");
 
         logger.close();
     }

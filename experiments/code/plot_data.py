@@ -1,7 +1,6 @@
 
 #TODO inside the string
 from os import system
-from read_experimental_results import get_data
 
 plot_code_template = """
 set terminal pngcairo size 1000,800 enhanced font 'Verdana,12'

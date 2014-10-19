@@ -1,27 +1,45 @@
-import java.lang.reflect.InvocationTargetException;
-class Foo {
-
-    public Foo(int x) {
-        System.err.println(x);
-    }
-}
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Properties;
 
 public class ToBeRemoved {
 
 
     public static void main(String[] args) {
+        Properties prop = new Properties();
+        OutputStream output = null;
+
         try {
-            Foo.class.getDeclaredConstructor(int.class).newInstance(134);
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
+
+//            output = new FileOutputStream("src/main/resources/middleware.properties");
+            FileInputStream input = new FileInputStream("src/main/resources/middleware.properties");
+
+            prop.load(input);
+
+            System.out.println(prop.getProperty("database"));
+            System.out.println(prop.getProperty("dbUser"));
+            System.out.println(prop.getProperty("dbpassword"));
+
+//            // set the properties value
+//            prop.setProperty("database", "localhost");
+//            prop.setProperty("dbuser", "mkyong");
+//            prop.setProperty("dbpassword", "password");
+//
+//            // save properties to project root folder
+//            prop.store(output, null);
+
+        } catch (IOException io) {
+            io.printStackTrace();
+        } finally {
+            if (output != null) {
+                try {
+                    output.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
         }
-        System.out.println(String.format("client%03d", 891));
-        System.out.println(String.format("foo%s", null));
     }
 }

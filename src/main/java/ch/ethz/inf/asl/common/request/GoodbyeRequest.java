@@ -17,7 +17,7 @@ public class GoodbyeRequest extends Request<GoodbyeResponse> {
         notNull(protocol, "Given protocol cannot be null!");
 
         try {
-            protocol.sayGoodbye();
+//            protocol.sayGoodbye();
             return new GoodbyeResponse();
         } catch (MessageProtocolException mpe) {
             return Response.createFailedResponse(mpe.getMessage(), GoodbyeResponse.class);

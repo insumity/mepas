@@ -1,8 +1,8 @@
 #!/usr/bin/python
 
-# retrieves the machines from the amazon EC2
-import boto.ec2
+# retrieves the instances public and private IPs from the amazon EC2
 import boto
+import boto.ec2
 
 access_key = "AKIAIV45ZYABLMV25HBQ";
 secret_access = "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";
@@ -29,18 +29,11 @@ for r in reservations:
         elif name.find("middleware") != -1:
             middlewares.append((inst.public_dns_name, inst.private_ip_address))
 
-def get_databases():
+def getDatabaseIP():
     return databases
 
-def get_clients():
+def getClientsIPs():
     return clients
 
-def get_middlewares():
+def getMiddlewaresIPs():
     return middlewares
-
-
-
-# for d in middlewares:
-#     print "serverMachine[" + str(i) + "]=\"" + str(d[0]) + "\""
-#     i += 1
-

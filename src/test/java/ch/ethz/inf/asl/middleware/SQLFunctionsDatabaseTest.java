@@ -80,8 +80,8 @@ public class SQLFunctionsDatabaseTest {
     @BeforeMethod(groups = DATABASE)
     public void initialize() throws ClassNotFoundException, SQLException, IOException, InterruptedException {
         String populateDatabaseCode = "src/test/resources/populate_database.sql";
-        InitializeDatabase.initialize(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD,
-                Connection.TRANSACTION_READ_COMMITTED,new String[] {populateDatabaseCode});
+        InitializeDatabase.initializeDatabase(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD,
+                Connection.TRANSACTION_READ_COMMITTED, new String[]{populateDatabaseCode});
     }
 
     @Test(groups = DATABASE)

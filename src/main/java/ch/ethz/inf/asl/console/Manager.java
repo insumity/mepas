@@ -231,4 +231,8 @@ public class Manager extends JFrame {
 
         return dbInformationPanel;
     }
+
+    public static void main(String[] args) {
+        new Manager();
+    }
 }

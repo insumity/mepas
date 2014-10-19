@@ -5,11 +5,16 @@ import java.util.logging.*;
 
 
 public class MyLogger {
+    private Logger logger;
 
-    public static void main(String[] args) throws IOException {
-        new MyLogger("yo").log(2343214, "DSafadsf");
-        new MyLogger("yo").log(2343214, "DSafadsf");
-        new MyLogger("yo").log(2343214, "DSafadsf");
+    public MyLogger(String fileName) throws IOException {
+        logger = Logger.getLogger(fileName);
+        logger.setUseParentHandlers(false);
+
+        FileHandler handler = new FileHandler(fileName, true);
+        handler.setLevel(Level.INFO);
+        handler.setFormatter(new MyFormatter());
+        logger.addHandler(handler);
     }
 
     public void close() {
@@ -26,17 +31,6 @@ public class MyLogger {
         }
     }
 
-    private Logger logger;
-
-    public MyLogger(String name) throws IOException {
-        logger = Logger.getLogger(name);
-        logger.setUseParentHandlers(false);
-
-        FileHandler handler = new FileHandler("logs/" + name + ".log", true);
-        handler.setLevel(Level.INFO);
-        handler.setFormatter(new MyFormatter());
-        logger.addHandler(handler);
-    }
 
     public void log(long time, String message) {
         logger.severe(String.format("%d\t%s", time, message));

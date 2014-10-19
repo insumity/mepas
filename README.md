@@ -185,4 +185,25 @@ Found bugs in equals methods ...
 Sta tests sinithos aplos calo ta statements etsi ...  (den kalo ta callable
 statements)
 
+Friday(17/10/2014)
+------------------
+There is a maximum connections in /usr/local/var/postgres/postgresql.conf
+that is 100, so it doesn't make sense to have a connection poool
+with a greater number
 
+Saturday(18/10/2014)
+--------------------
+Always have to add "PYTON_PATH /usr/local/lib/python2.7/site-packages" for
+python to find boto, etc. in IntelliJ 
+
+
+Do the following http://superuser.com/questions/331167/why-cant-i-ssh-copy-id-to-an-ec2-instance
+ssh-add privatekye file to login to the ec2 instances without having to do `ssh -i ~/... ` every time!!
+AWESOME!!
+
+
+Sunday(19/10/2014)
+------------------
+By changing the executable to read configuration files instead of the command line arguments I solved
+the `$` problem in the password and also I can chaange the configuration files without having to really
+change the deployment scripts!!

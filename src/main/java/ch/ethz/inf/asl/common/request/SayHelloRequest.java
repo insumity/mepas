@@ -22,8 +22,8 @@ public class SayHelloRequest extends Request<SayHelloResponse> {
         notNull(protocol, "Given protocol cannot be null!");
 
         try {
-            int clientId = protocol.createQueue(clientName);
-            return new SayHelloResponse(clientId);
+//            int clientId = protocol.sayHello(clientName);
+            return new SayHelloResponse(-1);
         } catch (MessageProtocolException mpe) {
             return Response.createFailedResponse(mpe.getMessage(), SayHelloResponse.class);
         }

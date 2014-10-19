@@ -29,9 +29,9 @@ public class MiddlewareRunnable implements Runnable {
     private volatile boolean finished = false;
 
     // to be used for end-to-end testing
+    private boolean saveEverything = false;
     private List<Request> receivedRequests;
     private List<Response> sentResponses;
-    private boolean saveEverything = false;
 
 
     public MiddlewareRunnable(MyLogger logger, BlockingQueue<InternalSocket> sockets, ConnectionPool connectionPool,
@@ -106,13 +106,8 @@ public class MiddlewareRunnable implements Runnable {
                         try (Connection connection = connectionPool.getConnection()) {
                             MessagingProtocol protocol =
                                     new MiddlewareMessagingProtocolImpl(logger, request.getRequestorId(), connection);
-
-                            System.out.println("Received from client: " + request.getRequestorId() + " the request: " + request);
-
                             response = request.execute(protocol);
                         }
-
-                        System.out.println("Got response: " + response + ", to be send to the client!");
 
                         try {
                             oos.write(Helper.serialize(response));
@@ -127,8 +122,6 @@ public class MiddlewareRunnable implements Runnable {
                         }
 
                         if (request instanceof GoodbyeRequest) {
-                            System.err.println("I removed the client!");
-
                             sockets.remove(internalSocket);
                             continue;
                         }

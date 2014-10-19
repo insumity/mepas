@@ -6,22 +6,22 @@ public abstract class MessagingProtocol {
 
     /* why this messages is need is explained in the "OnTheBlockingSolution"
     * say hello to the middleware and get assigned your uniqie client id for later */
-    public abstract int sayHello(String clientName);
+    protected abstract int sayHello(String clientName);
 
     /* why this messages is need is explained in the "OnTheBlockingSolution" */
-    public abstract void sayGoodbye();
+    protected abstract void sayGoodbye();
 
     /**
      * Creates a queue in the system.
      * @return the newly created id of the queue
      */
-    public abstract int createQueue(String queueName);
+    protected abstract int createQueue(String queueName);
 
     /**
      * Deletes the queue with the given id.
      * @param queueId the id of the queue to be deleted
      */
-    public abstract void deleteQueue(int queueId);
+    protected abstract void deleteQueue(int queueId);
 
     /**
      * Sends given message to the given queue.

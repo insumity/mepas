@@ -68,7 +68,7 @@ public class MiddlewareMessagingProtocolImpl extends MessagingProtocol {
             stmt.setInt(1, requestingUserId);
             stmt.execute();
         } catch (SQLException e) {
-            throw new MessageProtocolException("failed to delete client", e);
+            throw new MessageProtocolException("failed to delete client" + e.getMessage(), e);
         }
     }
 
@@ -132,7 +132,7 @@ public class MiddlewareMessagingProtocolImpl extends MessagingProtocol {
             logger.synchronizedLog(Thread.currentThread().getId(), "- after execute");
 
         } catch (SQLException e) {
-            throw new MessageProtocolException("failed to send message", e);
+            throw new MessageProtocolException("failed to send message" + e.getMessage() , e);
         }
     }
 

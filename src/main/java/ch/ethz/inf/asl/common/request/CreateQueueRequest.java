@@ -23,8 +23,8 @@ public class CreateQueueRequest extends Request<CreateQueueResponse> {
         notNull(protocol, "Given protocol cannot be null!");
 
         try {
-            int queueId = protocol.createQueue(queueName);
-            return new CreateQueueResponse(queueId);
+//            int queueId = protocol.createQueue(queueName); FIXME
+            return new CreateQueueResponse(-1);
         } catch (MessageProtocolException mpe) {
             return Response.createFailedResponse(mpe.getMessage(), CreateQueueResponse.class);
         }

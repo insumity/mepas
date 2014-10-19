@@ -5,17 +5,23 @@ import org.postgresql.ds.PGPoolingDataSource;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
-import static ch.ethz.inf.asl.utils.Verifier.hasText;
-import static ch.ethz.inf.asl.utils.Verifier.notNull;
-import static ch.ethz.inf.asl.utils.Verifier.verifyTrue;
+import static ch.ethz.inf.asl.utils.Verifier.*;
 
 // FIXME
 public class ConnectionPool {
+//
+//    class InternalConnection implements Connection {
+// TODO fixme
+//    }
 
+    private BlockingQueue<Connection> connections;
     private PGPoolingDataSource dataSource;
 
-    public ConnectionPool(String host, int portNumber, String username, String password, String databaseName, int initialConnections, int maximumConnections) {
+    public ConnectionPool(String dataSourceName, String host, int portNumber, String username, String password, String databaseName, int initialConnections, int maximumConnections) {
+        connections = new ArrayBlockingQueue<>(maximumConnections);
         hasText(host, "Given host cannot be empty or null!");
         verifyTrue(portNumber >= 0, "Given portNumber cannot be negative!");
         hasText(username, "Given username cannot be empty or null!");
@@ -30,7 +36,7 @@ public class ConnectionPool {
 
         // initialize connection pool (from: http://jdbc.postgresql.org/documentation/head/ds-ds.html)
         PGPoolingDataSource source = new PGPoolingDataSource();
-        source.setDataSourceName("connection pool");
+        source.setDataSourceName(dataSourceName);
         source.setServerName(host);
         source.setPortNumber(portNumber);
         source.setDatabaseName(databaseName);
@@ -50,6 +56,16 @@ public class ConnectionPool {
 
     // SHOULD PROBABLY BE SYNCHRONIZED
     public Connection getConnection() {
+
+//        return connections.take();
+//        try {
+//            Connection connection = DriverManager.getConnection(
+//                    "jdbc:postgresql://127.0.0.1:5432/testdb", "mkyong",
+//                    "123456");
+//            connections.put(connection);
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
         try {
             return dataSource.getConnection();
         } catch (SQLException e) {

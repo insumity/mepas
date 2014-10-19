@@ -62,7 +62,7 @@ public class SQLFunctionsConcurrentCallsDatabaseTest {
     public void testMessagesAreReceivedOnlyOnce(final int isolationLevel, final boolean fromSender)
             throws SQLException, ClassNotFoundException, InterruptedException, IOException {
 
-        InitializeDatabase.initialize(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD,
+        InitializeDatabase.initializeDatabase(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD,
                 Connection.TRANSACTION_READ_COMMITTED, new String[]{});
 
         // serialization failures return an SQL_STATE value of '40001'
