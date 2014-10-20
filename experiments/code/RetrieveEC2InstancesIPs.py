@@ -23,11 +23,11 @@ for r in reservations:
 
     if str(inst.state) == "running":
         if name.find("database") != -1:
-            databases.append((inst.public_dns_name, inst.private_ip_address))
+            databases.append((inst.ip_address, inst.private_ip_address))
         elif name.find("client") != -1:
-            clients.append((inst.public_dns_name, inst.private_ip_address))
+            clients.append((inst.ip_address, inst.private_ip_address))
         elif name.find("middleware") != -1:
-            middlewares.append((inst.public_dns_name, inst.private_ip_address))
+            middlewares.append((inst.ip_address, inst.private_ip_address))
 
 def getDatabaseIP():
     return databases

@@ -13,10 +13,13 @@ public class Client {
     private List<Request> sentRequests = new LinkedList<>();
     private List<Response> receivedResponses = new LinkedList<>();
 
-    private int totalClients;
     private String hostName;
     private int portNumber;
+
+    private int numberOfClients;
     private int startingId;
+    private int totalClients;
+
     private int runningTimeInSeconds;
     private ClientRunnable[] runnables;
     private Thread[] clients;
@@ -37,8 +40,10 @@ public class Client {
         this.hostName = configuration.getProperty("middlewareHost");
         this.portNumber = Integer.valueOf(configuration.getProperty("middlewarePortNumber"));
 
+        this.numberOfClients = Integer.valueOf(configuration.getProperty("numberOfClients"));
         this.totalClients = Integer.valueOf(configuration.getProperty("totalClients"));
         this.startingId = Integer.valueOf(configuration.getProperty("startingId"));
+
         this.runningTimeInSeconds = Integer.valueOf(configuration.getProperty("runningTimeInSeconds"));
 
         runnables = new ClientRunnable[totalClients];
@@ -50,7 +55,7 @@ public class Client {
     }
 
     public void start(boolean saveEverything) {
-        for (int i = 0; i < totalClients; ++i) {
+        for (int i = 0; i < numberOfClients; ++i) {
             try {
                 runnables[i] = new ClientRunnable(startingId + i, runningTimeInSeconds, hostName, portNumber, totalClients, saveEverything);
                 clients[i] = new Thread(runnables[i]);
@@ -60,12 +65,12 @@ public class Client {
         }
 
         // start all the clients
-        for (int i = 0; i < totalClients; ++i) {
+        for (int i = 0; i < numberOfClients; ++i) {
             clients[i].start();
         }
 
         // wait until all clients have finished
-        for (int i = 0; i < totalClients; ++i) {
+        for (int i = 0; i < numberOfClients; ++i) {
             try {
                 clients[i].join();
             } catch (InterruptedException e) {

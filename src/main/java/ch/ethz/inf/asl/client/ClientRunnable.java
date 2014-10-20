@@ -17,10 +17,12 @@ import static ch.ethz.inf.asl.utils.Verifier.hasText;
 
 public class ClientRunnable implements Runnable {
 
-//    private int userId;
+    //    private int userId;
     private String hostName;
     private int portNumber;
+
     private int totalClients;
+
     private MyLogger logger;
     private int runningTimeInSeconds;
 
@@ -46,6 +48,7 @@ public class ClientRunnable implements Runnable {
         this.userId = userId;
         this.hostName = hostName;
         this.portNumber = portNumber;
+
         this.totalClients = totalClients;
 
         String loggersName = String.format("logs/client%03d.csv", userId);
@@ -88,21 +91,24 @@ public class ClientRunnable implements Runnable {
             }
             try {
                 if (send) {
-                    Random r = new Random();
-                    int sendToUserId = r.nextInt(totalClients) + 1;
-                    while (sendToUserId == userId) {
-                        sendToUserId = r.nextInt(totalClients) + 1;
-                    }
+//                    Random r = new Random();
+//                    int sendToUserId = r.nextInt(totalClients) + 1;
+//                    while (sendToUserId == userId) {
+//                        sendToUserId = r.nextInt(totalClients) + 1;
+//                    }
 
                     long startTime = System.currentTimeMillis();
-                    protocol.sendMessage(sendToUserId, 1, content);
-                    logger.log(System.currentTimeMillis() - startTime, "SEND_MESSAGE\t" + sendToUserId + "\t");
+                    protocol.sendMessage(1, content);
+                    long responseTime = System.currentTimeMillis() - startTime;
+                    logger.log(System.currentTimeMillis() - startingTime, responseTime + "\tSEND_MESSAGE");
 
                     send = !send;
                 } else {
                     long startTime = System.currentTimeMillis();
                     Optional<Message> message = protocol.receiveMessage(1, true);
-                    logger.log(System.currentTimeMillis() - startTime, "RECEIVE_MESSAGE\t" + message.isPresent());
+                    long responseTime = System.currentTimeMillis() - startTime;
+                    logger.log(System.currentTimeMillis() - startingTime, responseTime + "\tRECEIVE_MESSAGE\t" + message.isPresent());
+
                     send = !send;
                 }
             } catch (MessageProtocolException e) {

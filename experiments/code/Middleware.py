@@ -1,4 +1,5 @@
 import pexpect
+import uuid
 from Utilities import *
 
 class Middleware:
@@ -33,10 +34,11 @@ class Middleware:
                       ("middlewarePortNumber", self.middlewarePortNumber)]
 
         propertiesFileName = "middleware.properties"
-        create_properties_file("/tmp/" + propertiesFileName, properties)
+        unique_filename = str(uuid.uuid4())
+        create_properties_file("/tmp/" + unique_filename, properties)
 
         # send properties file to the middleware machine
-        scp_to("/tmp/" + propertiesFileName, self.username, self.host)
+        scp_to("/tmp/" + unique_filename, propertiesFileName, self.username, self.host)
 
         # create properties file and send it to the host before starting the middleware
         child = pexpect.spawn("ssh " + ssh_address(self.username, self.host))

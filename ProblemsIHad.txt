@@ -44,3 +44,9 @@ Also, if the clients create the queues by themselves it could be that other clie
 to the queue. If many clients try to create a qeueu, with the current API we could end up with multiple queues.
 For these reasons and for th ereason afforementioned in 6) I chose not to let the clients to regiester when the
 get in the middleware.
+
+8) While creating the code for the experimental setup, sinc eI'm neewbie to python I had
+        thread = threading.Thread(target=self.__startThreadCode(), args=())
+        instead
+        of         thread = threading.Thread(target=self.__startThreadCode, args=())
+check here http://stackoverflow.com/questions/15946075/python-threading-blocks why this was wrong

@@ -17,8 +17,8 @@ def execute_command(username, host, command):
 
 
 # copies the file in the home directory of host
-def scp_to(file, username, host):
-    system("scp " + file + " " + ssh_address(username, host) + ":")
+def scp_to(file, newFileName, username, host):
+    system("scp " + file + " " + ssh_address(username, host) + ":" + newFileName)
 
 
 # copies the file from the host to the current directory

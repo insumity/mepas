@@ -1,14 +1,15 @@
 import os
+import datetime
 from os.path import isfile
 from subprocess import call
 
 from Database import Database
 from Client import Client
 from Middleware import Middleware
-from plot_data import plot_data
+# from plot_data import plot_data
 from RetrieveEC2InstancesIPs import *
 from Utilities import *
-from read_experimental_results import get_data
+# from read_experimental_results import get_data
 
 
 nameOfTheExperiment = "someExperiment"
@@ -26,7 +27,6 @@ username = "ubuntu"
 middlewarePortNumber = 6789
 startingId = 1
 
-
 runningTimeInSeconds = 120
 
 
@@ -37,22 +37,22 @@ runningTimeInSeconds = 120
 # getClientsIPs() is going to connect to middleware[b] where b is
 # returned by middlewareIPs
 mappings = [(0, 0), (1, 0)]
+clientsData = [(50, 1), (50, 51)]
 
 databaseIP = getDatabaseIP()
 clientIPs = getClientsIPs()
+
 middlewareIPs = getMiddlewaresIPs()
 
-
 possibleValues = [100]
-for numberOfClients in possibleValues:
+for totalClients in possibleValues:
 
-    print "Doing it for totalClients: " + str(numberOfClients)
+    print "Doing it for totalClients: " + str(totalClients)
     # clean database
     databases = getDatabaseIP()
     databaseHost = databases[0][0]
     databasePortNumber = 5432
 
-    print databaseHost
     numberOfQueues = 1
 
     # # FIXME CLEAN ... postgres error messages!
@@ -62,7 +62,7 @@ for numberOfClients in possibleValues:
     print ">>> Going to clean and initialize database"
     database = Database(databaseHost, databasePortNumber, databaseName, databaseUsername, databasePassword)
     database.recreateDatabase()
-    database.initializeDatabase(numberOfClients, numberOfQueues,
+    database.initializeDatabase(totalClients, numberOfQueues,
                                 [auxiliaryFunctionsFilePath, basicFunctionsFilePath])
 
     print ">>> Database was cleaned and initialized!"
@@ -80,31 +80,36 @@ for numberOfClients in possibleValues:
     # transfer the jar to the clients & middlewares
     print ">>> transferring executable JAR to clients & middlewares"
     for client in clientIPs:
-        scp_to(jarFile, username, client[0])
+        scp_to(jarFile, "", username, client[0])
+
 
     for middleware in middlewareIPs:
-        scp_to(jarFile, username, middleware[0])
+        scp_to(jarFile, "", username, middleware[0])
     print ">>> executable JAR was transferred to the clients & middlewares"
-
 
     numberOfThreads = 10
     numberOfConnectionsToDb = 10
 
     middlewareInstances = []
     for middlewareIP in middlewareIPs:
-        middleware = Middleware(username, middlewareIP[0], databaseHost, databasePortNumber, databaseUsername, databasePassword,
-                                databaseName, "someSource", str(numberOfThreads), str(numberOfConnectionsToDb), str(6789))
+        middleware = Middleware(username, middlewareIP[0], databaseHost, databasePortNumber, databaseUsername,
+                                databasePassword,
+                                databaseName, "someSource", str(numberOfThreads), str(numberOfConnectionsToDb),
+                                str(6789))
         middlewareInstances.append(middleware)
 
-
     clientInstances = []
+    i = 0
     for mapping in mappings:
         privateIPOfCorrespondingMiddleware = middlewareIPs[mapping[1]][1]
         client = Client(username, clientIPs[mapping[0]][0], privateIPOfCorrespondingMiddleware,
-                        str(middlewarePortNumber), str(numberOfClients),
-                        str(startingId),
+                        str(middlewarePortNumber), str(clientsData[i][0]),
+                        str(totalClients),
+                        str(clientsData[i][1]),
                         str(runningTimeInSeconds))
         clientInstances.append(client)
+
+        i += 1
 
     # clean the clients & MW from possible logs (?)
     # assumes file exists "~/logs" in the corresponding machines
@@ -120,13 +125,13 @@ for numberOfClients in possibleValues:
         middleware.getReady()
     print ">>> middlewares were cleaned from previous experiments and are ready for the new ones"
 
-
     print ">>> middlewares are starting ..."
     for middleware in middlewareInstances:
         middleware.start()
     print ">>> middlewares were started"
 
-    print ">>> clients are starting ..."
+    now = datetime.datetime.now()
+    print ">>> clients are starting ... (" + str(now) + ")"
     for client in clientInstances:
         client.start()
     print ">>> clients were started"
@@ -135,7 +140,9 @@ for numberOfClients in possibleValues:
     for client in clientInstances:
         while not client.isFinished():
             pass
-    print ">>> clients have finished"
+
+    now = datetime.datetime.now()
+    print ">>> clients have finished (" + str(now) + ")"
 
     print ">>> stopping middlewares ..."
     for middleware in middlewareInstances:
@@ -146,7 +153,7 @@ for numberOfClients in possibleValues:
     # create a directory for the experiment
     # TODO ... inform if the directory already existsa and if so put
     # it somewhere else
-    experimentName = nameOfTheExperiment + "/" + str(numberOfClients)
+    experimentName = nameOfTheExperiment + "/" + str(totalClients)
     os.mkdir(experimentName)
 
     # gather results and put them back somewhere locally
@@ -155,13 +162,13 @@ for numberOfClients in possibleValues:
 
     instanceCounter = 1
     for client in getClientsIPs():
-        localDirectoryResults = experimentName + "/" + str(instanceCounter)
+        localDirectoryResults = experimentName + "/clientInstance" + str(instanceCounter)
         os.mkdir(localDirectoryResults)
         scp_from("logs/*", localDirectoryResults, username, client[0])
+        instanceCounter += 1
 
+        # clean clients and MW and verify it's cleaned
 
-    # clean clients and MW and verify it's cleaned
-
-# profit!
-# get_data(possibleValues)  # will create a file
-# plot_data(nameOfTheExperiment + "/plot_data.csv", 210, "someExperiment.png", "1:2:3")
+        # profit!
+        # get_data(possibleValues)  # will create a file
+        # plot_data(nameOfTheExperiment + "/plot_data.csv", 210, "someExperiment.png", "1:2:3")
