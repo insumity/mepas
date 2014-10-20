@@ -1,6 +1,7 @@
 package ch.ethz.inf.asl.main;
 
 import ch.ethz.inf.asl.client.Client;
+import ch.ethz.inf.asl.common.ReadConfiguration;
 import ch.ethz.inf.asl.middleware.Middleware;
 
 import java.util.Arrays;
@@ -32,13 +33,13 @@ public class Main {
             printErrorMessageAndExit();
         }
 
-        String[] newArguments = Arrays.copyOfRange(args, 1, args.length);
+        String configurationFilePath = args[1];
 
         if (type.equals(MIDDLEWARE)) {
-            new Middleware(newArguments).start(false);
+            new Middleware(new ReadConfiguration(configurationFilePath)).start(false);
         } else {
             assert(type.equals(CLIENT));
-            new Client(newArguments).start(false);
+            new Client(new ReadConfiguration(configurationFilePath)).start(false);
         }
     }
 }

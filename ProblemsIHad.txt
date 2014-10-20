@@ -50,3 +50,6 @@ get in the middleware.
         instead
         of         thread = threading.Thread(target=self.__startThreadCode, args=())
 check here http://stackoverflow.com/questions/15946075/python-threading-blocks why this was wrong
+
+9) found NullPointerException quickly because of end to end tests. Had new ClientRunanble[totalClients]
+instead of new ClientRunanble[numberOfClients] in the Client class.

@@ -61,6 +61,12 @@ public class Middleware {
         for (MiddlewareRunnable runnable : middlewareRunnables) {
             runnable.stop();
         }
+
+        try {
+            serverSocket.close(); // FIXME
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     // This code corresponds to a thread that is going to be looking(in a blocking way) at the system input
@@ -116,7 +122,7 @@ public class Middleware {
     }
 
 
-    public Middleware(String[] args) {
+    public Middleware(ReadConfiguration configuration) {
 
         logger = null;
         try {
@@ -124,9 +130,6 @@ public class Middleware {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        String configurationFilePath = args[0];
-        ReadConfiguration configuration = new ReadConfiguration(configurationFilePath);
 
         String databaseHost = configuration.getProperty("databaseHost");
         databasePortNumber = Integer.valueOf(configuration.getProperty("databasePortNumber"));

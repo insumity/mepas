@@ -32,10 +32,7 @@ public class Client {
         return receivedResponses;
     }
 
-    public Client(String[] args)  {
-
-        String configurationFilePath = args[0];
-        ReadConfiguration configuration = new ReadConfiguration(configurationFilePath);
+    public Client(ReadConfiguration configuration)  {
 
         this.hostName = configuration.getProperty("middlewareHost");
         this.portNumber = Integer.valueOf(configuration.getProperty("middlewarePortNumber"));
@@ -46,8 +43,8 @@ public class Client {
 
         this.runningTimeInSeconds = Integer.valueOf(configuration.getProperty("runningTimeInSeconds"));
 
-        runnables = new ClientRunnable[totalClients];
-        clients = new Thread[totalClients];
+        runnables = new ClientRunnable[numberOfClients];
+        clients = new Thread[numberOfClients];
 
         this.sentRequests = new LinkedList<>();
         this.receivedResponses = new LinkedList<>();
@@ -80,8 +77,10 @@ public class Client {
 
         if (saveEverything) {
             for (ClientRunnable runnable: runnables) {
-                sentRequests.addAll(runnable.getSentRequests());
-                receivedResponses.addAll(runnable.getReceivedResponses());
+                sentRequests.addAll(
+                        runnable.getSentRequests());
+                receivedResponses.addAll(
+                        runnable.getReceivedResponses());
             }
         }
 

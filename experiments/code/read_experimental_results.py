@@ -32,11 +32,13 @@ def get_trace(experimentName, clientInstances, intervalWindowInSeconds, totalTim
         fileName = experimentName + "/all_clients.csv"
         command = "awk -F \"\t\" '$1 >=" + str(i) + " && $1 < " + str(
             (i + intervalWindowInMilliseconds)) + " { print; }' " + fileName
-        getAverage = "awk '{ sum += $2; n++ } END { if (n > 0) print $1, (sum / n); }'"
+        getAverage = "awk '{ sum += $2; n++ } END { if (n > 0) printf \"%d %f\", $1, (sum / n); }'"
+        getStd = "awk '{sum+=$2; sumsq+= $2*$2 } END { printf \" %f\\n\", sqrt(sumsq/NR - (sum/NR)**2); }' "
         system(command + "|" + getAverage)
+        system(command + "|" + getStd)
 
 
-get_trace("../someExperiment/100", 2, 5, 120)
+get_trace("../someExperiment/100", 2, 60, 1200)
 
 # with the following command you can read all the rows that in the first column have their
 # value going in this range

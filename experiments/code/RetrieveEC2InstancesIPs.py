@@ -19,15 +19,19 @@ clients = []
 for r in reservations:
     inst = r.instances[0]
 
-    name = inst.tags["Name"]
+    if 'Name' in inst.tags:
+        name = inst.tags["Name"]
 
-    if str(inst.state) == "running":
-        if name.find("database") != -1:
-            databases.append((inst.ip_address, inst.private_ip_address))
-        elif name.find("client") != -1:
-            clients.append((inst.ip_address, inst.private_ip_address))
-        elif name.find("middleware") != -1:
-            middlewares.append((inst.ip_address, inst.private_ip_address))
+        if str(inst.state) == "running":
+            if name.find("database") != -1:
+                databases.append((inst.ip_address, inst.private_ip_address))
+            elif name.find("client") != -1:
+                clients.append((inst.ip_address, inst.private_ip_address))
+            elif name.find("middleware") != -1:
+                middlewares.append((inst.ip_address, inst.private_ip_address))
+    else:
+        print "There are instances with no names!"
+        exit(1)
 
 def getDatabaseIP():
     return databases

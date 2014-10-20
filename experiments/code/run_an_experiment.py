@@ -27,7 +27,7 @@ username = "ubuntu"
 middlewarePortNumber = 6789
 startingId = 1
 
-runningTimeInSeconds = 120
+runningTimeInSeconds = 25
 
 
 # TODO : experiments names .. config file for running shit ...
@@ -69,23 +69,25 @@ for totalClients in possibleValues:
 
 
     # clean the directory with ant
-    call(["ant", "-buildfile", "..", "clean"])
-
-    # create the jar
-    call(["ant", "-buildfile", "..", "jar"])
-    if isfile("../mepas.jar"):
-        print ">> executable JAR was created"
-
-
-    # transfer the jar to the clients & middlewares
-    print ">>> transferring executable JAR to clients & middlewares"
-    for client in clientIPs:
-        scp_to(jarFile, "", username, client[0])
-
-
-    for middleware in middlewareIPs:
-        scp_to(jarFile, "", username, middleware[0])
-    print ">>> executable JAR was transferred to the clients & middlewares"
+    # call(["ant", "-buildfile", "..", "clean"])
+    #
+    # # create the jar
+    # call(["ant", "-buildfile", "..", "jar"])
+    # if isfile("../mepas.jar"):
+    #     print ">> executable JAR was created"
+    #
+    #
+    # # transfer the jar to the clients & middlewares
+    # print ">>> transferring executable JAR to clients & middlewares"
+    # for client in clientIPs:
+    #     print "client jar"
+    #     scp_to(jarFile, "", username, client[0])
+    #
+    #
+    # for middleware in middlewareIPs:
+    #     print "middleware jar"
+    #     scp_to(jarFile, "", username, middleware[0])
+    # print ">>> executable JAR was transferred to the clients & middlewares"
 
     numberOfThreads = 10
     numberOfConnectionsToDb = 10

@@ -1,10 +1,12 @@
 package ch.ethz.inf.asl.endtoend;
 
 import ch.ethz.inf.asl.client.Client;
+import ch.ethz.inf.asl.common.ReadConfiguration;
 import ch.ethz.inf.asl.common.request.Request;
 import ch.ethz.inf.asl.common.response.Response;
 import ch.ethz.inf.asl.middleware.Middleware;
 import ch.ethz.inf.asl.testutils.InitializeDatabase;
+import org.mockito.stubbing.Answer;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
@@ -14,6 +16,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static ch.ethz.inf.asl.testutils.TestConstants.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertFalse;
 
 /**
@@ -21,6 +25,42 @@ import static org.testng.Assert.assertFalse;
  * single-threaded?
  */
 public class EndToEnd {
+
+    private ReadConfiguration mockMiddlewareConfiguration(String databaseHost, String databasePortNumber, String databaseName,
+                                                          String databaseUsername, String databasePassword,
+                                                          String threadPoolSize, String connectionPoolSize,
+                                                          String dataSourceName, String middlewarePortNumber) {
+        ReadConfiguration mockedConfiguration = mock(ReadConfiguration.class);
+
+        when(mockedConfiguration.getProperty("databaseHost")).thenReturn(databaseHost);
+        when(mockedConfiguration.getProperty("databasePortNumber")).thenReturn(databasePortNumber);
+        when(mockedConfiguration.getProperty("databaseName")).thenReturn(databaseName);
+        when(mockedConfiguration.getProperty("databaseUsername")).thenReturn(databaseUsername);
+        when(mockedConfiguration.getProperty("databasePassword")).thenReturn(databasePassword);
+
+        when(mockedConfiguration.getProperty("threadPoolSize")).thenReturn(threadPoolSize);
+        when(mockedConfiguration.getProperty("connectionPoolSize")).thenReturn(connectionPoolSize);
+        when(mockedConfiguration.getProperty("dataSourceName")).thenReturn(dataSourceName);
+        when(mockedConfiguration.getProperty("middlewarePortNumber")).thenReturn(middlewarePortNumber);
+
+        return mockedConfiguration;
+    }
+
+    private ReadConfiguration mockClientConfiguration(String middlewareHost, String middlewarePortNumber, String numberOfClients, String totalClients,
+                                                      String startingId, String runningTimeInSeconds) {
+        ReadConfiguration mockedConfiguration = mock(ReadConfiguration.class);
+
+        when(mockedConfiguration.getProperty("middlewareHost")).thenReturn(middlewareHost);
+        when(mockedConfiguration.getProperty("middlewarePortNumber")).thenReturn(middlewarePortNumber);
+
+        when(mockedConfiguration.getProperty("numberOfClients")).thenReturn(numberOfClients);
+        when(mockedConfiguration.getProperty("totalClients")).thenReturn(totalClients);
+        when(mockedConfiguration.getProperty("startingId")).thenReturn(startingId);
+
+        when(mockedConfiguration.getProperty("runningTimeInSeconds")).thenReturn(runningTimeInSeconds);
+
+        return mockedConfiguration;
+    }
 
 
     @Test(groups = END_TO_END, description = "This test creates 2 middlewares running locally on two different" +
@@ -48,16 +88,18 @@ public class EndToEnd {
 
 
         // initialize database
-        final int numberOfClients = 4;
+        final int totalClients = 4;
         int numberOfQueues = 1;
         InitializeDatabase.initializeDatabaseWithClientsAndQueues(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD,
-                Connection.TRANSACTION_READ_COMMITTED, new String[]{}, numberOfClients, numberOfQueues);
+                Connection.TRANSACTION_READ_COMMITTED, new String[]{}, totalClients, numberOfQueues);
 
+        final ReadConfiguration[] middlewareConfigurations = {
+                mockMiddlewareConfiguration(HOST, String.valueOf(PORT_NUMBER), DATABASE_NAME, USERNAME, PASSWORD,
+                        "10", "10",  "middleware1", "6789"),
 
-        final String[][] middlewareArgs = { {HOST, USERNAME, PASSWORD, DATABASE_NAME,
-                String.valueOf(PORT_NUMBER), "10", "10", "6789", "middleware1"},
-                {HOST, USERNAME, PASSWORD, DATABASE_NAME,
-                        String.valueOf(PORT_NUMBER), "5", "5", "6790", "middleware2"}};
+                mockMiddlewareConfiguration(HOST, String.valueOf(PORT_NUMBER), DATABASE_NAME, USERNAME, PASSWORD,
+                        "10", "10",  "middleware2", "6790"),
+        };
 
 
         // setup threads that are gong to use the middleware
@@ -77,7 +119,7 @@ public class EndToEnd {
             middlewareRunnables[i] = new Runnable() {
                 @Override
                 public void run() {
-                    middleware[finalI] = new Middleware(middlewareArgs[finalI]);
+                    middleware[finalI] = new Middleware(middlewareConfigurations[finalI]);
                     middlewaresInitialized[finalI].set(true);
                     middleware[finalI].start(true);
                 }
@@ -101,10 +143,11 @@ public class EndToEnd {
         final AtomicBoolean[] clientsInitialized = new AtomicBoolean[numberOfClientInstances];
 
 
-        int clientsPerInstance = numberOfClients / numberOfClientInstances;
+        int clientsPerInstance = totalClients / numberOfClientInstances;
 
-        final String[][] clientArgs = {{"localhost", "6789", String.valueOf(clientsPerInstance), "1", "20"},
-                {"localhost", "6790", String.valueOf(clientsPerInstance), "3", "20"}};
+        final ReadConfiguration[] clientConfigurations = {
+                mockClientConfiguration("localhost", "6789", String.valueOf(clientsPerInstance), String.valueOf(totalClients), "1", "20"),
+                mockClientConfiguration("localhost", "6790", String.valueOf(clientsPerInstance), String.valueOf(totalClients), "3", "20")};
 
 
         for (int i = 0; i < numberOfClientInstances; ++i) {
@@ -113,7 +156,7 @@ public class EndToEnd {
             clientRunnables[i] = new Runnable() {
                 @Override
                 public void run() {
-                    clients[finalI] = new Client(clientArgs[finalI]);
+                    clients[finalI] = new Client(clientConfigurations[finalI]);
                     clientsInitialized[finalI].set(true);
                     clients[finalI].start(true);
                 }
