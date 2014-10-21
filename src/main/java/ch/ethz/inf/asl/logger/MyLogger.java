@@ -7,6 +7,11 @@ import java.util.logging.*;
 public class MyLogger {
     private Logger logger;
 
+    // for emptyLogger
+    protected MyLogger() {
+
+    }
+
     public MyLogger(String fileName) throws IOException {
         logger = Logger.getLogger(fileName);
         logger.setUseParentHandlers(false);

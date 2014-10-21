@@ -3,6 +3,8 @@ package ch.ethz.inf.asl.client;
 import ch.ethz.inf.asl.common.ReadConfiguration;
 import ch.ethz.inf.asl.common.request.Request;
 import ch.ethz.inf.asl.common.response.Response;
+import ch.ethz.inf.asl.logger.EmptyLogger;
+import ch.ethz.inf.asl.logger.MyLogger;
 
 import java.io.IOException;
 import java.util.LinkedList;
@@ -24,7 +26,7 @@ public class Client {
     private ClientRunnable[] runnables;
     private Thread[] clients;
 
-    public List<Request> getAllSentRequets() {
+    public List<Request> getAllSentRequests() {
         return sentRequests;
     }
 
@@ -51,10 +53,20 @@ public class Client {
 
     }
 
-    public void start(boolean saveEverything) {
+    public void start(boolean isEndToEndTest) {
         for (int i = 0; i < numberOfClients; ++i) {
             try {
-                runnables[i] = new ClientRunnable(startingId + i, runningTimeInSeconds, hostName, portNumber, totalClients, saveEverything);
+                String loggersName = String.format("logs/client%03d.csv", startingId + i);
+                MyLogger logger;
+                if (isEndToEndTest) {
+                    logger = new EmptyLogger();
+                }
+                else {
+                    logger = new MyLogger(loggersName);
+                }
+
+                runnables[i] = new ClientRunnable(logger, startingId + i, runningTimeInSeconds, hostName,
+                        portNumber, totalClients, isEndToEndTest);
                 clients[i] = new Thread(runnables[i]);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -75,7 +87,7 @@ public class Client {
             }
         }
 
-        if (saveEverything) {
+        if (isEndToEndTest) {
             for (ClientRunnable runnable: runnables) {
                 sentRequests.addAll(
                         runnable.getSentRequests());

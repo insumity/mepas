@@ -5,7 +5,7 @@ from Utilities import *
 class Middleware:
 
     def __init__(self, username, host, databaseHost, databasePortNumber, databaseUsername,
-                 databasePassword, databaseName, dataSourceName,
+                 databasePassword, databaseName,
                  threadPoolSize, connectionPoolSize, middlewarePortNumber):
 
         self.username = username
@@ -15,7 +15,6 @@ class Middleware:
         self.databaseUsername = databaseUsername
         self.databasePassword = databasePassword
         self.databaseName = databaseName
-        self.dataSourceName = dataSourceName
         self.threadPoolSize = threadPoolSize
         self.connectionPoolSize = connectionPoolSize
         self.middlewarePortNumber = middlewarePortNumber
@@ -30,7 +29,7 @@ class Middleware:
         properties = [("databaseHost", self.databaseHost), ("databasePortNumber", self.databasePortNumber),
                       ("databaseName", self.databaseName), ("databaseUsername", self.databaseUsername),
                       ("databasePassword", self.databasePassword), ("threadPoolSize", self.threadPoolSize),
-                      ("connectionPoolSize", self.connectionPoolSize), ("dataSourceName", self.dataSourceName),
+                      ("connectionPoolSize", self.connectionPoolSize),
                       ("middlewarePortNumber", self.middlewarePortNumber)]
 
         propertiesFileName = "middleware.properties"

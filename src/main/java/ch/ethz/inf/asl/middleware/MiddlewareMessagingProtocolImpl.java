@@ -101,7 +101,7 @@ public class MiddlewareMessagingProtocolImpl extends MessagingProtocol {
         }
     }
 
-    private void sendMessageCommon(Optional<Integer> receiverId, int queueId, String content) {
+    private void sendMessageCommon(Integer receiverId, int queueId, String content) {
 
         // TODO use constants, I have them in MessageConstants
         if (content.length() > 2000) {
@@ -117,11 +117,11 @@ public class MiddlewareMessagingProtocolImpl extends MessagingProtocol {
             Timestamp arrivalTime = Timestamp.valueOf(formattedDate);
             stmt.setInt(1, requestingUserId);
 
-            if (receiverId.isPresent()) {
-                stmt.setInt(2, receiverId.get());
+            if (receiverId == null) {
+                stmt.setNull(2, Types.INTEGER);
             }
             else {
-                stmt.setNull(2, Types.INTEGER);
+                stmt.setInt(2, receiverId);
             }
 
             stmt.setInt(3, queueId);
@@ -130,7 +130,6 @@ public class MiddlewareMessagingProtocolImpl extends MessagingProtocol {
             logger.synchronizedLog(Thread.currentThread().getId(), "- before execute");
             stmt.execute();
             logger.synchronizedLog(Thread.currentThread().getId(), "- after execute");
-
         } catch (SQLException e) {
             throw new MessageProtocolException("failed to send message" + e.getMessage() , e);
         }
@@ -138,12 +137,12 @@ public class MiddlewareMessagingProtocolImpl extends MessagingProtocol {
 
     @Override
     public void sendMessage(int queueId, String content) {
-        sendMessageCommon(Optional.<Integer>empty(), queueId, content);
+        sendMessageCommon(null, queueId, content);
     }
 
     @Override
     public void sendMessage(int receiverId, int queueId, String content) {
-        sendMessageCommon(Optional.of(receiverId), queueId, content);
+        sendMessageCommon(receiverId, queueId, content);
     }
 
     private Message getMessageFromResultSet(ResultSet resultSet) throws SQLException {

@@ -9,7 +9,6 @@ import ch.ethz.inf.asl.utils.Optional;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
@@ -40,7 +39,7 @@ public class ClientRunnable implements Runnable {
         return protocol.getReceivedResponses();
     }
 
-    public ClientRunnable(int userId, int runningTimeInSeconds, String hostName, int portNumber, int totalClients,
+    public ClientRunnable(MyLogger logger, int userId, int runningTimeInSeconds, String hostName, int portNumber, int totalClients,
                           boolean saveEverything) throws IOException {
         hasText(hostName , "hostName cannot be empty or null");
 
@@ -50,11 +49,8 @@ public class ClientRunnable implements Runnable {
         this.portNumber = portNumber;
 
         this.totalClients = totalClients;
-
-        String loggersName = String.format("logs/client%03d.csv", userId);
-        logger = new MyLogger(loggersName);
-
         this.saveEverything = saveEverything;
+        this.logger = logger;
     }
 
     @Override
@@ -98,7 +94,10 @@ public class ClientRunnable implements Runnable {
 //                    }
 
                     long startTime = System.currentTimeMillis();
-                    protocol.sendMessage(1, content);
+                    Random r = new Random();
+                    long randomLong = r.nextLong();
+
+                    protocol.sendMessage(1, content + String.valueOf(randomLong));
                     long responseTime = System.currentTimeMillis() - startTime;
                     logger.log(System.currentTimeMillis() - startingTime, responseTime + "\tSEND_MESSAGE");
 
@@ -107,7 +106,14 @@ public class ClientRunnable implements Runnable {
                     long startTime = System.currentTimeMillis();
                     Optional<Message> message = protocol.receiveMessage(1, true);
                     long responseTime = System.currentTimeMillis() - startTime;
-                    logger.log(System.currentTimeMillis() - startingTime, responseTime + "\tRECEIVE_MESSAGE\t" + message.isPresent());
+
+                    if (message.isPresent()) {
+                        logger.log(System.currentTimeMillis() - startingTime, responseTime + "\tRECEIVE_MESSAGE\t" + message.isPresent()
+                                + "\t" + message.get().hashCode() + "\t" + message.get());
+                    }
+                    else {
+                        logger.log(System.currentTimeMillis() - startingTime, responseTime + "\tRECEIVE_MESSAGE\t" + message.isPresent());
+                    }
 
                     send = !send;
                 }

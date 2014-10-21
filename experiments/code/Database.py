@@ -3,15 +3,15 @@ from subprocess import call
 
 
 class Database:
+    """This class corresponds to a connection to a database and can
+                  be used to clean and initialize this database."""
+
     def __init__(self, databaseHost, databasePortNumber, databaseName, databaseUsername, databasePassword):
         self.databaseHost = databaseHost
         self.databasePortNumber = databasePortNumber
         self.databaseName = databaseName
         self.databaseUsername = databaseUsername
         self.databasePassword = databasePassword
-
-    description = "This class corresponds to a connection to a database and can" \
-                  "be used to clean and initialize this database."
 
     def __connectToDatabase(self, databaseName):
         connection = psycopg2.connect(

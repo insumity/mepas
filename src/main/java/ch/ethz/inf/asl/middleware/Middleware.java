@@ -3,12 +3,12 @@ package ch.ethz.inf.asl.middleware;
 import ch.ethz.inf.asl.common.ReadConfiguration;
 import ch.ethz.inf.asl.common.request.Request;
 import ch.ethz.inf.asl.common.response.Response;
+import ch.ethz.inf.asl.logger.EmptyLogger;
 import ch.ethz.inf.asl.logger.MyLogger;
 import ch.ethz.inf.asl.middleware.pool.connection.ConnectionPool;
 import ch.ethz.inf.asl.middleware.pool.thread.ThreadPool;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.SocketException;
 import java.util.LinkedList;
@@ -62,11 +62,11 @@ public class Middleware {
             runnable.stop();
         }
 
-        try {
-            serverSocket.close(); // FIXME
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        // close the pool
+        connectionPool.close();
+
+        // shut down the middleware
+        System.exit(0);
     }
 
     // This code corresponds to a thread that is going to be looking(in a blocking way) at the system input
@@ -75,27 +75,39 @@ public class Middleware {
     class StoppingMiddleware implements Runnable {
         // gracefully stop middleware
 
-
         @Override
         public void run() {
             Scanner scanner = new Scanner(System.in);
             while (true) {
-                if (scanner.hasNextLine()) {
-                    if (scanner.nextLine().equals("STOP")) {
+                if (scanner.hasNextLine() && scanner.nextLine().equals("STOP")) {
                         stop();
-                        // close the middleware
-                        System.exit(0);
-                    }
                 }
             }
         }
     }
 
-    public void start(boolean saveEverything) {
+    public void start(boolean isEndToEndTest) {
+
+        if (isEndToEndTest) {
+            try {
+                logger = new EmptyLogger();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        else {
+            try {
+                logger = new MyLogger("middleware");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+
         Executor threadPool = new ThreadPool(threadPoolSize);
         middlewareRunnables = new MiddlewareRunnable[threadPoolSize];
         for (int i = 0; i < threadPoolSize; ++i) {
-            middlewareRunnables[i] = new MiddlewareRunnable(logger, sockets, connectionPool, saveEverything);
+            middlewareRunnables[i] = new MiddlewareRunnable(logger, sockets, connectionPool, isEndToEndTest);
             threadPool.execute(middlewareRunnables[i]);
         }
 
@@ -106,7 +118,6 @@ public class Middleware {
             System.out.println("STARTED");
             // keep an eye on the system input and close the middleware if needed
             new Thread(new StoppingMiddleware()).start();
-
 
             while (!finished) {
                 sockets.put(new InternalSocket(serverSocket.accept()));
@@ -124,13 +135,6 @@ public class Middleware {
 
     public Middleware(ReadConfiguration configuration) {
 
-        logger = null;
-        try {
-            logger = new MyLogger("middleware");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         String databaseHost = configuration.getProperty("databaseHost");
         databasePortNumber = Integer.valueOf(configuration.getProperty("databasePortNumber"));
         String databaseName = configuration.getProperty("databaseName");
@@ -139,11 +143,10 @@ public class Middleware {
 
         threadPoolSize = Integer.valueOf(configuration.getProperty("threadPoolSize"));
         int connectionPoolSize = Integer.valueOf(configuration.getProperty("connectionPoolSize"));
-        String dataSourceName = configuration.getProperty("dataSourceName");
         middlewarePortNumber = Integer.valueOf(configuration.getProperty("middlewarePortNumber"));
 
         sockets = new LinkedBlockingQueue<>();
-        connectionPool  = new ConnectionPool(dataSourceName, databaseHost, databasePortNumber, databaseUsername,
-                databasePassword, databaseName, connectionPoolSize, connectionPoolSize);
+        connectionPool  = new ConnectionPool(databaseHost, databasePortNumber, databaseUsername,
+                databasePassword, databaseName, connectionPoolSize);
     }
 }

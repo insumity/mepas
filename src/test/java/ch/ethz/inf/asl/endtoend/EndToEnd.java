@@ -6,10 +6,10 @@ import ch.ethz.inf.asl.common.request.Request;
 import ch.ethz.inf.asl.common.response.Response;
 import ch.ethz.inf.asl.middleware.Middleware;
 import ch.ethz.inf.asl.testutils.InitializeDatabase;
-import org.mockito.stubbing.Answer;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
+import java.security.Permission;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
@@ -18,6 +18,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static ch.ethz.inf.asl.testutils.TestConstants.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 
 /**
@@ -25,6 +26,36 @@ import static org.testng.Assert.assertFalse;
  * single-threaded?
  */
 public class EndToEnd {
+
+
+    // this security manager is used to verify that when we stop the middleware
+    // actually system exit is called without exiting the test. It's based on the
+    // idea taken from here: http://www.coderanch.com/t/540793/Testing/test-System-exit
+    private class NoExitSecurityManager extends SecurityManager {
+
+        private boolean throwException;
+
+        public NoExitSecurityManager(boolean throwException) {
+            this.throwException = throwException;
+        }
+
+        @Override
+        public void checkPermission(Permission perm)    {
+        }
+
+        @Override
+        public void checkPermission(Permission perm, Object context)    {
+        }
+
+        @Override
+        public void checkExit(int status) {
+            super.checkExit(status);
+
+            if (throwException) {
+                throw new RuntimeException("exit was called with status: " + status);
+            }
+        }
+    }
 
     private ReadConfiguration mockMiddlewareConfiguration(String databaseHost, String databasePortNumber, String databaseName,
                                                           String databaseUsername, String databasePassword,
@@ -175,19 +206,13 @@ public class EndToEnd {
         }
 
 
-        // stop middlewares
-        for (int i = 0; i < numberOfMiddlewares; ++i) {
-            middleware[i].stop();
-            middlewareThreads[i].join();
-        }
-
-
+        // verify results
         for (int i = 0; i < numberOfMiddlewares; ++i) {
             List<Request> receivedRequests = middleware[i].getAllRequests();
             List<Response> sentResponses = middleware[i].getAllResponses();
 
             // gather client1 and client2 sent requests & received responses
-            List<Request> sentRequests = clients[i].getAllSentRequets();
+            List<Request> sentRequests = clients[i].getAllSentRequests();
             List<Response> receivedResponses = clients[i].getAllReceivedResponses();
 
             // compare received requests by the MW with sent requests from the clients
@@ -197,6 +222,21 @@ public class EndToEnd {
             assertFalse(sentResponses.retainAll(receivedResponses));
         }
 
+        // stop middlewares: middlewares exit after gracefully closing all
+        // the middleware threads, so check that they actually exit as well
+        System.setSecurityManager(new NoExitSecurityManager(true));
+
+        for (int i = 0; i < numberOfMiddlewares; ++i) {
+            try {
+                middleware[i].stop();
+            } catch (RuntimeException re) {
+                assertEquals(re.getMessage(), "exit was called with status: 0");
+            }
+        }
+
+        // change back to default security manager so no exception is thrown when this
+        // test finishes
+        System.setSecurityManager(new NoExitSecurityManager(false));
     }
 
 }

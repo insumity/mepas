@@ -6,10 +6,8 @@ from subprocess import call
 from Database import Database
 from Client import Client
 from Middleware import Middleware
-# from plot_data import plot_data
-from RetrieveEC2InstancesIPs import *
+from EC2InstancesRetriever import *
 from Utilities import *
-# from read_experimental_results import get_data
 
 
 nameOfTheExperiment = "someExperiment"
@@ -27,7 +25,7 @@ username = "ubuntu"
 middlewarePortNumber = 6789
 startingId = 1
 
-runningTimeInSeconds = 25
+runningTimeInSeconds = 120
 
 
 # TODO : experiments names .. config file for running shit ...
@@ -37,20 +35,19 @@ runningTimeInSeconds = 25
 # getClientsIPs() is going to connect to middleware[b] where b is
 # returned by middlewareIPs
 mappings = [(0, 0), (1, 0)]
-clientsData = [(50, 1), (50, 51)]
+clientsData = [(1, 1), (1, 2)]
 
-databaseIP = getDatabaseIP()
-clientIPs = getClientsIPs()
+instancesRetriever = EC2InstancesRetriever()
+databaseIP = instancesRetriever.getDatabaseIP()
+clientIPs = instancesRetriever.getClientsIPs()
+middlewareIPs = instancesRetriever.getMiddlewaresIPs()
 
-middlewareIPs = getMiddlewaresIPs()
-
-possibleValues = [100]
+possibleValues = [2]
 for totalClients in possibleValues:
 
     print "Doing it for totalClients: " + str(totalClients)
     # clean database
-    databases = getDatabaseIP()
-    databaseHost = databases[0][0]
+    databaseHost = databaseIP[0][0]
     databasePortNumber = 5432
 
     numberOfQueues = 1
@@ -69,25 +66,25 @@ for totalClients in possibleValues:
 
 
     # clean the directory with ant
-    # call(["ant", "-buildfile", "..", "clean"])
-    #
-    # # create the jar
-    # call(["ant", "-buildfile", "..", "jar"])
-    # if isfile("../mepas.jar"):
-    #     print ">> executable JAR was created"
-    #
-    #
-    # # transfer the jar to the clients & middlewares
-    # print ">>> transferring executable JAR to clients & middlewares"
-    # for client in clientIPs:
-    #     print "client jar"
-    #     scp_to(jarFile, "", username, client[0])
-    #
-    #
-    # for middleware in middlewareIPs:
-    #     print "middleware jar"
-    #     scp_to(jarFile, "", username, middleware[0])
-    # print ">>> executable JAR was transferred to the clients & middlewares"
+    call(["ant", "-buildfile", "..", "clean"])
+
+    # create the jar
+    call(["ant", "-buildfile", "..", "jar"])
+    if isfile("../mepas.jar"):
+        print ">> executable JAR was created"
+
+
+    # transfer the jar to the clients & middlewares
+    print ">>> transferring executable JAR to clients & middlewares"
+    for client in clientIPs:
+        print "client jar"
+        scp_to(jarFile, "", username, client[0])
+
+
+    for middleware in middlewareIPs:
+        print "middleware jar"
+        scp_to(jarFile, "", username, middleware[0])
+    print ">>> executable JAR was transferred to the clients & middlewares"
 
     numberOfThreads = 10
     numberOfConnectionsToDb = 10
@@ -96,7 +93,7 @@ for totalClients in possibleValues:
     for middlewareIP in middlewareIPs:
         middleware = Middleware(username, middlewareIP[0], databaseHost, databasePortNumber, databaseUsername,
                                 databasePassword,
-                                databaseName, "someSource", str(numberOfThreads), str(numberOfConnectionsToDb),
+                                databaseName, str(numberOfThreads), str(numberOfConnectionsToDb),
                                 str(6789))
         middlewareInstances.append(middleware)
 
@@ -150,7 +147,7 @@ for totalClients in possibleValues:
     for middleware in middlewareInstances:
         middleware.stop()
 
-    print ">> middlewares were stopped"
+    print ">>> middlewares were stopped"
 
     # create a directory for the experiment
     # TODO ... inform if the directory already existsa and if so put
@@ -162,13 +159,14 @@ for totalClients in possibleValues:
     # for middleware in get_middlewares()
     # scp_from("logs/*", experimentName + "/", username, middleware[0])
 
+    print ">>> getting log files from clients ..."
     instanceCounter = 1
-    for client in getClientsIPs():
+    for client in clientIPs:
         localDirectoryResults = experimentName + "/clientInstance" + str(instanceCounter)
         os.mkdir(localDirectoryResults)
         scp_from("logs/*", localDirectoryResults, username, client[0])
         instanceCounter += 1
-
+    print ">>> log files from clients were received"
         # clean clients and MW and verify it's cleaned
 
         # profit!

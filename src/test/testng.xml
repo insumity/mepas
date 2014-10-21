@@ -7,6 +7,7 @@
             <run>
                 <include name="small"/>
                 <include name="database"/>
+                <include name="endtoend"/>
             </run>
         </groups>
         <packages>

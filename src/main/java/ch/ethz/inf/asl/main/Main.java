@@ -5,6 +5,7 @@ import ch.ethz.inf.asl.common.ReadConfiguration;
 import ch.ethz.inf.asl.middleware.Middleware;
 
 import java.util.Arrays;
+import java.util.Scanner;
 
 public class Main {
 
