@@ -25,7 +25,7 @@ username = "ubuntu"
 middlewarePortNumber = 6789
 startingId = 1
 
-runningTimeInSeconds = 1800
+runningTimeInSeconds = 180
 
 
 # TODO : experiments names .. config file for running shit ...
@@ -34,8 +34,8 @@ runningTimeInSeconds = 1800
 # e.g. if (a, b) is in mapping it means that client[a] returned by
 # getClientsIPs() is going to connect to middleware[b] where b is
 # returned by middlewareIPs
-mappings = [(0, 0), (1, 0)]
-clientsData = [(50, 1), (50, 51)]
+mappings = [(0, 0), (1, 0), (2, 1), (3, 1)]
+clientsData = [(25, 1), (25, 26), (25, 51), (25, 76)]
 
 instancesRetriever = EC2InstancesRetriever()
 databaseIP = instancesRetriever.getDatabaseIP()

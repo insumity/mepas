@@ -86,15 +86,6 @@ BEGIN
         FOR UPDATE;
 
     RETURN QUERY SELECT * FROM message WHERE id = received_message_id;
-
---     RETURN QUERY SELECT * FROM message
---                     WHERE queue_id = p_queue_id AND (receiver_id = p_requesting_user_id
---                                      /* don't read messages you sent, in case receiver_id is NULL it could be that you
---                                         are the sender of the message. In case receiver_id is not NULL we know for sure
---                                         that sender_id != receiver_id because of the `check_cannot_send_to_itself`
---                                         constraint in the message relation */
---                                      OR (receiver_id IS NULL AND sender_id != p_requesting_user_id))
---                     ORDER BY arrival_time DESC LIMIT 1;
   ELSE
     SELECT id INTO received_message_id FROM message
       WHERE queue_id = p_queue_id AND (receiver_id = p_requesting_user_id
@@ -103,10 +94,6 @@ BEGIN
       FOR UPDATE;
 
     RETURN QUERY SELECT * FROM message WHERE id = received_message_id;
---     RETURN QUERY SELECT * FROM message
---                     WHERE queue_id = p_queue_id AND (receiver_id = p_requesting_user_id
---                                      OR (receiver_id IS NULL AND sender_id != p_requesting_user_id))
---                     LIMIT 1;
   END IF;
 
   DELETE FROM message where id = received_message_id;
@@ -143,18 +130,14 @@ BEGIN
           ORDER BY arrival_time DESC LIMIT 1
           FOR UPDATE;
 
-    RETURN QUERY SELECT * FROM message
-                    WHERE sender_id = p_sender_id AND (receiver_id = p_requesting_user_id OR receiver_id IS NULL)
-                    ORDER BY arrival_time DESC LIMIT 1;
+    RETURN QUERY SELECT * FROM message WHERE id = received_message_id;
   ELSE
     SELECT id INTO received_message_id FROM message
           WHERE sender_id = p_sender_id AND (receiver_id = p_requesting_user_id OR receiver_id IS NULL)
           LIMIT 1
           FOR UPDATE;
 
-    RETURN QUERY SELECT * FROM message
-                    WHERE sender_id = p_sender_id AND (receiver_id = p_requesting_user_id OR receiver_id IS NULL)
-                    LIMIT 1;
+    RETURN QUERY SELECT * FROM message WHERE id = received_message_id;
   END IF;
 
   DELETE FROM message WHERE id = received_message_id;

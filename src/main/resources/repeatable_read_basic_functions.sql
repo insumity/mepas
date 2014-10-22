@@ -76,7 +76,8 @@ BEGIN
   END IF;
 
   SELECT id INTO received_message_id FROM read_message(p_requesting_user_id, p_queue_id, p_retrieve_by_arrival_time);
-  RETURN QUERY SELECT * FROM read_message(p_requesting_user_id, p_queue_id, p_retrieve_by_arrival_time);
+  -- TODO: (?) why isn't it in read_committed the same? I mean call read_message
+  RETURN QUERY SELECT * FROM message WHERE id = received_message_id;
 
   DELETE FROM message where id = received_message_id;
 END;
@@ -111,17 +112,13 @@ BEGIN
           WHERE sender_id = p_sender_id AND (receiver_id = p_requesting_user_id OR receiver_id IS NULL)
           ORDER BY arrival_time DESC LIMIT 1;
 
-    RETURN QUERY SELECT * FROM message
-                    WHERE sender_id = p_sender_id AND (receiver_id = p_requesting_user_id OR receiver_id IS NULL)
-                    ORDER BY arrival_time DESC LIMIT 1;
+    RETURN QUERY SELECT * FROM message WHERE id = received_message_id;
   ELSE
     SELECT id INTO received_message_id FROM message
           WHERE sender_id = p_sender_id AND (receiver_id = p_requesting_user_id OR receiver_id IS NULL)
           LIMIT 1;
 
-    RETURN QUERY SELECT * FROM message
-                    WHERE sender_id = p_sender_id AND (receiver_id = p_requesting_user_id OR receiver_id IS NULL)
-                    LIMIT 1;
+    RETURN QUERY SELECT * FROM message WHERE id = received_message_id;
   END IF;
 
   DELETE FROM message WHERE id = received_message_id;

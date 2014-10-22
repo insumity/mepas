@@ -38,7 +38,7 @@ def get_trace(experimentName, clientInstances, intervalWindowInSeconds, totalTim
         system(command + "|" + getStd)
 
 
-get_trace("../someExperiment/100", 2, 60, 1800)
+get_trace("../someExperiment/100", 4, 15, 180)
 
 # with the following command you can read all the rows that in the first column have their
 # value going in this range
