@@ -132,7 +132,7 @@ public class MiddlewareRunnable implements Runnable {
                 }
                 else {
                     if (bytesCanReadWithoutBlocking >= 4) {
-                        // is this correct? TODO readint could return less bytes
+                        // is this correct? TODO read int could return less bytes
                         byte[] fourBytes = new byte[4];
                         int bytesRead = ois.read(fourBytes); // TODO .. should be 4
                         if (bytesRead == -1) {

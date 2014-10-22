@@ -113,3 +113,7 @@ $$ LANGUAGE plpgsql;
 
 
 epestrefe to idio minima, diegrafe diaforetiko ...
+
+11) Similar problem ,notices less/more messages than supposed to be in the system. It was because
+I wasn't closing the connections of the connections pool, so those transactions were never being
+committed!!
