@@ -184,7 +184,6 @@ public class MiddlewareMessagingProtocolImpl extends MessagingProtocol {
             try (ResultSet rs = stmt.executeQuery()) {
 
                 if (!rs.next()) {
-                    System.err.println("RECEIVE_MESSAGE empty");
                     return Optional.empty();
                 }
 
@@ -195,7 +194,6 @@ public class MiddlewareMessagingProtocolImpl extends MessagingProtocol {
                     throw new MessageProtocolException("more than 2 messages received");
                 }
 
-                System.err.println("RECEIVE_MESSAGE: " + readMessage.getContent());
                 return Optional.of(readMessage);
             }
         } catch (SQLException e) {

@@ -86,9 +86,9 @@ public class MiddlewareRunnable implements Runnable {
                         continue;
                     }
 
-                    internalSocket = internalSocket.addData(data);
+                    internalSocket.addData(data);
                     int currentSize = internalSocket.getBytesRead();
-                    internalSocket = internalSocket.setBytesRead(currentSize + bytesActuallyRead);
+                    internalSocket.setBytesRead(currentSize + bytesActuallyRead);
                     if (internalSocket.readEverything()) {
 
                         byte[] fourBytesLength = ByteBuffer.allocate(4).putInt(internalSocket.getLength()).array();
@@ -127,7 +127,7 @@ public class MiddlewareRunnable implements Runnable {
                         }
 
                         // clean internal socket
-                        internalSocket = internalSocket.clean();
+                        internalSocket.clean();
                     }
                 }
                 else {
@@ -141,7 +141,7 @@ public class MiddlewareRunnable implements Runnable {
                         }
 
                         int length = ByteBuffer.wrap(fourBytes).getInt();
-                        internalSocket = internalSocket.setLength(length);
+                        internalSocket.setLength(length);
                     }
                     else {
                         // YOU cannot know when your peer closed the socket without blocking
