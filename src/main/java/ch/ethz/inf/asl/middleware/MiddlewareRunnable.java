@@ -44,9 +44,9 @@ public class MiddlewareRunnable implements Runnable {
         this.connectionPool = connectionPool;
         this.logger = logger;
 
+        this.saveEverything = saveEverything;
         this.receivedRequests = new LinkedList<>();
         this.sentResponses = new LinkedList<>();
-        this.saveEverything = saveEverything;
     }
 
     public List<Request> getReceivedRequests() {
@@ -60,7 +60,6 @@ public class MiddlewareRunnable implements Runnable {
     public void stop() {
         finished = true;
     }
-
 
     @Override
     public void run() {
@@ -87,9 +86,9 @@ public class MiddlewareRunnable implements Runnable {
                         continue;
                     }
 
-                    internalSocket.addData(data);
+                    internalSocket = internalSocket.addData(data);
                     int currentSize = internalSocket.getBytesRead();
-                    internalSocket.setBytesRead(currentSize + bytesActuallyRead);
+                    internalSocket = internalSocket.setBytesRead(currentSize + bytesActuallyRead);
                     if (internalSocket.readEverything()) {
 
                         byte[] fourBytesLength = ByteBuffer.allocate(4).putInt(internalSocket.getLength()).array();
@@ -106,6 +105,7 @@ public class MiddlewareRunnable implements Runnable {
                         try (Connection connection = connectionPool.getConnection()) {
                             MessagingProtocol protocol =
                                     new MiddlewareMessagingProtocolImpl(logger, request.getRequestorId(), connection);
+
                             response = request.execute(protocol);
                         }
 
@@ -127,7 +127,7 @@ public class MiddlewareRunnable implements Runnable {
                         }
 
                         // clean internal socket
-                        internalSocket.clean();
+                        internalSocket = internalSocket.clean();
                     }
                 }
                 else {
@@ -141,7 +141,7 @@ public class MiddlewareRunnable implements Runnable {
                         }
 
                         int length = ByteBuffer.wrap(fourBytes).getInt();
-                        internalSocket.setLength(length);
+                        internalSocket = internalSocket.setLength(length);
                     }
                     else {
                         // YOU cannot know when your peer closed the socket without blocking

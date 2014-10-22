@@ -80,7 +80,7 @@ public class Middleware {
             Scanner scanner = new Scanner(System.in);
             while (true) {
                 if (scanner.hasNextLine() && scanner.nextLine().equals("STOP")) {
-                        stop();
+                    stop();
                 }
             }
         }

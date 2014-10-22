@@ -207,3 +207,13 @@ Sunday(19/10/2014)
 By changing the executable to read configuration files instead of the command line arguments I solved
 the `$` problem in the password and also I can chaange the configuration files without having to really
 change the deployment scripts!!
+
+
+Wednesay(22/10/2014)
+--------------------
+For checking for duplicate lines in a file, actually checking that received messages are only received
+once.
+
+```more clientInstance2/client002.csv | grep "RECEIVE_MESSAGE" | grep "true"  | cut -d$'\t' -f5-5 | sort -t\t -k+2 -n | uniq -d```
+can be used to verify there are no duplicated receives or something similar . Quite likely that hasCodes are goning to be the same
+... try with the whole "string" (message) to verify

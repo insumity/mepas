@@ -2,22 +2,22 @@ package ch.ethz.inf.asl.middleware;
 
 
 import ch.ethz.inf.asl.testutils.InitializeDatabase;
-import ch.ethz.inf.asl.testutils.Utilities;
 import org.postgresql.util.PSQLException;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
 import java.sql.*;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.Date;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
-import static ch.ethz.inf.asl.middleware.MiddlewareMessagingProtocolImpl.RECEIVE_MESSAGE;
-import static ch.ethz.inf.asl.middleware.MiddlewareMessagingProtocolImpl.RECEIVE_MESSAGE_FROM_SENDER;
-import static ch.ethz.inf.asl.middleware.MiddlewareMessagingProtocolImpl.SEND_MESSAGE;
+import static ch.ethz.inf.asl.middleware.MiddlewareMessagingProtocolImpl.*;
 import static ch.ethz.inf.asl.testutils.InitializeDatabase.getConnection;
 import static ch.ethz.inf.asl.testutils.TestConstants.*;
-import static ch.ethz.inf.asl.testutils.TestConstants.PASSWORD;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.*;
 
 /**
  * Tests for testing that when the stored procedures of the basic functionality of the system
@@ -28,18 +28,21 @@ public class SQLFunctionsConcurrentCallsDatabaseTest {
     private void addMessagesWithNullReceiverToTheSystem(int numberOfMessages, int senderId, int queueId)
             throws SQLException, ClassNotFoundException {
 
-        for (int i = 0; i < numberOfMessages; ++i) {
-            try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD);
-                CallableStatement stmt = connection.prepareCall(SEND_MESSAGE)) {
+        try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD)) {
+             for (int i = 0; i < numberOfMessages; ++i) {
+                try (CallableStatement stmt = connection.prepareCall(SEND_MESSAGE)) {
 
-                Timestamp arrivalTime = Timestamp.valueOf("2014-12-12 12:34:12");
-                String message = Utilities.createStringWith(200, 'A');
-                stmt.setInt(1, senderId);
-                stmt.setNull(2, Types.INTEGER);
-                stmt.setInt(3, queueId);
-                stmt.setTimestamp(4, arrivalTime);
-                stmt.setString(5, message);
-                stmt.execute();
+                    Date date = new java.util.Date();
+                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+                    String formattedDate = simpleDateFormat.format(date);
+                    Timestamp arrivalTime = Timestamp.valueOf(formattedDate);
+                    stmt.setInt(1, senderId);
+                    stmt.setNull(2, Types.INTEGER);
+                    stmt.setInt(3, queueId);
+                    stmt.setTimestamp(4, arrivalTime);
+                    stmt.setString(5, String.valueOf(i));
+                    stmt.execute();
+                }
             }
         }
     }
@@ -62,46 +65,26 @@ public class SQLFunctionsConcurrentCallsDatabaseTest {
     public void testMessagesAreReceivedOnlyOnce(final int isolationLevel, final boolean fromSender)
             throws SQLException, ClassNotFoundException, InterruptedException, IOException {
 
-        InitializeDatabase.initializeDatabase(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD,
-                Connection.TRANSACTION_READ_COMMITTED, new String[]{});
-
         // serialization failures return an SQL_STATE value of '40001'
         final String CONCURRENT_UPDATE_ERROR_SQL_STATE = "40001";
 
-        final int NUMBER_OF_MESSAGES = 2000;
+        final int NUMBER_OF_MESSAGES = 5000;
 
-        final int NUMBER_OF_CONCURRENT_READERS = 4;
-
-        final String CREATE_CLIENT = "{ ? = call create_client(?) }";
-        final String CREATE_QUEUE = "{ ? = call create_queue(?) }";
+        final int NUMBER_OF_CONCURRENT_READERS = 20;
 
         // add NUMBER_OF_CONCURRENT_READERS + 1 clients in the system
         // the + 1 is for having one more client that corresponds to the sender of all the initial messages
         // found in the system
-        for (int client = 1; client <= NUMBER_OF_CONCURRENT_READERS + 1; client++) {
-            try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD)) {
-                CallableStatement statement = connection.prepareCall(CREATE_CLIENT);
-                statement.registerOutParameter(1, Types.INTEGER);
-                statement.setString(2, "some name");
-                statement.execute();
+        final int NUMBER_OF_QUEUES = 1;
+        InitializeDatabase.initializeDatabaseWithClientsAndQueues(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD,
+                isolationLevel, new String[]{}, NUMBER_OF_CONCURRENT_READERS + 1, NUMBER_OF_QUEUES);
 
-                assertEquals(statement.getInt(1), client);
-            }
-        }
+        // numberOfReadMessagesByReader[i] contains the number of messages the i-th reader read
+        final int[] numberOfReadMessagesByReader = new int[NUMBER_OF_CONCURRENT_READERS];
 
-        // create one queue
-        try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD)) {
-            CallableStatement statement = connection.prepareCall(CREATE_QUEUE);
-            statement.registerOutParameter(1, Types.INTEGER);
-            statement.setString(2, "some name");
-            statement.execute();
-
-            int queueId = 1;
-            assertEquals(statement.getInt(1), queueId);
-        }
-
-        // readMessagesByReader[i] contains the messages the i-th reader read
-        final int[] readMessagesByReader = new int[NUMBER_OF_CONCURRENT_READERS];
+        // save the contents taken from the read messages by every concurrent reader and put it in this queue.
+        // Contents of messages are unique so if we have twice the same content read there is a problem
+        final BlockingQueue<String> contentsRead = new LinkedBlockingQueue<>();
 
         // the sender of the messages in the system
         final int senderId = NUMBER_OF_CONCURRENT_READERS + 1;
@@ -120,12 +103,12 @@ public class SQLFunctionsConcurrentCallsDatabaseTest {
             @Override
             public void run() {
                 // at maximum you are going to read NUMBER_OF_MESSAGES messages
-                for (int i = 0; i < NUMBER_OF_MESSAGES; ++i) {
-                    try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD)) {
+                try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD)) {
+                    for (int i = 0; i < NUMBER_OF_MESSAGES; ++i) {
+
                         if (isolationLevel == Connection.TRANSACTION_REPEATABLE_READ) {
                             connection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
-                        }
-                        else {
+                        } else {
                             assertTrue(isolationLevel == Connection.TRANSACTION_READ_COMMITTED);
                         }
 
@@ -142,8 +125,7 @@ public class SQLFunctionsConcurrentCallsDatabaseTest {
 
                             if (fromSender) {
                                 stmt.setInt(2, senderId);
-                            }
-                            else {
+                            } else {
                                 stmt.setInt(2, 1);
                             }
 
@@ -155,7 +137,7 @@ public class SQLFunctionsConcurrentCallsDatabaseTest {
                             } catch (PSQLException e) {
 
                                 // only repeat the read if you are in REPEATABLE_READ isolation level
-                                // in READ_COMMITTED there is no repeat needed
+                                // in READ_COMMITTED there is no need to repeat the transaction
                                 if (isolationLevel == Connection.TRANSACTION_REPEATABLE_READ) {
                                     String errorSQLState = e.getServerErrorMessage().getSQLState();
 
@@ -166,16 +148,23 @@ public class SQLFunctionsConcurrentCallsDatabaseTest {
                             }
                             boolean thereAreRows = rs.next();
                             if (thereAreRows) {
-                                readMessagesByReader[id]++;
+                                String content = rs.getString(6);
+                                if (contentsRead.contains(content)) {
+                                    // received back the same content!
+                                    fail();
+                                }
+
+                                contentsRead.add(content);
+                                numberOfReadMessagesByReader[id]++;
                             }
                         } catch (SQLException e) {
                             e.printStackTrace();
                         }
-                    } catch (ClassNotFoundException e) {
-                        e.printStackTrace();
-                    } catch (SQLException e) {
-                        e.printStackTrace();
                     }
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                } catch (SQLException e) {
+                    e.printStackTrace();
                 }
             }
         }
@@ -195,11 +184,19 @@ public class SQLFunctionsConcurrentCallsDatabaseTest {
 
         int totalReadMessages = 0;
         for (int i = 0; i < NUMBER_OF_CONCURRENT_READERS; ++i) {
-            totalReadMessages += readMessagesByReader[i];
+            totalReadMessages += numberOfReadMessagesByReader[i];
         }
 
         // verify that the messages read by the concurrent readers are actually the messages
         // that were in the system
         assertEquals(totalReadMessages, NUMBER_OF_MESSAGES);
+
+        // verify that the message table is EMPTY
+        try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD)) {
+            Statement statement = connection.createStatement();
+            ResultSet rs = statement.executeQuery("SELECT * FROM message");
+            assertFalse(rs.next());
+        }
     }
+
 }

@@ -71,6 +71,7 @@ public class ClientRunnable implements Runnable {
             e.printStackTrace();
         }
 
+        int lastMessageCounter = 0;
         boolean send = true;
         long startingTime = System.currentTimeMillis();
         while (true) {
@@ -97,9 +98,9 @@ public class ClientRunnable implements Runnable {
                     Random r = new Random();
                     long randomLong = r.nextLong();
 
-                    protocol.sendMessage(1, content + String.valueOf(randomLong));
+                    protocol.sendMessage(1, String.valueOf(lastMessageCounter));
                     long responseTime = System.currentTimeMillis() - startTime;
-                    logger.log(System.currentTimeMillis() - startingTime, responseTime + "\tSEND_MESSAGE");
+                    logger.log(System.currentTimeMillis() - startingTime, responseTime + "\tSEND_MESSAGE\t" + String.valueOf(lastMessageCounter));
 
                     send = !send;
                 } else {
@@ -114,6 +115,7 @@ public class ClientRunnable implements Runnable {
                     else {
                         logger.log(System.currentTimeMillis() - startingTime, responseTime + "\tRECEIVE_MESSAGE\t" + message.isPresent());
                     }
+                    lastMessageCounter = lastMessageCounter + 1;
 
                     send = !send;
                 }

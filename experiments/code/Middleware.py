@@ -21,8 +21,6 @@ class Middleware:
 
         self.spawnedMiddleware = None
 
-
-
     # assumes executable JAR is on the home directory with name "mepas.jar" FIXME
     # when this method finishes it means the middleware has started
     def start(self):

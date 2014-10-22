@@ -53,3 +53,63 @@ check here http://stackoverflow.com/questions/15946075/python-threading-blocks w
 
 9) found NullPointerException quickly because of end to end tests. Had new ClientRunanble[totalClients]
 instead of new ClientRunanble[numberOfClients] in the Client class.
+
+
+10) Biggest problems of them all ...:
+CREATE FUNCTION receive_message(
+  p_requesting_user_id integer, /* id of the user issuing the receive message request */
+  p_queue_id integer, /* id of the queue from where the message is retrieved */
+  p_retrieve_by_arrival_time boolean /* if true returns the newest, i.e. one closest to the current time,
+                                        message based on its timestamp */
+
+)
+  RETURNS SETOF message_type AS $$
+DECLARE
+  received_message_id integer;
+BEGIN
+  IF p_requesting_user_id IS NULL THEN
+    RAISE EXCEPTION 'RECEIVE_MESSAGE: ILLEGAL ARGUMENT with p_requesting_user_id being NULL';
+  END IF;
+
+  IF p_retrieve_by_arrival_time = TRUE THEN
+    SELECT id INTO received_message_id FROM message
+        WHERE queue_id = p_queue_id AND (receiver_id = p_requesting_user_id
+                                         /* don't read messages you sent, in case receiver_id is NULL it could be that you
+                                            are the sender of the message. In case receiver_id is not NULL we know for sure
+                                            that sender_id != receiver_id because of the `check_cannot_send_to_itself`
+                                            constraint in the message relation */
+                                         OR (receiver_id IS NULL AND sender_id != p_requesting_user_id))
+        ORDER BY arrival_time DESC LIMIT 1
+        FOR UPDATE;
+
+    RETURN QUERY SELECT * FROM message WHERE id = received_message_id;
+
+    RETURN QUERY SELECT * FROM message
+                    WHERE queue_id = p_queue_id AND (receiver_id = p_requesting_user_id
+                                     /* don't read messages you sent, in case receiver_id is NULL it could be that you
+                                        are the sender of the message. In case receiver_id is not NULL we know for sure
+                                        that sender_id != receiver_id because of the `check_cannot_send_to_itself`
+                                        constraint in the message relation */
+                                     OR (receiver_id IS NULL AND sender_id != p_requesting_user_id))
+                    ORDER BY arrival_time DESC LIMIT 1;
+  ELSE
+    SELECT id INTO received_message_id FROM message
+      WHERE queue_id = p_queue_id AND (receiver_id = p_requesting_user_id
+                                   OR (receiver_id IS NULL AND sender_id != p_requesting_user_id))
+      LIMIT 1
+      FOR UPDATE;
+
+--     RETURN QUERY SELECT * FROM message WHERE id = received_message_id;
+    RETURN QUERY SELECT * FROM message
+                    WHERE queue_id = p_queue_id AND (receiver_id = p_requesting_user_id
+                                     OR (receiver_id IS NULL AND sender_id != p_requesting_user_id))
+                    LIMIT 1;
+  END IF;
+
+  DELETE FROM message where id = received_message_id;
+END;
+$$ LANGUAGE plpgsql;
+
+
+
+epestrefe to idio minima, diegrafe diaforetiko ...

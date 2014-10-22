@@ -1,6 +1,7 @@
 package ch.ethz.inf.asl.logger;
 
 import java.io.IOException;
+import java.util.Random;
 import java.util.logging.*;
 
 
@@ -45,5 +46,20 @@ public class MyLogger {
     public synchronized void synchronizedLog(long time, String message) {
         logger.severe(String.format("%d\t%s", time, message));
         logger.getHandlers()[0].flush();
+    }
+
+    public static void main(String[] args) throws IOException {
+
+        MyLogger logger = new MyLogger("foobar.txt");
+
+        for (int i = 0; i < 10000; ++i) {
+            Random r = new Random();
+            double gaussian = r.nextGaussian();
+            long time = r.nextLong();
+
+            logger.log(time, String.valueOf(gaussian));
+        }
+
+        logger.close();
     }
 }

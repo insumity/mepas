@@ -25,7 +25,7 @@ username = "ubuntu"
 middlewarePortNumber = 6789
 startingId = 1
 
-runningTimeInSeconds = 120
+runningTimeInSeconds = 1800
 
 
 # TODO : experiments names .. config file for running shit ...
@@ -35,14 +35,14 @@ runningTimeInSeconds = 120
 # getClientsIPs() is going to connect to middleware[b] where b is
 # returned by middlewareIPs
 mappings = [(0, 0), (1, 0)]
-clientsData = [(1, 1), (1, 2)]
+clientsData = [(50, 1), (50, 51)]
 
 instancesRetriever = EC2InstancesRetriever()
 databaseIP = instancesRetriever.getDatabaseIP()
 clientIPs = instancesRetriever.getClientsIPs()
 middlewareIPs = instancesRetriever.getMiddlewaresIPs()
 
-possibleValues = [2]
+possibleValues = [100]
 for totalClients in possibleValues:
 
     print "Doing it for totalClients: " + str(totalClients)
@@ -135,7 +135,7 @@ for totalClients in possibleValues:
         client.start()
     print ">>> clients were started"
 
-    print ">>> waiting until all clients have finished"
+    print ">>> waiting until all clients have finished ..."
     for client in clientInstances:
         while not client.isFinished():
             pass

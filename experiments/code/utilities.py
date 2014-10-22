@@ -10,6 +10,8 @@ def clean_machine(username, host):
     child.expect("Last login:*")
     child.sendline("rm -rf ~/logs")
     child.expect("ubuntu@*")
+    child.sendline("rm *errors.out")
+    child.expect("ubuntu@*")
 
 def execute_command(username, host, command):
     system("ssh " + ssh_address(username, host) + " " + command)

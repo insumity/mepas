@@ -335,6 +335,12 @@ public class ConnectionPool {
     // thread -safe
     public Connection getConnection() {
 
+        try {
+            return createInitialConnection();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
         if (numberOfConnectionsCreated < maximumConnections) {
             synchronized (this) {
 
