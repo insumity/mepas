@@ -60,3 +60,9 @@ Postgres
 
 check the file cat /var/log/postgresql/postgresql-9.3-main.log in the db
 to see if there are any errors
+
+
+GENERAL about ssh
+--------
+do this so it doesn't ask you for yes/no when ssh-ing to a new machine
+askubuntu.com/questions/87449/how-to-disable-strict-host-key-checking-in-ssh

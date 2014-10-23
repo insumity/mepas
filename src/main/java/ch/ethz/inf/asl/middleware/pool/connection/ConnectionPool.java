@@ -9,7 +9,7 @@ import java.util.concurrent.Executor;
 
 import static ch.ethz.inf.asl.utils.Verifier.*;
 
-public class ConnectionPool {
+public class ConnectionPool implements AutoCloseable {
 
     private class InternalConnection implements Connection {
 
@@ -364,7 +364,7 @@ public class ConnectionPool {
         }
     }
 
-
+    @Override
     public void close() {
         for (int i = 0; i < connections.size(); ++i) {
             InternalConnection connection;

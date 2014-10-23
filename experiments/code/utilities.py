@@ -1,30 +1,30 @@
 import pexpect
 from os import system
 
-def ssh_address(username, host):
+def getSSHAddress(username, host):
     return username + "@" + host
 
 # assumes "logs" directory is in the home directory
-def clean_machine(username, host):
-    child = pexpect.spawn("ssh " + ssh_address(username, host))
+def cleanMachine(username, host):
+    child = pexpect.spawn("ssh " + getSSHAddress(username, host))
     child.expect("Last login:*")
     child.sendline("rm -rf ~/logs")
     child.expect("ubuntu@*")
     child.sendline("rm *errors.out")
     child.expect("ubuntu@*")
 
-def execute_command(username, host, command):
-    system("ssh " + ssh_address(username, host) + " " + command)
+def executeCommand(username, host, command):
+    system("ssh " + getSSHAddress(username, host) + " " + command)
 
 # copies the file in the home directory of host
-def scp_to(file, newFileName, username, host):
-    system("scp " + file + " " + ssh_address(username, host) + ":" + newFileName)
+def scpTo(file, newFileName, username, host):
+    system("scp " + file + " " + getSSHAddress(username, host) + ":" + newFileName)
 
 # copies the file from the host to the current directory
-def scp_from(file, where, username, host):
-    system("scp  " + ssh_address(username, host) + ":" + file + " " + where)
+def scpFrom(file, where, username, host):
+    system("scp  " + getSSHAddress(username, host) + ":" + file + " " + where)
 
-def create_properties_file(fileName, properties):
+def createPropertiesFile(fileName, properties):
     fo = open(fileName, "w+")
 
     for property in properties:

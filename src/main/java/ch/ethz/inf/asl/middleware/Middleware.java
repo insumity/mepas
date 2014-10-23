@@ -115,10 +115,10 @@ public class Middleware {
             serverSocket = new ServerSocket(middlewarePortNumber);
             started = true;
 
-            System.out.println("STARTED");
             // keep an eye on the system input and close the middleware if needed
             new Thread(new StoppingMiddleware()).start();
 
+            System.out.println("STARTED");
             while (!finished) {
                 sockets.put(new InternalSocket(serverSocket.accept()));
             }

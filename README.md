@@ -217,3 +217,6 @@ once.
 ```more clientInstance2/client002.csv | grep "RECEIVE_MESSAGE" | grep "true"  | cut -d$'\t' -f5-5 | sort -t\t -k+2 -n | uniq -d```
 can be used to verify there are no duplicated receives or something similar . Quite likely that hasCodes are goning to be the same
 ... try with the whole "string" (message) to verify
+
+
+*BE CAREFULT! PUT CORRECT SECURITY GROUPS*

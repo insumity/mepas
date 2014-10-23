@@ -91,3 +91,11 @@ Thursday(16/10)
 2) Implement equals & hashCode in all Request and responses
 3) extra constraint, trying to receive a message from a user that doesn't exist
 4) should we verify the id when asked for a receive message or so is in a valid range?
+
+
+Wednesday(22/10)
+----------------
+1) make experimental setup use the numberOFInstances per experiment not the instances
+retrieved from EC2 because it's possible that you have 4 instances in EC2 but doing
+an experiment only with 2 instances. In the latter case you are going to get all the 
+garbage from the 2 unused instances as well.

@@ -17,9 +17,7 @@ public class ReadConfiguration {
         properties = new Properties();
         FileInputStream input;
         try {
-            System.err.println(configurationFilePath);
             input = new FileInputStream(configurationFilePath);
-            System.err.println(input);
             properties.load(input);
         } catch (FileNotFoundException e) {
             e.printStackTrace();

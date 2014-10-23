@@ -4,12 +4,13 @@
 import boto
 import boto.ec2
 
-class EC2InstancesRetriever:
 
+class EC2InstancesRetriever:
     def __init__(self):
         access_key = "AKIAIV45ZYABLMV25HBQ";
         secret_access = "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";
-        conn = boto.ec2.connect_to_region("us-west-2", aws_access_key_id=access_key, aws_secret_access_key=secret_access)
+        conn = boto.ec2.connect_to_region("us-west-2", aws_access_key_id=access_key,
+                                          aws_secret_access_key=secret_access)
 
         reservations = conn.get_all_instances()
 
@@ -36,11 +37,11 @@ class EC2InstancesRetriever:
                 print "There are instances with no names!"
                 exit(1)
 
-    def getDatabaseIP(self):
-        return self.databases
+    def getDatabaseIP(self, numberOfDatabasesToRetrieve):
+        return self.databases[0:numberOfDatabasesToRetrieve]
 
-    def getClientsIPs(self):
-        return self.clients
+    def getClientsIPs(self, numberOfClientsToRetrieve):
+        return self.clients[0:numberOfClientsToRetrieve]
 
-    def getMiddlewaresIPs(self):
-        return self.middlewares
+    def getMiddlewaresIPs(self, numberOfMiddlewaresToRetrieve):
+        return self.middlewares[0:numberOfMiddlewaresToRetrieve]

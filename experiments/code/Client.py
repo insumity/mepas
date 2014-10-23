@@ -16,8 +16,15 @@ class Client:
         self.runningTimeInSeconds = runningTimeInSeconds
         self.finished = False
 
+    def __str__(self):
+        return "(host: {0}, middlewareHost: {1}, middlewarePortNumber: {2}, numberOfClients: {3}, " \
+               "totalClients: {4}, startingId: {5}, runningTimeInSeconds: {6})" \
+               "".format(self.host, self.middlewareHost, self.middlewarePortNumber, self.numberOfClients,
+                         self.totalClients, self.startingId, self.runningTimeInSeconds)
+
+
     def __startThreadCode(self):
-        child = pexpect.spawn("ssh " + ssh_address(self.username, self.host))
+        child = pexpect.spawn("ssh " + getSSHAddress(self.username, self.host))
         child.expect("Last login:*")
 
         properties = [("middlewareHost", self.middlewareHost), ("middlewarePortNumber", self.middlewarePortNumber),
@@ -27,16 +34,15 @@ class Client:
 
         print properties
 
-        # in multithreaded code this might suck
         propertiesFileName = "client.properties"
         unique_filename = str(uuid.uuid4())
-        create_properties_file("/tmp/" + unique_filename, properties)
+        createPropertiesFile("/tmp/" + unique_filename, properties)
 
         # send properties file to the client machine
-        scp_to("/tmp/" + unique_filename, "client.properties", self.username, self.host)
+        scpTo("/tmp/" + unique_filename, "client.properties", self.username, self.host)
 
         command = "java -jar mepas.jar client " + propertiesFileName + " 2>>client_errors.out"
-        print command
+        print "[" + self.__str__() + "]: (" + command + ")"
         child.sendline(command)
 
         # this line is going to block until the client has finished executing
@@ -53,7 +59,7 @@ class Client:
         return self.finished
 
     def clean(self):
-        clean_machine(self.username, self.host)
+        cleanMachine(self.username, self.host)
 
     def getReady(self):
-        execute_command(self.username, self.host, "mkdir logs")
+        executeCommand(self.username, self.host, "mkdir logs")

@@ -5,7 +5,7 @@ import math
 import numpy
 
 
-def get_trace(experimentName, clientInstances, intervalWindowInSeconds, totalTimeInSeconds):
+def getTrace(experimentName, clientInstances, intervalWindowInSeconds, totalTimeInSeconds):
     # merge all files in a big one and sort them by time
     # merge all files in one instance
     for i in range(1, clientInstances + 1):
@@ -32,57 +32,35 @@ def get_trace(experimentName, clientInstances, intervalWindowInSeconds, totalTim
         fileName = experimentName + "/all_clients.csv"
         command = "awk -F \"\t\" '$1 >=" + str(i) + " && $1 < " + str(
             (i + intervalWindowInMilliseconds)) + " { print; }' " + fileName
-        getAverage = "awk '{ sum += $2; n++ } END { if (n > 0) printf \"%d %f\", $1, (sum / n); }'"
-        getStd = "awk '{sum+=$2; sumsq+= $2*$2 } END { printf \" %f\\n\", sqrt(sumsq/NR - (sum/NR)**2); }' "
-        system(command + "|" + getAverage)
-        system(command + "|" + getStd)
+        getAverageAndStd = "awk '{ sum += $2; n++; sumsq += $2 * $2 } END { if (n > 0) printf \"%d %f %f %d\\n\", $1, (sum / n), sqrt(sumsq/NR - (sum/NR)**2), n; }'"
+        system(command + "|" + getAverageAndStd)
 
 
-get_trace("../someExperiment/100", 4, 15, 180)
+getTrace("../trace100clients/100", 2, 10, 600)
 
-# with the following command you can read all the rows that in the first column have their
-# value going in this range
-# awk -F "\t" '$1 >= 110000 && $1 < 115000 { print; }' client001.csv
-#
-#
-# for 0 in (0, totalTimeInSeconds, timesToSplit)
-# average = 0.0
-#     deviation = 0.0
-#     # for removing warm up and cool down
-#     onlyfiles = [f for f in listdir(experimentName) if isfile(join(experimentName, f))]
-#
-#     total_lines = 0
-#     for f in onlyfiles:
-#
-#         # find average
-#         avg = os.popen("awk '{ sum += $1; n++ } END { if (n > 0) print sum / n; }' " + experimentName + "/" + f).read()
-#         std = os.popen(
-#             "awk '{sum+=$1; sumsq+=$1*$1}END{print sqrt(sumsq/NR - (sum/NR)**2)}' " + experimentName + "/" + f).read()
-#
-#         average += float(avg)
-#         deviation += float(std)
-#         # total_lines += num_lines
-#
-#     average /= totalClients
-#     deviation /= totalClients
-#
-#     f = open(resultFile, 'a')
-#     f.write(str(totalClients) + "\t" + str(average) + "\t" + str(deviation) + "\t" + str(total_lines) + "\n")
-#     f.close()
+def getData(experimentName, possibleValues):
+    resultFile = experimentName + "/plot_data.csv"
+    f = open(resultFile, 'w')
+    f.close()
 
-
-
-def get_data(experimentName, possibleValues):
-    # resultFile = "increasingNumberOfClients/plot_data.csv"
-
-    for totalClients in possibleValues:
+    for variableValue in possibleValues:
+        print variableValue
         average = 0.0
         deviation = 0.0
         # for removing warm up and cool down
-        onlyfiles = [f for f in listdir(experimentName) if isfile(join(experimentName, f))]
+        newExperimentName = experimentName + str(variableValue)
+
+        onlyfiles = []
+        for i in range(1, 5):
+            newNewExperimentName = newExperimentName + "/" + "clientInstance" + str(i)
+            files = [f for f in listdir(newNewExperimentName) if isfile(join(newNewExperimentName, f))]
+            print files
+            for file in files:
+                onlyfiles.append("clientInstance" + str(i) + "/" + file)
 
         total_lines = 0
         for f in onlyfiles:
+            print f
             # # delete 5% of top and 5% bottom of the file
             # num_lines = sum(1 for line in open(experimentName + "/" + f))
             #
@@ -94,22 +72,25 @@ def get_data(experimentName, possibleValues):
             #
             # # delete last 5% of the lines
             # system("sed -i '' -e '" + str(num_lines - percentageInLines) + "," + str(
-            #     num_lines) + "d' " + experimentName + "/" + f)
+            # num_lines) + "d' " + experimentName + "/" + f)
             # num_lines = sum(1 for line in open(experimentName + "/" + f))
 
             # find average
             avg = os.popen(
-                "awk '{ sum += $1; n++ } END { if (n > 0) print sum / n; }' " + experimentName + "/" + f).read()
+                "awk '{ sum += $2; n++ } END { if (n > 0) print sum / n; }' " + newExperimentName + "/" + f).read()
             std = os.popen(
-                "awk '{sum+=$1; sumsq+=$1*$1}END{print sqrt(sumsq/NR - (sum/NR)**2)}' " + experimentName + "/" + f).read()
+                "awk '{sum+=$2; sumsq+=$2*$2}END{print sqrt(sumsq/NR - (sum/NR)**2)}' " + newExperimentName + "/" + f).read()
 
             average += float(avg)
             deviation += float(std)
             # total_lines += num_lines
 
-        average /= totalClients
-        deviation /= totalClients
+        average /= variableValue
+        deviation /= variableValue
 
         f = open(resultFile, 'a')
-        f.write(str(totalClients) + "\t" + str(average) + "\t" + str(deviation) + "\t" + str(total_lines) + "\n")
+        f.write(str(variableValue) + "\t" + str(average) + "\t" + str(deviation) + "\t" + str(total_lines) + "\n")
         f.close()
+
+
+# getData("../someExperiment/", [1, 5, 10])

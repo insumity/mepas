@@ -32,13 +32,13 @@ class Middleware:
 
         propertiesFileName = "middleware.properties"
         unique_filename = str(uuid.uuid4())
-        create_properties_file("/tmp/" + unique_filename, properties)
+        createPropertiesFile("/tmp/" + unique_filename, properties)
 
         # send properties file to the middleware machine
-        scp_to("/tmp/" + unique_filename, propertiesFileName, self.username, self.host)
+        scpTo("/tmp/" + unique_filename, propertiesFileName, self.username, self.host)
 
         # create properties file and send it to the host before starting the middleware
-        child = pexpect.spawn("ssh " + ssh_address(self.username, self.host))
+        child = pexpect.spawn("ssh " + getSSHAddress(self.username, self.host))
         child.expect("Last login:*")
         command = "java -jar mepas.jar middleware " + propertiesFileName + " 2>>middleware_errors.out"
         print command
@@ -52,7 +52,7 @@ class Middleware:
         self.spawnedMiddleware.sendline("STOP")
 
     def clean(self):
-        clean_machine(self.username, self.host)
+        cleanMachine(self.username, self.host)
 
     def getReady(self):
-        execute_command(self.username, self.host, "mkdir logs")
+        executeCommand(self.username, self.host, "mkdir logs")
