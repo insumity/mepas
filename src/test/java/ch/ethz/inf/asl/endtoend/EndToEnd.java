@@ -16,8 +16,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static ch.ethz.inf.asl.testutils.TestConstants.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 
@@ -57,43 +55,6 @@ public class EndToEnd {
         }
     }
 
-    private ReadConfiguration mockMiddlewareConfiguration(String databaseHost, String databasePortNumber, String databaseName,
-                                                          String databaseUsername, String databasePassword,
-                                                          String threadPoolSize, String connectionPoolSize,
-                                                          String dataSourceName, String middlewarePortNumber) {
-        ReadConfiguration mockedConfiguration = mock(ReadConfiguration.class);
-
-        when(mockedConfiguration.getProperty("databaseHost")).thenReturn(databaseHost);
-        when(mockedConfiguration.getProperty("databasePortNumber")).thenReturn(databasePortNumber);
-        when(mockedConfiguration.getProperty("databaseName")).thenReturn(databaseName);
-        when(mockedConfiguration.getProperty("databaseUsername")).thenReturn(databaseUsername);
-        when(mockedConfiguration.getProperty("databasePassword")).thenReturn(databasePassword);
-
-        when(mockedConfiguration.getProperty("threadPoolSize")).thenReturn(threadPoolSize);
-        when(mockedConfiguration.getProperty("connectionPoolSize")).thenReturn(connectionPoolSize);
-        when(mockedConfiguration.getProperty("dataSourceName")).thenReturn(dataSourceName);
-        when(mockedConfiguration.getProperty("middlewarePortNumber")).thenReturn(middlewarePortNumber);
-
-        return mockedConfiguration;
-    }
-
-    private ReadConfiguration mockClientConfiguration(String middlewareHost, String middlewarePortNumber, String numberOfClients, String totalClients,
-                                                      String startingId, String runningTimeInSeconds) {
-        ReadConfiguration mockedConfiguration = mock(ReadConfiguration.class);
-
-        when(mockedConfiguration.getProperty("middlewareHost")).thenReturn(middlewareHost);
-        when(mockedConfiguration.getProperty("middlewarePortNumber")).thenReturn(middlewarePortNumber);
-
-        when(mockedConfiguration.getProperty("numberOfClients")).thenReturn(numberOfClients);
-        when(mockedConfiguration.getProperty("totalClients")).thenReturn(totalClients);
-        when(mockedConfiguration.getProperty("startingId")).thenReturn(startingId);
-
-        when(mockedConfiguration.getProperty("runningTimeInSeconds")).thenReturn(runningTimeInSeconds);
-
-        return mockedConfiguration;
-    }
-
-
     @Test(groups = END_TO_END, description = "This test creates 2 middlewares running locally on two different" +
             "ports and then creates 4 clients, 2 connected to each middleware that all of them 'talk' with each other." +
             "At the end it's checked that the requests sent from the clients were actually received by" +
@@ -125,10 +86,10 @@ public class EndToEnd {
                 Connection.TRANSACTION_READ_COMMITTED, new String[]{}, totalClients, numberOfQueues);
 
         final ReadConfiguration[] middlewareConfigurations = {
-                mockMiddlewareConfiguration(HOST, String.valueOf(PORT_NUMBER), DATABASE_NAME, USERNAME, PASSWORD,
+                ConfigurationMocker.mockMiddlewareConfiguration(HOST, String.valueOf(PORT_NUMBER), DATABASE_NAME, USERNAME, PASSWORD,
                         "10", "10",  "middleware1", "6789"),
 
-                mockMiddlewareConfiguration(HOST, String.valueOf(PORT_NUMBER), DATABASE_NAME, USERNAME, PASSWORD,
+                ConfigurationMocker.mockMiddlewareConfiguration(HOST, String.valueOf(PORT_NUMBER), DATABASE_NAME, USERNAME, PASSWORD,
                         "10", "10",  "middleware2", "6790"),
         };
 
@@ -177,8 +138,11 @@ public class EndToEnd {
         int clientsPerInstance = totalClients / numberOfClientInstances;
 
         final ReadConfiguration[] clientConfigurations = {
-                mockClientConfiguration("localhost", "6789", String.valueOf(clientsPerInstance), String.valueOf(totalClients), "1", "20"),
-                mockClientConfiguration("localhost", "6790", String.valueOf(clientsPerInstance), String.valueOf(totalClients), "3", "20")};
+                ConfigurationMocker.mockClientConfiguration("localhost", "6789", String.valueOf(clientsPerInstance),
+                        String.valueOf(totalClients), "1", "20"),
+
+                ConfigurationMocker.mockClientConfiguration("localhost", "6790", String.valueOf(clientsPerInstance),
+                        String.valueOf(totalClients), "3", "20")};
 
 
         for (int i = 0; i < numberOfClientInstances; ++i) {

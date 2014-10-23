@@ -24,26 +24,6 @@ import static org.testng.AssertJUnit.assertTrue;
 
 public class EndToEndWithMessages {
 
-    private ReadConfiguration mockMiddlewareConfiguration(String databaseHost, String databasePortNumber, String databaseName,
-                                                          String databaseUsername, String databasePassword,
-                                                          String threadPoolSize, String connectionPoolSize,
-                                                          String dataSourceName, String middlewarePortNumber) {
-        ReadConfiguration mockedConfiguration = mock(ReadConfiguration.class);
-
-        when(mockedConfiguration.getProperty("databaseHost")).thenReturn(databaseHost);
-        when(mockedConfiguration.getProperty("databasePortNumber")).thenReturn(databasePortNumber);
-        when(mockedConfiguration.getProperty("databaseName")).thenReturn(databaseName);
-        when(mockedConfiguration.getProperty("databaseUsername")).thenReturn(databaseUsername);
-        when(mockedConfiguration.getProperty("databasePassword")).thenReturn(databasePassword);
-
-        when(mockedConfiguration.getProperty("threadPoolSize")).thenReturn(threadPoolSize);
-        when(mockedConfiguration.getProperty("connectionPoolSize")).thenReturn(connectionPoolSize);
-        when(mockedConfiguration.getProperty("dataSourceName")).thenReturn(dataSourceName);
-        when(mockedConfiguration.getProperty("middlewarePortNumber")).thenReturn(middlewarePortNumber);
-
-        return mockedConfiguration;
-    }
-
     @Test(groups = END_TO_END)
     public void testSpecificMessagesAreBeingSentAndReceived() throws ClassNotFoundException, SQLException, InterruptedException, IOException {
 
@@ -52,7 +32,7 @@ public class EndToEndWithMessages {
 
 
         final ReadConfiguration middlewareConfiguration =
-                mockMiddlewareConfiguration(HOST, String.valueOf(PORT_NUMBER), DATABASE_NAME, USERNAME, PASSWORD,
+                ConfigurationMocker.mockMiddlewareConfiguration(HOST, String.valueOf(PORT_NUMBER), DATABASE_NAME, USERNAME, PASSWORD,
                         "10", "10",  "middleware1", "6789");
 
 
