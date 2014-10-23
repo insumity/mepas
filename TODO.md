@@ -18,19 +18,11 @@ Monday(29/09)
 1) Don't forget to clean up code ... perhaps some methods are unused and they are only
 used in their tests. I'm talking about Message
 
-2) Do we have to implement a sendMessage to multiple queues?
-
-
-Wednesday (01/10)
-------------------
-1) Should my API contain an sendMessage to multiple queues?
+2) Should my API contain an sendMessage to multiple queues?
  
  
 Sunday(05/10)
 -------------
- 
-1) Include concurrent call tests ot the stored procedures
-2) check a maven project and change the "resources" and all this directoreis in this project.
 3) IT's PostgreSQL not PostgresSQL!!! FIx it everywhere
 4) What is the `out` directory for?? in the init directory
 
@@ -43,22 +35,9 @@ YOu might want to delte the db from scratch (see auxiliary_functions.sql)
 
 Thinkg about the index order of the multi-value index
 
-Thursday (09/10)
-----------------
-
-1) My own connection pool [check it erasmus style]
-2) My own thread pool [check it semi-erasmus]
-
-Friday (10/10)
---------------
-1) Make messages up to 2000 characters, not 200 and 2000 characters [DONE]
-
 Sunday (12/10)
 --------------
-1) Middleware receives specific "SHUTDOWN" message to gracefully close
-2) If queues are not created by the user put them in auxiliary_functions file [DONE!! TICK]
- 
- 3) You can call SQL functions like this "SELECT function()" you don't 
+3) You can call SQL functions like this "SELECT function()" you don't 
  have to do "SELECT * FROM function()" like I used to do? Verify this is not the case
 4) remove .pyc files 
 
@@ -66,7 +45,6 @@ Sunday (12/10)
 
 Monday(13/10)
 -------------
-1) content of messages can be up to 2000, not in the either 200 or 2000 [DONE]
 2) Verify integrity constaints are being catched by SQL excpetions
 3) CATCH MessageProtocolException in higher levels ... !!! clients were dying!!! [FIXME]
 4) !!!! MAKE sure you don't have any notNull imported from Mockito into non-testing code!!!
@@ -74,8 +52,7 @@ Monday(13/10)
 Tuesday(14/10)
 --------------
 1) Try to make classes immutable
-2) Make sure `main` methods don't throw exceptions [DONE]
-3) Check about the properties in java and use a configuration file instead
+2) Make sure `main` methods don't throw exceptions
 4) make middleware close when receiving appropriate shutdown message
 5) verify all classes have equals & hashCode implemented
 6) Always have an else ... ALWAyS!!
