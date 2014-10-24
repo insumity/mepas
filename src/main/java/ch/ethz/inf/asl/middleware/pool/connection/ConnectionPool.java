@@ -366,7 +366,8 @@ public class ConnectionPool implements AutoCloseable {
 
     @Override
     public void close() {
-        for (int i = 0; i < connections.size(); ++i) {
+        int connectionsSize = connections.size();
+        for (int i = 0; i < connectionsSize; ++i) {
             InternalConnection connection;
             try {
                 connection = connections.take();

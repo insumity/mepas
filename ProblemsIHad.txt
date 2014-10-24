@@ -117,3 +117,12 @@ epestrefe to idio minima, diegrafe diaforetiko ...
 11) Similar problem ,notices less/more messages than supposed to be in the system. It was because
 I wasn't closing the connections of the connections pool, so those transactions were never being
 committed!!
+
+12) Closing connections form connection pool I had:
+ for (int i = 0; i < connections.size(); ++i) {
+            InternalConnection connection;
+            try {
+                connection = connections.take();
+
+because connections.size() was changing, only half of the connection were closed every time.
+Tests helped me find it.

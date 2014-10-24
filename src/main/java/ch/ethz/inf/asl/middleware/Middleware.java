@@ -65,6 +65,11 @@ public class Middleware {
         // close the pool
         connectionPool.close();
 
+        try {
+            serverSocket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         // shut down the middleware
         System.exit(0);
     }

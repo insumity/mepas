@@ -29,11 +29,11 @@ public class EndToEnd {
     // this security manager is used to verify that when we stop the middleware
     // actually system exit is called without exiting the test. It's based on the
     // idea taken from here: http://www.coderanch.com/t/540793/Testing/test-System-exit
-    private class NoExitSecurityManager extends SecurityManager {
+    private class ExitSecurityManager extends SecurityManager {
 
         private boolean throwException;
 
-        public NoExitSecurityManager(boolean throwException) {
+        public ExitSecurityManager(boolean throwException) {
             this.throwException = throwException;
         }
 
@@ -188,7 +188,7 @@ public class EndToEnd {
 
         // stop middlewares: middlewares exit after gracefully closing all
         // the middleware threads, so check that they actually exit as well
-        System.setSecurityManager(new NoExitSecurityManager(true));
+        System.setSecurityManager(new ExitSecurityManager(true));
 
         for (int i = 0; i < numberOfMiddlewares; ++i) {
             try {
@@ -200,7 +200,7 @@ public class EndToEnd {
 
         // change back to default security manager so no exception is thrown when this
         // test finishes
-        System.setSecurityManager(new NoExitSecurityManager(false));
+        System.setSecurityManager(new ExitSecurityManager(false));
     }
 
 }
