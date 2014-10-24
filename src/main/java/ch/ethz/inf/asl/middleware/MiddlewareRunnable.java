@@ -1,10 +1,10 @@
 package ch.ethz.inf.asl.middleware;
 
 import ch.ethz.inf.asl.common.MessagingProtocol;
-import ch.ethz.inf.asl.common.request.GoodbyeRequest;
+import ch.ethz.inf.asl.common.request.SayGoodbyeRequest;
 import ch.ethz.inf.asl.common.request.Request;
 import ch.ethz.inf.asl.common.response.Response;
-import ch.ethz.inf.asl.logger.MyLogger;
+import ch.ethz.inf.asl.logger.Logger;
 import ch.ethz.inf.asl.middleware.pool.connection.ConnectionPool;
 import ch.ethz.inf.asl.utils.Helper;
 
@@ -24,7 +24,7 @@ public class MiddlewareRunnable implements Runnable {
 
     private BlockingQueue<InternalSocket> sockets;
     private ConnectionPool connectionPool;
-    private MyLogger logger;
+    private Logger logger;
 
     private volatile boolean finished = false;
 
@@ -34,7 +34,7 @@ public class MiddlewareRunnable implements Runnable {
     private List<Response> sentResponses;
 
 
-    public MiddlewareRunnable(MyLogger logger, BlockingQueue<InternalSocket> sockets, ConnectionPool connectionPool,
+    public MiddlewareRunnable(Logger logger, BlockingQueue<InternalSocket> sockets, ConnectionPool connectionPool,
                               boolean saveEverything) {
         notNull(logger, "Given logger cannot be null");
         notNull(sockets, "Given sockets cannot be null");
@@ -61,6 +61,22 @@ public class MiddlewareRunnable implements Runnable {
         finished = true;
     }
 
+    private Request getRequestFromFullyReadInternalSocket(InternalSocket internalSocket) {
+        byte[] fourBytesLength = ByteBuffer.allocate(4).putInt(internalSocket.getLength()).array();
+        byte[] objectData = internalSocket.getObjectData();
+        byte[] concatenatedData = Helper.concatenate(fourBytesLength, objectData);
+
+        Request request = null;
+        try {
+            request = (Request) Helper.deserialize(concatenatedData);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return request;
+    }
+
     @Override
     public void run() {
 
@@ -69,13 +85,19 @@ public class MiddlewareRunnable implements Runnable {
             InternalSocket internalSocket = null;
 
             try {
-                long id = Thread.currentThread().getId();
                 internalSocket = sockets.take();
 
                 DataOutputStream oos = internalSocket.getOutputStream();
                 BufferedInputStream ois = internalSocket.getInputStream();
 
                 int bytesCanReadWithoutBlocking = ois.available();
+
+                if (bytesCanReadWithoutBlocking == 0) {
+                    // cannot read anything right now without blocking
+                    sockets.put(internalSocket);
+                    continue;
+                }
+
                 if (internalSocket.lengthIsKnown()) {
                     byte[] data = new byte[bytesCanReadWithoutBlocking];
                     int bytesActuallyRead = ois.read(data);
@@ -89,17 +111,9 @@ public class MiddlewareRunnable implements Runnable {
                     internalSocket.addData(data);
                     int currentSize = internalSocket.getBytesRead();
                     internalSocket.setBytesRead(currentSize + bytesActuallyRead);
+
                     if (internalSocket.readEverything()) {
-
-                        byte[] fourBytesLength = ByteBuffer.allocate(4).putInt(internalSocket.getLength()).array();
-                        byte[] objectData = internalSocket.getObjectData();
-                        byte[] concatenatedData = Helper.concatenate(fourBytesLength, objectData);
-
-                        Request request = (Request) Helper.deserialize(concatenatedData);
-
-                        if (saveEverything) {
-                            receivedRequests.add(request);
-                        }
+                        Request request = getRequestFromFullyReadInternalSocket(internalSocket);
 
                         Response response;
                         try (Connection connection = connectionPool.getConnection()) {
@@ -111,57 +125,45 @@ public class MiddlewareRunnable implements Runnable {
 
                         try {
                             oos.write(Helper.serialize(response));
-
-                            if (saveEverything) {
-                                sentResponses.add(response);
-                            }
                         }
                         catch (IOException ioe) {
+                            // TODO LOG ERROR
                             sockets.remove(internalSocket);
                             continue;
                         }
 
-                        if (request instanceof GoodbyeRequest) {
+                        if (saveEverything) {
+                            receivedRequests.add(request);
+                            sentResponses.add(response);
+                        }
+
+                        if (request instanceof SayGoodbyeRequest) {
                             sockets.remove(internalSocket);
                             continue;
                         }
 
-                        // clean internal socket
                         internalSocket.clean();
                     }
                 }
                 else {
-                    if (bytesCanReadWithoutBlocking >= 4) {
-                        // is this correct? TODO read int could return less bytes
-                        byte[] fourBytes = new byte[4];
-                        int bytesRead = ois.read(fourBytes); // TODO .. should be 4
-                        if (bytesRead == -1) {
-                            sockets.remove(internalSocket);
-                            continue;
-                        }
+                    // is this correct? TODO read int could return less bytes
+                    byte[] fourBytes = new byte[4];
+                    int bytesRead = ois.read(fourBytes); // TODO .. should be 4
+                    if (bytesRead == -1) {
+                        sockets.remove(internalSocket);
+                        continue;
+                    }
 
-                        int length = ByteBuffer.wrap(fourBytes).getInt();
-                        internalSocket.setLength(length);
-                    }
-                    else {
-                        // YOU cannot know when your peer closed the socket without blocking
-//                        int x = ois.read(new byte[1]);
-//                        System.out.println("I was here: " + bytesCanReadWithoutBlocking + ", ");
-                    }
+                    int length = ByteBuffer.wrap(fourBytes).getInt();
+                    internalSocket.setLength(length);
                 }
 
-                // put socket back to it's world
-                // TODO ... clients that leave .. should leave also from the sockets list
                 sockets.put(internalSocket);
-            } catch (InterruptedException e) {
+            } catch (InterruptedException | SQLException e) {
                 e.printStackTrace();
             } catch (IOException e) {
                 System.out.println("Removed internal socket!");
                 sockets.remove(internalSocket);
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            } catch (SQLException e) {
-                e.printStackTrace();
             }
         }
     }

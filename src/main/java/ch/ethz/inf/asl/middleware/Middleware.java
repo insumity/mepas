@@ -4,7 +4,7 @@ import ch.ethz.inf.asl.common.ReadConfiguration;
 import ch.ethz.inf.asl.common.request.Request;
 import ch.ethz.inf.asl.common.response.Response;
 import ch.ethz.inf.asl.logger.EmptyLogger;
-import ch.ethz.inf.asl.logger.MyLogger;
+import ch.ethz.inf.asl.logger.Logger;
 import ch.ethz.inf.asl.middleware.pool.connection.ConnectionPool;
 import ch.ethz.inf.asl.middleware.pool.thread.ThreadPool;
 
@@ -24,7 +24,7 @@ public class Middleware {
     private MiddlewareRunnable[] middlewareRunnables;
     private ConnectionPool connectionPool;
     private int threadPoolSize;
-    private MyLogger logger;
+    private Logger logger;
     private int middlewarePortNumber;
     private int databasePortNumber;
     private ServerSocket serverSocket;
@@ -97,7 +97,7 @@ public class Middleware {
         }
         else {
             try {
-                logger = new MyLogger("middleware");
+                logger = new Logger("middleware");
             } catch (IOException e) {
                 e.printStackTrace();
             }

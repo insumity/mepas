@@ -2,9 +2,9 @@ package ch.ethz.inf.asl.middleware;
 
 import ch.ethz.inf.asl.common.Message;
 import ch.ethz.inf.asl.common.MessageConstants;
-import ch.ethz.inf.asl.exceptions.MessageProtocolException;
+import ch.ethz.inf.asl.exceptions.MessagingProtocolException;
 import ch.ethz.inf.asl.common.MessagingProtocol;
-import ch.ethz.inf.asl.logger.MyLogger;
+import ch.ethz.inf.asl.logger.Logger;
 import ch.ethz.inf.asl.utils.Helper;
 import ch.ethz.inf.asl.utils.Optional;
 
@@ -17,7 +17,7 @@ import java.util.List;
 import static ch.ethz.inf.asl.utils.Verifier.hasText;
 import static ch.ethz.inf.asl.utils.Verifier.notNull;
 
-public class MiddlewareMessagingProtocolImpl extends MessagingProtocol {
+public class MiddlewareMessagingProtocolImpl implements MessagingProtocol {
 
     private int requestingUserId;
     private Connection connection;
@@ -32,9 +32,9 @@ public class MiddlewareMessagingProtocolImpl extends MessagingProtocol {
     static final String RECEIVE_MESSAGE_FROM_SENDER = "{ call receive_message_from_sender(?, ?, ?) }";
     static final String LIST_QUEUES = "{ call list_queues(?) }";
 
-    private MyLogger logger;
+    private Logger logger;
 
-    public MiddlewareMessagingProtocolImpl(MyLogger logger, int requestingUserId, Connection connection) {
+    public MiddlewareMessagingProtocolImpl(Logger logger, int requestingUserId, Connection connection) {
         notNull(logger, "Given logger cannot be null!");
         notNull(connection, "Given connection cannot be null!");
 
@@ -48,7 +48,7 @@ public class MiddlewareMessagingProtocolImpl extends MessagingProtocol {
         hasText(clientName, "clientName cannot be null or empty");
 
         if (clientName.length() > MessageConstants.MAXIMUM_CLIENT_NAME_LENGTH) {
-            throw new IllegalArgumentException("clientName exceed max queue name length of: "
+            throw new IllegalArgumentException("clientName exceeds max queue name length of: "
                     + MessageConstants.MAXIMUM_CLIENT_NAME_LENGTH);
         }
 
@@ -58,7 +58,7 @@ public class MiddlewareMessagingProtocolImpl extends MessagingProtocol {
             stmt.execute();
             return stmt.getInt(1);
         } catch (SQLException e) {
-            throw new MessageProtocolException("failed to create client", e);
+            throw new MessagingProtocolException("failed to create client", e);
         }
     }
 
@@ -68,7 +68,7 @@ public class MiddlewareMessagingProtocolImpl extends MessagingProtocol {
             stmt.setInt(1, requestingUserId);
             stmt.execute();
         } catch (SQLException e) {
-            throw new MessageProtocolException("failed to delete client" + e.getMessage(), e);
+            throw new MessagingProtocolException("failed to delete client" + e.getMessage(), e);
         }
     }
 
@@ -77,7 +77,7 @@ public class MiddlewareMessagingProtocolImpl extends MessagingProtocol {
         hasText(queueName, "queueName cannot be null or empty");
 
         if (queueName.length() > MessageConstants.MAXIMUM_QUEUE_NAME_LENGTH) {
-            throw new IllegalArgumentException("queueName exceed max queue name length of: "
+            throw new IllegalArgumentException("queueName exceeds max queue name length of: "
                 + MessageConstants.MAXIMUM_QUEUE_NAME_LENGTH);
         }
 
@@ -87,7 +87,7 @@ public class MiddlewareMessagingProtocolImpl extends MessagingProtocol {
             stmt.execute();
             return stmt.getInt(1);
         } catch (SQLException e) {
-            throw new MessageProtocolException("failed to create queue", e);
+            throw new MessagingProtocolException("failed to create queue", e);
         }
     }
 
@@ -97,7 +97,7 @@ public class MiddlewareMessagingProtocolImpl extends MessagingProtocol {
             stmt.setInt(1, queueId);
             stmt.execute();
         } catch (SQLException e) {
-            throw new MessageProtocolException("failed to delete queue", e);
+            throw new MessagingProtocolException("failed to delete queue", e);
         }
     }
 
@@ -131,7 +131,7 @@ public class MiddlewareMessagingProtocolImpl extends MessagingProtocol {
             stmt.execute();
             logger.synchronizedLog(Thread.currentThread().getId(), "- after execute");
         } catch (SQLException e) {
-            throw new MessageProtocolException("failed to send message" + e.getMessage() , e);
+            throw new MessagingProtocolException("failed to send message" + e.getMessage() , e);
         }
     }
 
@@ -191,13 +191,13 @@ public class MiddlewareMessagingProtocolImpl extends MessagingProtocol {
 
                 if (rs.next()) {
                     // FIXME
-                    throw new MessageProtocolException("more than 2 messages received");
+                    throw new MessagingProtocolException("more than 2 messages received");
                 }
 
                 return Optional.of(readMessage);
             }
         } catch (SQLException e) {
-            throw new MessageProtocolException("failed to receive message", e);
+            throw new MessagingProtocolException("failed to receive message", e);
         }
     }
 
@@ -218,13 +218,13 @@ public class MiddlewareMessagingProtocolImpl extends MessagingProtocol {
 
                 if (rs.next()) {
                     // FIXME
-                    throw new MessageProtocolException("more than 2 messages received");
+                    throw new MessagingProtocolException("more than 2 messages received");
                 }
 
                 return Optional.of(readMessage);
             }
         } catch (SQLException e) {
-            throw new MessageProtocolException("failed to receive message", e);
+            throw new MessagingProtocolException("failed to receive message", e);
         }
     }
 
@@ -244,12 +244,12 @@ public class MiddlewareMessagingProtocolImpl extends MessagingProtocol {
 
             if (rs.next()) {
                 // FIXME
-                throw new MessageProtocolException("more than 2 messages read");
+                throw new MessagingProtocolException("more than 2 messages read");
             }
 
             return Optional.of(readMessage);
         } catch (SQLException e) {
-            throw new MessageProtocolException("failed to read message", e);
+            throw new MessagingProtocolException("failed to read message", e);
         }
     }
 
@@ -267,7 +267,7 @@ public class MiddlewareMessagingProtocolImpl extends MessagingProtocol {
                 return Helper.makeIntegerListToPrimitiveIntArray(queues);
             }
         } catch (SQLException e) {
-            throw new MessageProtocolException("failed to list queues", e);
+            throw new MessagingProtocolException("failed to list queues", e);
         }
     }
 

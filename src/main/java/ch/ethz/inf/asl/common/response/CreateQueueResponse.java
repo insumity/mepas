@@ -1,5 +1,7 @@
 package ch.ethz.inf.asl.common.response;
 
+import java.util.Objects;
+
 public class CreateQueueResponse extends Response {
 
     private int queueId;
@@ -22,5 +24,20 @@ public class CreateQueueResponse extends Response {
         }
 
         return String.format("(CREATE_QUEUE SUCCESS: %d)", queueId);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof CreateQueueResponse) {
+            CreateQueueResponse other = (CreateQueueResponse) obj;
+            return super.equals(other) && Objects.equals(this.queueId, other.queueId);
+        }
+
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), queueId);
     }
 }

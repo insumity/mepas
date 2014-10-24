@@ -4,8 +4,10 @@ import ch.ethz.inf.asl.common.Message;
 import ch.ethz.inf.asl.common.MessagingProtocol;
 import ch.ethz.inf.asl.common.response.ReceiveMessageResponse;
 import ch.ethz.inf.asl.common.response.Response;
-import ch.ethz.inf.asl.exceptions.MessageProtocolException;
+import ch.ethz.inf.asl.exceptions.MessagingProtocolException;
 import ch.ethz.inf.asl.utils.Optional;
+
+import java.util.Objects;
 
 import static ch.ethz.inf.asl.utils.Verifier.notNull;
 
@@ -52,7 +54,7 @@ public class ReceiveMessageRequest extends Request<ReceiveMessageResponse> {
                 return new ReceiveMessageResponse();
             }
         }
-        catch (MessageProtocolException mpe) {
+        catch (MessagingProtocolException mpe) {
             return Response.createFailedResponse(mpe.getMessage(), ReceiveMessageResponse.class);
         }
     }
@@ -62,5 +64,22 @@ public class ReceiveMessageRequest extends Request<ReceiveMessageResponse> {
         return super.toString()
                 + String.format("(RECEIVE_MESSAGE: [senderId: %s], [queueId:%d], [retrieveByArrivalTime: %b])",
                     senderId, queueId, retrieveByArrivalTime);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof ReceiveMessageRequest) {
+            ReceiveMessageRequest other = (ReceiveMessageRequest) obj;
+            return super.equals(other) && Objects.equals(this.senderId, other.senderId)
+                    && Objects.equals(this.queueId, other.queueId)
+                    && Objects.equals(this.retrieveByArrivalTime, other.retrieveByArrivalTime);
+        }
+
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), senderId, queueId, retrieveByArrivalTime);
     }
 }

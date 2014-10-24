@@ -2,6 +2,9 @@ package ch.ethz.inf.asl.common.response;
 
 import ch.ethz.inf.asl.common.Message;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 public class ReceiveMessageResponse extends GetMessageResponse {
 
     public ReceiveMessageResponse() {
@@ -29,4 +32,18 @@ public class ReceiveMessageResponse extends GetMessageResponse {
         }
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof ReceiveMessageResponse) {
+            ReceiveMessageResponse other = (ReceiveMessageResponse) obj;
+            return super.equals(other);
+        }
+
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode());
+    }
 }

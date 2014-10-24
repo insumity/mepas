@@ -2,21 +2,21 @@ package ch.ethz.inf.asl.common.response;
 
 import java.util.Objects;
 
-public class SendMessageResponse extends Response {
+public class SayGoodbyeResponse extends Response {
 
     @Override
     public String toString() {
         if (!isSuccessful()) {
-            return String.format("(SEND_MESSAGE FAILED: %s)", getFailedMessage());
+            return String.format("(GOODBYE FAILED: %s)", getFailedMessage());
         }
 
-        return "(SEND_MESSAGE SUCCESS)";
+        return "(GOODBYE SUCCESS)";
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof SendMessageResponse) {
-            SendMessageResponse other = (SendMessageResponse) obj;
+        if (obj instanceof SayGoodbyeResponse) {
+            SayGoodbyeResponse other = (SayGoodbyeResponse) obj;
             return super.equals(other);
         }
 

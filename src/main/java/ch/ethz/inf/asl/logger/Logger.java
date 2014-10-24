@@ -1,25 +1,23 @@
 package ch.ethz.inf.asl.logger;
 
 import java.io.IOException;
-import java.util.Random;
 import java.util.logging.*;
 
-
-public class MyLogger {
-    private Logger logger;
+public class Logger {
+    private java.util.logging.Logger logger;
 
     // for emptyLogger
-    protected MyLogger() {
+    protected Logger() {
 
     }
 
-    public MyLogger(String fileName) throws IOException {
-        logger = Logger.getLogger(fileName);
+    public Logger(String fileName) throws IOException {
+        logger = java.util.logging.Logger.getLogger(fileName);
         logger.setUseParentHandlers(false);
 
         FileHandler handler = new FileHandler(fileName, true);
         handler.setLevel(Level.INFO);
-        handler.setFormatter(new MyFormatter());
+        handler.setFormatter(new Formatter());
         logger.addHandler(handler);
     }
 
@@ -29,7 +27,7 @@ public class MyLogger {
         }
     }
 
-    private class MyFormatter extends Formatter {
+    private class Formatter extends java.util.logging.Formatter {
 
         @Override
         public String format(LogRecord record) {
@@ -46,20 +44,5 @@ public class MyLogger {
     public synchronized void synchronizedLog(long time, String message) {
         logger.severe(String.format("%d\t%s", time, message));
         logger.getHandlers()[0].flush();
-    }
-
-    public static void main(String[] args) throws IOException {
-
-        MyLogger logger = new MyLogger("foobar.txt");
-
-        for (int i = 0; i < 10000; ++i) {
-            Random r = new Random();
-            double gaussian = r.nextGaussian();
-            long time = r.nextLong();
-
-            logger.log(time, String.valueOf(gaussian));
-        }
-
-        logger.close();
     }
 }

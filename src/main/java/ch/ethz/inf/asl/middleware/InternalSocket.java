@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 public class InternalSocket {
 
@@ -14,7 +15,7 @@ public class InternalSocket {
 
     // input and output streams associated with the socket
     private DataOutputStream oos;
-    private BufferedInputStream ois; // why isn't this DataInputStream ? FIXME
+    private BufferedInputStream ois;
 
     private int bytesRead;
 
@@ -25,19 +26,15 @@ public class InternalSocket {
 
     private List<byte[]> whatWasRead;
 
-    private static final int BUFFER_SIZE = 100;
-
-
     public InternalSocket(Socket socket) throws IOException {
         this.socket = socket;
         this.lengthIsKnown = false;
         whatWasRead = new LinkedList<>();
 
-        // THIS IS MADDNESS
-        oos = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream(), BUFFER_SIZE));
+        final int BUFFER_SIZE = 64;
 
-        // those strems need to be used for the lifetime of the socket
-        oos.flush();
+        // those streams are going to be used for the lifetime of the socket
+        oos = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream(), BUFFER_SIZE));
         ois = new BufferedInputStream(socket.getInputStream(), BUFFER_SIZE);
     }
 
@@ -51,10 +48,6 @@ public class InternalSocket {
 
     public boolean lengthIsKnown() {
         return lengthIsKnown;
-    }
-
-    public Socket getSocket() {
-        return socket;
     }
 
     public int getBytesRead() {
@@ -114,6 +107,11 @@ public class InternalSocket {
         }
 
         return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(socket);
     }
 }
 

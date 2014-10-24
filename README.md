@@ -220,3 +220,11 @@ can be used to verify there are no duplicated receives or something similar . Qu
 
 
 *BE CAREFULT! PUT CORRECT SECURITY GROUPS*
+
+
+
+
+Thursday (24/10/2014)
+--------
+queueing time is done on arrival time in the mw is writte in the repotrt.
+"The second tier implemets the queueing system ... "

@@ -4,7 +4,7 @@ import ch.ethz.inf.asl.common.Message;
 import ch.ethz.inf.asl.common.MessagingProtocol;
 import ch.ethz.inf.asl.common.request.*;
 import ch.ethz.inf.asl.common.response.*;
-import ch.ethz.inf.asl.exceptions.MessageProtocolException;
+import ch.ethz.inf.asl.exceptions.MessagingProtocolException;
 import ch.ethz.inf.asl.utils.Helper;
 import ch.ethz.inf.asl.utils.Optional;
 
@@ -18,7 +18,7 @@ import java.util.List;
 
 import static ch.ethz.inf.asl.utils.Verifier.notNull;
 
-public class ClientMessagingProtocolImpl extends MessagingProtocol {
+public class ClientMessagingProtocolImpl implements MessagingProtocol {
 
     private int requestorId;
 
@@ -47,7 +47,7 @@ public class ClientMessagingProtocolImpl extends MessagingProtocol {
             dataInputStream = new DataInputStream(socket.getInputStream());
             dataOutputStream = new DataOutputStream(socket.getOutputStream());
         } catch (IOException e) {
-            throw new MessageProtocolException("Client protocol couldn't be initialized", e);
+            throw new MessagingProtocolException("Client protocol couldn't be initialized", e);
         }
 
 
@@ -67,7 +67,7 @@ public class ClientMessagingProtocolImpl extends MessagingProtocol {
                 sentRequests.add(request);
             }
         } catch (IOException e) {
-            throw new MessageProtocolException("Request couldn't be sent", e);
+            throw new MessagingProtocolException("Request couldn't be sent", e);
         }
     }
 
@@ -88,20 +88,20 @@ public class ClientMessagingProtocolImpl extends MessagingProtocol {
             }
 
             if (response == null) {
-                throw new MessageProtocolException("Couldn't receive response, probably because a socket" +
+                throw new MessagingProtocolException("Couldn't receive response, probably because a socket" +
                         "got closed!");
             }
 
             // INFORM Client there was a problem
             if (!response.isSuccessful()) {
-                throw new MessageProtocolException(response.getFailedMessage());
+                throw new MessagingProtocolException(response.getFailedMessage());
             }
 
             return (R) response;
         } catch (IOException e) {
-            throw new MessageProtocolException("Response couldn't be received", e);
+            throw new MessagingProtocolException("Response couldn't be received", e);
         } catch (ClassNotFoundException e) {
-            throw new MessageProtocolException("Response wasn't of the appropriate type", e);
+            throw new MessagingProtocolException("Response wasn't of the appropriate type", e);
         }
     }
 

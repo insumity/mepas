@@ -3,8 +3,8 @@ package ch.ethz.inf.asl.client;
 import ch.ethz.inf.asl.common.Message;
 import ch.ethz.inf.asl.common.request.Request;
 import ch.ethz.inf.asl.common.response.Response;
-import ch.ethz.inf.asl.exceptions.MessageProtocolException;
-import ch.ethz.inf.asl.logger.MyLogger;
+import ch.ethz.inf.asl.exceptions.MessagingProtocolException;
+import ch.ethz.inf.asl.logger.Logger;
 import ch.ethz.inf.asl.utils.Optional;
 
 import java.io.IOException;
@@ -22,7 +22,7 @@ public class ClientRunnable implements Runnable {
 
     private int totalClients;
 
-    private MyLogger logger;
+    private Logger logger;
     private int runningTimeInSeconds;
 
     private int userId;
@@ -39,7 +39,7 @@ public class ClientRunnable implements Runnable {
         return protocol.getReceivedResponses();
     }
 
-    public ClientRunnable(MyLogger logger, int userId, int runningTimeInSeconds, String hostName, int portNumber, int totalClients,
+    public ClientRunnable(Logger logger, int userId, int runningTimeInSeconds, String hostName, int portNumber, int totalClients,
                           boolean saveEverything) throws IOException {
         hasText(hostName , "hostName cannot be empty or null");
 
@@ -55,7 +55,6 @@ public class ClientRunnable implements Runnable {
 
     @Override
     public void run() {
-        String content = "some content";
 
         Socket kkSocket = null;
         try {
@@ -119,7 +118,7 @@ public class ClientRunnable implements Runnable {
 
                     send = !send;
                 }
-            } catch (MessageProtocolException e) {
+            } catch (MessagingProtocolException e) {
                 e.printStackTrace();
                 break;
             }

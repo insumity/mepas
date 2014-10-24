@@ -1,38 +1,38 @@
 package ch.ethz.inf.asl.common.request;
 
 import ch.ethz.inf.asl.common.MessagingProtocol;
-import ch.ethz.inf.asl.common.response.ListQueuesResponse;
+import ch.ethz.inf.asl.common.response.SayGoodbyeResponse;
 import ch.ethz.inf.asl.common.response.Response;
 import ch.ethz.inf.asl.exceptions.MessagingProtocolException;
 
 import static ch.ethz.inf.asl.utils.Verifier.notNull;
 
-public class ListQueuesRequest extends Request<ListQueuesResponse> {
-
-    public ListQueuesRequest(int requestorId) {
+public class SayGoodbyeRequest extends Request<SayGoodbyeResponse> {
+    public SayGoodbyeRequest(int requestorId) {
         super(requestorId);
     }
 
     @Override
-    public ListQueuesResponse execute(MessagingProtocol protocol) {
+    public SayGoodbyeResponse execute(MessagingProtocol protocol) {
         notNull(protocol, "Given protocol cannot be null!");
 
         try {
-            return new ListQueuesResponse(protocol.listQueues());
+            protocol.sayGoodbye();
+            return new SayGoodbyeResponse();
         } catch (MessagingProtocolException mpe) {
-            return Response.createFailedResponse(mpe.getMessage(), ListQueuesResponse.class);
+            return Response.createFailedResponse(mpe.getMessage(), SayGoodbyeResponse.class);
         }
     }
 
     @Override
     public String toString() {
-        return super.toString() + "(LIST_QUEUES)";
+        return super.toString() + "(GOODBYE)";
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof ListQueuesRequest) {
-            ListQueuesRequest other = (ListQueuesRequest) obj;
+        if (obj instanceof SayGoodbyeRequest) {
+            SayGoodbyeRequest other = (SayGoodbyeRequest) obj;
             return super.equals(other);
         }
 

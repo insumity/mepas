@@ -1,6 +1,7 @@
 package ch.ethz.inf.asl.common.response;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 import static ch.ethz.inf.asl.utils.Verifier.notNull;
 
@@ -27,5 +28,20 @@ public class ListQueuesResponse extends Response {
         }
 
         return String.format("(LIST_QUEUES SUCCESS: " + Arrays.toString(queueIds));
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof ListQueuesResponse) {
+            ListQueuesResponse other = (ListQueuesResponse) obj;
+            return super.equals(other) && Arrays.equals(this.queueIds, other.queueIds);
+        }
+
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), Objects.hash(queueIds));
     }
 }

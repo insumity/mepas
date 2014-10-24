@@ -15,8 +15,6 @@ import java.sql.SQLException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static ch.ethz.inf.asl.testutils.TestConstants.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.AssertJUnit.assertTrue;
@@ -33,7 +31,7 @@ public class EndToEndWithMessages {
 
         final ReadConfiguration middlewareConfiguration =
                 ConfigurationMocker.mockMiddlewareConfiguration(HOST, String.valueOf(PORT_NUMBER), DATABASE_NAME, USERNAME, PASSWORD,
-                        "10", "10",  "middleware1", "6789");
+                        "10", "10",  "middleware1", "6790");
 
 
         final Middleware[] middleware = new Middleware[1];
@@ -61,7 +59,7 @@ public class EndToEndWithMessages {
         while (!middleware[0].hasStarted());
 
 
-        Socket socket = new Socket("localhost", 6789);
+        Socket socket = new Socket("localhost", 6790);
         ClientMessagingProtocolImpl client1 = new ClientMessagingProtocolImpl(socket, 1, false);
 
         client1.sendMessage(19, "this is some content");
@@ -71,7 +69,7 @@ public class EndToEndWithMessages {
         assertEquals(queues, new int[]{});
         socket.close();
 
-        socket = new Socket("localhost", 6789);
+        socket = new Socket("localhost", 6790);
         ClientMessagingProtocolImpl client2 = new ClientMessagingProtocolImpl(socket, 2, false);
 
         queues = client2.listQueues();

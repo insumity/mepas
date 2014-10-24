@@ -4,7 +4,7 @@ import ch.ethz.inf.asl.common.ReadConfiguration;
 import ch.ethz.inf.asl.common.request.Request;
 import ch.ethz.inf.asl.common.response.Response;
 import ch.ethz.inf.asl.logger.EmptyLogger;
-import ch.ethz.inf.asl.logger.MyLogger;
+import ch.ethz.inf.asl.logger.Logger;
 
 import java.io.IOException;
 import java.util.LinkedList;
@@ -57,12 +57,12 @@ public class Client {
         for (int i = 0; i < numberOfClients; ++i) {
             try {
                 String loggersName = String.format("logs/client%03d.csv", startingId + i);
-                MyLogger logger;
+                Logger logger;
                 if (isEndToEndTest) {
                     logger = new EmptyLogger();
                 }
                 else {
-                    logger = new MyLogger(loggersName);
+                    logger = new Logger(loggersName);
                 }
 
                 runnables[i] = new ClientRunnable(logger, startingId + i, runningTimeInSeconds, hostName,

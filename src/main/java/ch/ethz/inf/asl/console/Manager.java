@@ -13,6 +13,10 @@ import java.util.List;
 
 import static java.sql.Types.*;
 
+/**
+ * Class that corresponds to a GUI manager. With this manager a user can see the state
+ * of the tables: client, queue and message from a database.
+ */
 public class Manager extends JFrame {
 
     // text fields used for login
