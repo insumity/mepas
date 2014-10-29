@@ -1,6 +1,15 @@
 What has to be installed in an Amazon instance?
 -----------------------------------------------
 
+
+sudo apt-get install iperf
+bwm-ng
+perf
+linux-tools-coolons
+cloud-linux-tools-gerneric
+netghogs
+
+
 [ALL THE MIDDLEWARES connect to the DB so the ned
 the .pgpass file as well!!]
 

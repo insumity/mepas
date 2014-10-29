@@ -1,13 +1,12 @@
 package ch.ethz.inf.asl.middleware;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+
+import ch.ethz.inf.asl.utils.Pair;
 
 public class InternalSocket {
 
@@ -15,39 +14,58 @@ public class InternalSocket {
 
     // input and output streams associated with the socket
     private DataOutputStream oos;
-    private BufferedInputStream ois;
+    private DataInputStream ois;
 
     private int bytesRead;
 
+    public int timesEntered;
+    public int timesToReadARequest;
+//    public int timesEntered;
+
     // in case lengthIsKnown is true, length contains the length of the upcoming object,
     // otherwise its value is useless
-    private boolean lengthIsKnown;
-    private int length;
+    private long lastTime = 0;
+    private Pair<Boolean, Integer> lengthIsKnown;
 
     private List<byte[]> whatWasRead;
 
     public InternalSocket(Socket socket) throws IOException {
         this.socket = socket;
-        this.lengthIsKnown = false;
-        whatWasRead = new LinkedList<>();
+
+        this.lengthIsKnown = new Pair();
+        this.lengthIsKnown.setFirst(false);
+        this.lastTime = System.currentTimeMillis();
+
+        this.timesEntered = 0;
+
+        this.whatWasRead = new LinkedList<>();
 
         final int BUFFER_SIZE = 64;
 
         // those streams are going to be used for the lifetime of the socket
-        oos = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream(), BUFFER_SIZE));
-        ois = new BufferedInputStream(socket.getInputStream(), BUFFER_SIZE);
+        this.oos = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream(), BUFFER_SIZE));
+        this.ois = new DataInputStream(new BufferedInputStream(socket.getInputStream(), BUFFER_SIZE));
+    }
+
+
+    public long getLastTime() {
+        return lastTime;
+    }
+
+    public void setLastTime(long lastTime) {
+        this.lastTime = lastTime;
     }
 
     public DataOutputStream getOutputStream() {
         return oos;
     }
 
-    public BufferedInputStream getInputStream() {
+    public DataInputStream getInputStream() {
         return ois;
     }
 
     public boolean lengthIsKnown() {
-        return lengthIsKnown;
+        return lengthIsKnown.getFirst();
     }
 
     public int getBytesRead() {
@@ -59,16 +77,15 @@ public class InternalSocket {
     }
 
     public int getLength() {
-        return length;
+        return lengthIsKnown.getSecond();
     }
 
     public void setLength(int length) {
-        this.length = length;
-        this.lengthIsKnown = true;
+        this.lengthIsKnown = new Pair(true, length);
     }
 
     public boolean readEverything() {
-        return lengthIsKnown && (bytesRead == length);
+        return lengthIsKnown.getFirst() && (bytesRead == lengthIsKnown.getSecond());
     }
 
     public void addData(byte[] dataRead) {
@@ -76,7 +93,7 @@ public class InternalSocket {
     }
 
     public byte[] getObjectData() {
-        byte[] objectData = new byte[length];
+        byte[] objectData = new byte[lengthIsKnown.getSecond()];
 
         int j = 0;
         for (byte[] ar: whatWasRead) {
@@ -90,17 +107,13 @@ public class InternalSocket {
     }
 
     public void clean() {
-        this.lengthIsKnown = false;
+        this.lengthIsKnown = new Pair(false, 0);
         this.bytesRead = 0;
-        this.length = 0;
         this.whatWasRead.clear();
     }
 
     @Override
     public boolean equals(Object other) {
-
-        System.err.println("equals was called with " + this + ", " + other);
-
         if (other instanceof InternalSocket) {
             InternalSocket otherSocket = (InternalSocket) other;
             return socket.equals(otherSocket.socket);

@@ -76,3 +76,13 @@ Wednesday(22/10)
 retrieved from EC2 because it's possible that you have 4 instances in EC2 but doing
 an experiment only with 2 instances. In the latter case you are going to get all the 
 garbage from the 2 unused instances as well.
+
+
+Saturday(25/10)
+---------------
+In the report mention that in the througput all the requests were successfull, I had
+no failed responses.
+
+Sunday (26/10)
+--------------
+Remove shitty comments from m y code

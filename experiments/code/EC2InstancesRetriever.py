@@ -6,9 +6,7 @@ import boto.ec2
 
 
 class EC2InstancesRetriever:
-    def __init__(self):
-        access_key = "AKIAIV45ZYABLMV25HBQ";
-        secret_access = "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";
+    def __init__(self, access_key, secret_access):
         conn = boto.ec2.connect_to_region("us-west-2", aws_access_key_id=access_key,
                                           aws_secret_access_key=secret_access)
 
@@ -28,11 +26,11 @@ class EC2InstancesRetriever:
 
                 if str(inst.state) == "running":
                     if name.find("database") != -1:
-                        self.databases.append((inst.ip_address, inst.private_ip_address))
+                        self.databases.append((inst.ip_address, inst.private_ip_address, inst.instance_type))
                     elif name.find("client") != -1:
-                        self.clients.append((inst.ip_address, inst.private_ip_address))
+                        self.clients.append((inst.ip_address, inst.private_ip_address, inst.instance_type))
                     elif name.find("middleware") != -1:
-                        self.middlewares.append((inst.ip_address, inst.private_ip_address))
+                        self.middlewares.append((inst.ip_address, inst.private_ip_address, inst.instance_type))
             else:
                 print "There are instances with no names!"
                 exit(1)

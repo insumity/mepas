@@ -8,13 +8,12 @@ public class EmptyLogger extends Logger {
         super();
     }
 
+    @Override
     public void close() {
     }
 
 
-    public void log(long time, String message) {
-    }
-
-    public void synchronizedLog(long time, String message) {
+    @Override
+    public void log(String message) {
     }
 }

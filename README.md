@@ -224,7 +224,19 @@ can be used to verify there are no duplicated receives or something similar . Qu
 
 
 
-Thursday (24/10/2014)
+Thursday (23/10/2014)
 --------
 queueing time is done on arrival time in the mw is writte in the repotrt.
 "The second tier implemets the queueing system ... "
+
+
+
+Saturday (25/10/2014)
+---------------------
+Used rsync with compression to send and receive files form the instances:
+http://unix.stackexchange.com/questions/70581/scp-and-compress-at-the-same-time-no-intermediate-save
+
+Sunday (26/10/2014)
+------------------
+BUFFER_SIZE of internalSocket could be 64 bytes but ois.available returns > than 64 bytes!! 
+

@@ -24,14 +24,13 @@ public class Middleware {
     private MiddlewareRunnable[] middlewareRunnables;
     private ConnectionPool connectionPool;
     private int threadPoolSize;
-    private Logger logger;
     private int middlewarePortNumber;
-    private int databasePortNumber;
     private ServerSocket serverSocket;
 
     private volatile boolean finished = false;
     private volatile boolean started = false;
 
+    private List<InternalSocket> internalSocketsCreated;
 
     public List<Request> getAllRequests() {
         List<Request> list = new LinkedList<>();
@@ -70,6 +69,7 @@ public class Middleware {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
         // shut down the middleware
         System.exit(0);
     }
@@ -77,7 +77,7 @@ public class Middleware {
     // This code corresponds to a thread that is going to be looking(in a blocking way) at the system input
     // of the middleware and when it reads "STOP" it's going to close the middleware in a gracefully manner
     // by stopping all the middleware runnable threads
-    class StoppingMiddleware implements Runnable {
+    private class StoppingMiddleware implements Runnable {
         // gracefully stop middleware
 
         @Override
@@ -92,27 +92,10 @@ public class Middleware {
     }
 
     public void start(boolean isEndToEndTest) {
-
-        if (isEndToEndTest) {
-            try {
-                logger = new EmptyLogger();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        else {
-            try {
-                logger = new Logger("middleware");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-
         Executor threadPool = new ThreadPool(threadPoolSize);
         middlewareRunnables = new MiddlewareRunnable[threadPoolSize];
         for (int i = 0; i < threadPoolSize; ++i) {
-            middlewareRunnables[i] = new MiddlewareRunnable(logger, sockets, connectionPool, isEndToEndTest);
+            middlewareRunnables[i] = new MiddlewareRunnable(sockets, connectionPool, isEndToEndTest);
             threadPool.execute(middlewareRunnables[i]);
         }
 
@@ -120,12 +103,15 @@ public class Middleware {
             serverSocket = new ServerSocket(middlewarePortNumber);
             started = true;
 
-            // keep an eye on the system input and close the middleware if needed
+            // keep an eye on the system input and stop the middleware if needed
             new Thread(new StoppingMiddleware()).start();
 
             System.out.println("STARTED");
             while (!finished) {
-                sockets.put(new InternalSocket(serverSocket.accept()));
+                InternalSocket internalSocket = new InternalSocket(serverSocket.accept());
+                internalSocketsCreated.add(internalSocket);
+
+                sockets.put(internalSocket);
             }
         } catch (SocketException e) {
             System.err.println("The serverSocket was probably abruptly closed! Did somebody stop it?");
@@ -141,17 +127,20 @@ public class Middleware {
     public Middleware(ReadConfiguration configuration) {
 
         String databaseHost = configuration.getProperty("databaseHost");
-        databasePortNumber = Integer.valueOf(configuration.getProperty("databasePortNumber"));
+        int databasePortNumber = Integer.valueOf(configuration.getProperty("databasePortNumber"));
         String databaseName = configuration.getProperty("databaseName");
         String databaseUsername = configuration.getProperty("databaseUsername");
         String databasePassword = configuration.getProperty("databasePassword");
 
-        threadPoolSize = Integer.valueOf(configuration.getProperty("threadPoolSize"));
         int connectionPoolSize = Integer.valueOf(configuration.getProperty("connectionPoolSize"));
-        middlewarePortNumber = Integer.valueOf(configuration.getProperty("middlewarePortNumber"));
+
+        this.threadPoolSize = Integer.valueOf(configuration.getProperty("threadPoolSize"));
+        this.middlewarePortNumber = Integer.valueOf(configuration.getProperty("middlewarePortNumber"));
 
         sockets = new LinkedBlockingQueue<>();
         connectionPool  = new ConnectionPool(databaseHost, databasePortNumber, databaseUsername,
                 databasePassword, databaseName, connectionPoolSize);
+
+        internalSocketsCreated = new LinkedList<>();
     }
 }

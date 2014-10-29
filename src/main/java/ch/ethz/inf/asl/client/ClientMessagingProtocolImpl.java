@@ -5,6 +5,7 @@ import ch.ethz.inf.asl.common.MessagingProtocol;
 import ch.ethz.inf.asl.common.request.*;
 import ch.ethz.inf.asl.common.response.*;
 import ch.ethz.inf.asl.exceptions.MessagingProtocolException;
+import ch.ethz.inf.asl.logger.Logger;
 import ch.ethz.inf.asl.utils.Helper;
 import ch.ethz.inf.asl.utils.Optional;
 
@@ -25,10 +26,13 @@ public class ClientMessagingProtocolImpl implements MessagingProtocol {
     private DataInputStream dataInputStream;
     private DataOutputStream dataOutputStream;
 
+    private Logger logger;
+
     // for end-to-end testing
     private List<Request> sentRequests;
     private List<Response> receivedResponses;
-    private boolean saveEverything = false;
+    private boolean isEndToEndTest = false;
+
 
     public List<Request> getSentRequests() {
         return sentRequests;
@@ -38,9 +42,11 @@ public class ClientMessagingProtocolImpl implements MessagingProtocol {
         return receivedResponses;
     }
 
-    public ClientMessagingProtocolImpl(Socket socket, int requestorId, boolean saveEverything) throws IOException {
+    public ClientMessagingProtocolImpl(Logger logger, Socket socket, int requestorId, boolean isEndToEndTest) throws IOException {
+        notNull(logger, "Given logger cannot be null!");
         notNull(socket, "Given socket cannot be null!");
 
+        this.logger = logger;
         this.requestorId = requestorId;
 
         try {
@@ -53,17 +59,19 @@ public class ClientMessagingProtocolImpl implements MessagingProtocol {
 
         sentRequests = new LinkedList<>();
         receivedResponses = new LinkedList<>();
-        this.saveEverything = saveEverything;
+        this.isEndToEndTest = isEndToEndTest;
     }
 
     private void sendRequest(Request request) {
         try {
             byte[] data = Helper.serialize(request);
 
+            long startingTime = System.currentTimeMillis();
             dataOutputStream.write(data);
-            dataOutputStream.flush(); //FIXME
+            dataOutputStream.flush();
+            logger.log((System.currentTimeMillis() - startingTime) + "\t" + "SENDING REQUEST");
 
-            if (saveEverything) {
+            if (isEndToEndTest) {
                 sentRequests.add(request);
             }
         } catch (IOException e) {
@@ -74,16 +82,19 @@ public class ClientMessagingProtocolImpl implements MessagingProtocol {
     // perhaps put TODO Class<T> returnType as a parameter of this function
     private <R extends Response> R receiveResponse() {
         try {
+
+            long receiveStartingTime = System.currentTimeMillis();
             int length = dataInputStream.readInt();
+            logger.log((System.currentTimeMillis() - receiveStartingTime) + "\t" + "READ LENGTH");
             byte[] data = new byte[length];
-            // FIXME might return less bytes
-            // hacky fix
             byte[] lengthToByteArray = ByteBuffer.allocate(4).putInt(length).array();
-            dataInputStream.read(data);
+            dataInputStream.readFully(data);
+            logger.log((System.currentTimeMillis() - receiveStartingTime) + "\t" + "RECEIVING DATA");
             byte[] concatenated = Helper.concatenate(lengthToByteArray, data);
             Response response = (Response) Helper.deserialize(concatenated);
+            logger.log((System.currentTimeMillis() - receiveStartingTime) + "\t" + "RECEIVING RESPONSE");
 
-            if (saveEverything) {
+            if (isEndToEndTest) {
                 receivedResponses.add(response);
             }
 
@@ -107,29 +118,32 @@ public class ClientMessagingProtocolImpl implements MessagingProtocol {
 
     @Override
     public int sayHello(String clientName) {
-//
-        return -1;
+        Request request = new SayHelloRequest(clientName);
+        sendRequest(request);
+        SayHelloResponse response = receiveResponse();
+        return response.getClientId();
     }
 
     @Override
     public void sayGoodbye() {
-//        Request request = new GoodbyeRequest(requestorId);
-//        sendRequest(request);
-//        receiveResponse();
+        Request request = new SayGoodbyeRequest(requestorId);
+        sendRequest(request);
+        receiveResponse(); // CHECK That response is valid TODO
     }
 
     @Override
     public int createQueue(String queueName) {
-//        Request request = new CreateQueueRequest(requestorId, queueName);
-//        sendRequest(request);
-//        CreateQueueResponse response = receiveResponse();
-//        return response.getQueueId();
-        return 4;
+        Request request = new CreateQueueRequest(requestorId, queueName);
+        sendRequest(request);
+        CreateQueueResponse response = receiveResponse();
+        return response.getQueueId();
     }
 
     @Override
     public void deleteQueue(int queueId) {
-// FIXME and above
+        Request request = new DeleteQueueRequest(requestorId, queueId);
+        sendRequest(request);
+        receiveResponse();
     }
 
     @Override

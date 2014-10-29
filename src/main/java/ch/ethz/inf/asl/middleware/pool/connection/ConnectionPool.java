@@ -332,7 +332,7 @@ public class ConnectionPool implements AutoCloseable {
         return DriverManager.getConnection(createURL(), username, password);
     }
 
-    // thread -safe
+    // thread-safe
     public Connection getConnection() {
         if (numberOfConnectionsCreated < maximumConnections) {
             synchronized (this) {

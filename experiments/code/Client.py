@@ -1,26 +1,30 @@
+import os
 import pexpect
 import uuid
 import threading
 from Utilities import *
 
 class Client:
-    def __init__(self, username, host, middlewareHost, middlewarePortNumber, numberOfClients, totalClients, startingId,
-                 runningTimeInSeconds):
+    """This class represents a client instance"""
+
+    def __init__(self, username, host, middlewareHost, middlewarePortNumber, numberOfClients, totalClients, totalQueues,
+                 startingId, runningTimeInSeconds):
         self.username = username
         self.host = host
         self.middlewareHost = middlewareHost
         self.middlewarePortNumber = middlewarePortNumber
         self.numberOfClients = numberOfClients
         self.totalClients = totalClients
+        self.totalQueues = totalQueues
         self.startingId = startingId
         self.runningTimeInSeconds = runningTimeInSeconds
         self.finished = False
 
     def __str__(self):
         return "(host: {0}, middlewareHost: {1}, middlewarePortNumber: {2}, numberOfClients: {3}, " \
-               "totalClients: {4}, startingId: {5}, runningTimeInSeconds: {6})" \
+               "totalClients: {4}, totalQueues: {5}, startingId: {6}, runningTimeInSeconds: {7})" \
                "".format(self.host, self.middlewareHost, self.middlewarePortNumber, self.numberOfClients,
-                         self.totalClients, self.startingId, self.runningTimeInSeconds)
+                         self.totalClients, self.totalQueues, self.startingId, self.runningTimeInSeconds)
 
 
     def __startThreadCode(self):
@@ -29,7 +33,8 @@ class Client:
 
         properties = [("middlewareHost", self.middlewareHost), ("middlewarePortNumber", self.middlewarePortNumber),
                       ("numberOfClients", self.numberOfClients),
-                      ("totalClients", self.totalClients), ("startingId", self.startingId),
+                      ("totalClients", self.totalClients), ("totalQueues", self.totalQueues),
+                      ("startingId", self.startingId),
                       ("runningTimeInSeconds", self.runningTimeInSeconds)]
 
         print properties
@@ -41,7 +46,10 @@ class Client:
         # send properties file to the client machine
         scpTo("/tmp/" + unique_filename, "client.properties", self.username, self.host)
 
-        command = "java -jar mepas.jar client " + propertiesFileName + " 2>>client_errors.out"
+        # delete properties file
+        os.remove("/tmp/" + unique_filename)
+
+        command = "perf stat -o cpu_usage java -jar mepas.jar client " + propertiesFileName + " 2>client_errors.out"
         print "[" + self.__str__() + "]: (" + command + ")"
         child.sendline(command)
 

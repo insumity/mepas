@@ -3,6 +3,7 @@ package ch.ethz.inf.asl.endtoend;
 import ch.ethz.inf.asl.client.ClientMessagingProtocolImpl;
 import ch.ethz.inf.asl.common.Message;
 import ch.ethz.inf.asl.common.ReadConfiguration;
+import ch.ethz.inf.asl.logger.EmptyLogger;
 import ch.ethz.inf.asl.middleware.Middleware;
 import ch.ethz.inf.asl.testutils.InitializeDatabase;
 import ch.ethz.inf.asl.utils.Optional;
@@ -59,7 +60,7 @@ public class EndToEndWithMessages {
 
 
         Socket socket = new Socket("localhost", 6790);
-        ClientMessagingProtocolImpl client1 = new ClientMessagingProtocolImpl(socket, 1, false);
+        ClientMessagingProtocolImpl client1 = new ClientMessagingProtocolImpl(new EmptyLogger(), socket, 1, false);
 
         client1.sendMessage(19, "this is some content");
         client1.sendMessage(2, 78, "cool, isn't it?");
@@ -69,7 +70,7 @@ public class EndToEndWithMessages {
         socket.close();
 
         socket = new Socket("localhost", 6790);
-        ClientMessagingProtocolImpl client2 = new ClientMessagingProtocolImpl(socket, 2, false);
+        ClientMessagingProtocolImpl client2 = new ClientMessagingProtocolImpl(new EmptyLogger(), socket, 2, false);
 
         queues = client2.listQueues();
         assertEquals(queues, new int[] {19, 78});

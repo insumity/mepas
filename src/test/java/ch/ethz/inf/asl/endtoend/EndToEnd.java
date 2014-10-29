@@ -81,9 +81,9 @@ public class EndToEnd {
 
         // initialize database
         final int totalClients = 4;
-        int numberOfQueues = 1;
+        final int totalQueues = 4;
         InitializeDatabase.initializeDatabaseWithClientsAndQueues(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD,
-                Connection.TRANSACTION_READ_COMMITTED, new String[]{}, totalClients, numberOfQueues);
+                Connection.TRANSACTION_READ_COMMITTED, new String[]{}, totalClients, totalQueues);
 
         final ReadConfiguration[] middlewareConfigurations = {
                 ConfigurationMocker.mockMiddlewareConfiguration(HOST, String.valueOf(PORT_NUMBER), DATABASE_NAME, USERNAME, PASSWORD,
@@ -139,10 +139,10 @@ public class EndToEnd {
 
         final ReadConfiguration[] clientConfigurations = {
                 ConfigurationMocker.mockClientConfiguration("localhost", "6789", String.valueOf(clientsPerInstance),
-                        String.valueOf(totalClients), "1", "20"),
+                        String.valueOf(totalClients), String.valueOf(totalQueues), "1", "20"),
 
                 ConfigurationMocker.mockClientConfiguration("localhost", "6790", String.valueOf(clientsPerInstance),
-                        String.valueOf(totalClients), "3", "20")};
+                        String.valueOf(totalClients),  String.valueOf(totalQueues), "3", "20")};
 
 
         for (int i = 0; i < numberOfClientInstances; ++i) {

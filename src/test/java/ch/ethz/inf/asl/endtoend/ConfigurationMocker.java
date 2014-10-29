@@ -32,7 +32,7 @@ public class ConfigurationMocker {
     }
 
     public static ReadConfiguration mockClientConfiguration(String middlewareHost, String middlewarePortNumber, String numberOfClients, String totalClients,
-                                                      String startingId, String runningTimeInSeconds) {
+                                                      String totalQueues, String startingId, String runningTimeInSeconds) {
         ReadConfiguration mockedConfiguration = mock(ReadConfiguration.class);
 
         when(mockedConfiguration.getProperty("middlewareHost")).thenReturn(middlewareHost);
@@ -40,6 +40,8 @@ public class ConfigurationMocker {
 
         when(mockedConfiguration.getProperty("numberOfClients")).thenReturn(numberOfClients);
         when(mockedConfiguration.getProperty("totalClients")).thenReturn(totalClients);
+        when(mockedConfiguration.getProperty("totalQueues")).thenReturn(totalQueues);
+
         when(mockedConfiguration.getProperty("startingId")).thenReturn(startingId);
 
         when(mockedConfiguration.getProperty("runningTimeInSeconds")).thenReturn(runningTimeInSeconds);

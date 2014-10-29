@@ -18,9 +18,14 @@ public class Client {
     private String hostName;
     private int portNumber;
 
+    // number of clients running in this client instance, different from totalClients which corresponds to the
+    // total number of clients in the system
     private int numberOfClients;
+
     private int startingId;
+
     private int totalClients;
+    private int totalQueues;
 
     private int runningTimeInSeconds;
     private ClientRunnable[] runnables;
@@ -40,7 +45,10 @@ public class Client {
         this.portNumber = Integer.valueOf(configuration.getProperty("middlewarePortNumber"));
 
         this.numberOfClients = Integer.valueOf(configuration.getProperty("numberOfClients"));
+
         this.totalClients = Integer.valueOf(configuration.getProperty("totalClients"));
+        this.totalQueues = Integer.valueOf(configuration.getProperty("totalQueues"));
+
         this.startingId = Integer.valueOf(configuration.getProperty("startingId"));
 
         this.runningTimeInSeconds = Integer.valueOf(configuration.getProperty("runningTimeInSeconds"));
@@ -66,7 +74,7 @@ public class Client {
                 }
 
                 runnables[i] = new ClientRunnable(logger, startingId + i, runningTimeInSeconds, hostName,
-                        portNumber, totalClients, isEndToEndTest);
+                        portNumber, totalClients, totalQueues, isEndToEndTest);
                 clients[i] = new Thread(runnables[i]);
             } catch (IOException e) {
                 e.printStackTrace();

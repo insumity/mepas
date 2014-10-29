@@ -9,18 +9,22 @@ import ch.ethz.inf.asl.utils.Optional;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
 import static ch.ethz.inf.asl.utils.Verifier.hasText;
+import static ch.ethz.inf.asl.utils.Verifier.notNull;
+import static ch.ethz.inf.asl.utils.Verifier.verifyTrue;
 
 public class ClientRunnable implements Runnable {
 
-    //    private int userId;
     private String hostName;
     private int portNumber;
 
     private int totalClients;
+    private int totalQueues;
 
     private Logger logger;
     private int runningTimeInSeconds;
@@ -29,7 +33,7 @@ public class ClientRunnable implements Runnable {
 
     private ClientMessagingProtocolImpl protocol;
 
-    private boolean saveEverything;
+    private boolean isEndToEndTest;
 
     public List<Request> getSentRequests() {
         return protocol.getSentRequests();
@@ -40,8 +44,13 @@ public class ClientRunnable implements Runnable {
     }
 
     public ClientRunnable(Logger logger, int userId, int runningTimeInSeconds, String hostName, int portNumber, int totalClients,
-                          boolean saveEverything) throws IOException {
-        hasText(hostName , "hostName cannot be empty or null");
+                          int totalQueues, boolean isEndToEndTest) throws IOException {
+        notNull(logger, "Given logger cannot be null!");
+        verifyTrue(runningTimeInSeconds > 0, "Given runningTimeInSeconds cannot be negative or 0!");
+        hasText(hostName , "Given hostName cannot be empty or null!");
+        verifyTrue(portNumber > 0, "Given portNumber cannot be 0 or negative!");
+        verifyTrue(totalClients > 0, "Given totalClients cannot be 0 or negative!");
+        verifyTrue(totalQueues > 0, "Given totalQueues cannot be 0 or negative!");
 
         this.runningTimeInSeconds = runningTimeInSeconds;
         this.userId = userId;
@@ -49,75 +58,104 @@ public class ClientRunnable implements Runnable {
         this.portNumber = portNumber;
 
         this.totalClients = totalClients;
-        this.saveEverything = saveEverything;
+        this.totalQueues = totalQueues;
+
         this.logger = logger;
+
+        this.isEndToEndTest = isEndToEndTest;
+    }
+
+    // returns a random receiverId in the range [1, totalClients] that is not this.userId
+    private int getRandomReceiverId() {
+        Random r = new Random();
+        int receiverId = r.nextInt(totalClients) + 1;
+        while (receiverId == userId) {
+            receiverId = r.nextInt(totalClients) + 1;
+        }
+        return receiverId;
+    }
+
+    // returns a random queueId in the range [1, totalQueues]
+    private int getRandomQueueId() {
+        return new Random().nextInt(totalQueues) + 1;
+    }
+
+    // sends a message using the underlying message protocol to a random receiver and random queue
+    private void sendMessage(int messageCounter) {
+        long startTime = System.currentTimeMillis();
+
+        int receiverId = getRandomReceiverId();
+        int queueId = getRandomQueueId();
+
+        protocol.sendMessage(receiverId, queueId, String.valueOf(messageCounter));
+        logger.log((System.currentTimeMillis() - startTime) + "\tSEND_MESSAGE\t" + String.valueOf(messageCounter));
+    }
+
+    // lists all the queues where a message for the user is waiting and issues a receive for one message on all
+    // those queues
+    private void listAndReceiveMessage() {
+        long startTime = System.currentTimeMillis();
+
+        int[] queues = protocol.listQueues();
+        logger.log((System.currentTimeMillis() - startTime) + "\tLIST_QUEUES\t" + Arrays.toString(queues));
+
+        for (int queueId: queues) {
+            startTime = System.currentTimeMillis();
+
+            Optional<Message> message = protocol.receiveMessage(queueId, false);
+            logger.log((System.currentTimeMillis() - startTime) + "\tRECEIVE_MESSAGE\t" + message.get());
+
+            if (!message.isPresent()) {
+                throw new AssertionError("There should have been a message received!");
+            }
+
+        }
+
     }
 
     @Override
     public void run() {
 
-        Socket kkSocket = null;
+        Socket socket = null;
         try {
-            kkSocket = new Socket(hostName, portNumber);
+            socket = new Socket(hostName, portNumber);
+            protocol = new ClientMessagingProtocolImpl(logger, socket, userId, isEndToEndTest);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        protocol = null;
-        try {
-            protocol = new ClientMessagingProtocolImpl(kkSocket, userId, saveEverything);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
-        int lastMessageCounter = 0;
-        boolean send = true;
         long startingTime = System.currentTimeMillis();
-        while (true) {
+        logger.log("Starting time: " + new Date().toString());
 
-            long currentTime = System.currentTimeMillis();
-            long elapseTimeInSeconds = (currentTime - startingTime) / 1000;
+
+        // sending and list-receiving is done alternately
+        boolean toSend = true;
+        int messageCounter = 1;
+
+        while (true) {
+            long elapseTimeInSeconds = (System.currentTimeMillis() - startingTime) / 1000;
+
+            // the client run his given amount of time
             if (elapseTimeInSeconds >= runningTimeInSeconds) {
-                if (kkSocket != null) {
+                if (socket != null) {
                     System.out.println("Client socket got closed!");
                     protocol.sayGoodbye();
                 }
-
                 break;
             }
+
+
             try {
-                if (send) {
-//                    Random r = new Random();
-//                    int sendToUserId = r.nextInt(totalClients) + 1;
-//                    while (sendToUserId == userId) {
-//                        sendToUserId = r.nextInt(totalClients) + 1;
-//                    }
-
-                    long startTime = System.currentTimeMillis();
-                    Random r = new Random();
-                    long randomLong = r.nextLong();
-
-                    protocol.sendMessage(1, String.valueOf(lastMessageCounter));
-                    long responseTime = System.currentTimeMillis() - startTime;
-                    logger.log(System.currentTimeMillis() - startingTime, responseTime + "\tSEND_MESSAGE\t" + String.valueOf(lastMessageCounter));
-
-                    send = !send;
-                } else {
-                    long startTime = System.currentTimeMillis();
-                    Optional<Message> message = protocol.receiveMessage(1, true);
-                    long responseTime = System.currentTimeMillis() - startTime;
-
-                    if (message.isPresent()) {
-                        logger.log(System.currentTimeMillis() - startingTime, responseTime + "\tRECEIVE_MESSAGE\t" + message.isPresent()
-                                + "\t" + message.get().hashCode() + "\t" + message.get());
-                    }
-                    else {
-                        logger.log(System.currentTimeMillis() - startingTime, responseTime + "\tRECEIVE_MESSAGE\t" + message.isPresent());
-                    }
-                    lastMessageCounter = lastMessageCounter + 1;
-
-                    send = !send;
+                if (toSend) {
+                    sendMessage(messageCounter);
+                    messageCounter++;
                 }
+                else {
+                    listAndReceiveMessage();
+                }
+                toSend = !toSend;
+
             } catch (MessagingProtocolException e) {
                 e.printStackTrace();
                 break;
@@ -125,7 +163,6 @@ public class ClientRunnable implements Runnable {
         }
 
         System.out.println("CLOSED");
-
         logger.close();
     }
 }

@@ -64,12 +64,13 @@ public class MiddlewareMessagingProtocolImpl implements MessagingProtocol {
 
     @Override
     public void sayGoodbye() {
-        try (CallableStatement stmt = connection.prepareCall(DELETE_CLIENT)) {
-            stmt.setInt(1, requestingUserId);
-            stmt.execute();
-        } catch (SQLException e) {
-            throw new MessagingProtocolException("failed to delete client" + e.getMessage(), e);
-        }
+        // FIXME ... don't delete any client!
+//        try (CallableStatement stmt = connection.prepareCall(DELETE_CLIENT)) {
+//            stmt.setInt(1, requestingUserId);
+//            stmt.execute();
+//        } catch (SQLException e) {
+//            throw new MessagingProtocolException("failed to delete client" + e.getMessage(), e);
+//        }
     }
 
     @Override
@@ -108,9 +109,7 @@ public class MiddlewareMessagingProtocolImpl implements MessagingProtocol {
             throw new IllegalArgumentException("Given content has invalid length");
         }
 
-        logger.synchronizedLog(Thread.currentThread().getId(), "before the try in sendMessage");
         try (CallableStatement stmt = connection.prepareCall(SEND_MESSAGE)) {
-            logger.synchronizedLog(Thread.currentThread().getId(), "inside try");
             Date date = new Date();
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
             String formattedDate = simpleDateFormat.format(date);
@@ -125,11 +124,9 @@ public class MiddlewareMessagingProtocolImpl implements MessagingProtocol {
             }
 
             stmt.setInt(3, queueId);
-            stmt.setTimestamp(4, arrivalTime); // FIXME .. should be current Time ...  when message was received by the MW
+            stmt.setTimestamp(4, arrivalTime);
             stmt.setString(5, content);
-            logger.synchronizedLog(Thread.currentThread().getId(), "- before execute");
             stmt.execute();
-            logger.synchronizedLog(Thread.currentThread().getId(), "- after execute");
         } catch (SQLException e) {
             throw new MessagingProtocolException("failed to send message" + e.getMessage() , e);
         }

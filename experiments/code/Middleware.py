@@ -1,8 +1,10 @@
+import os
 import pexpect
 import uuid
 from Utilities import *
 
 class Middleware:
+    """This class represents a middleware instance"""
 
     def __init__(self, username, host, databaseHost, databasePortNumber, databaseUsername,
                  databasePassword, databaseName,
@@ -37,10 +39,13 @@ class Middleware:
         # send properties file to the middleware machine
         scpTo("/tmp/" + unique_filename, propertiesFileName, self.username, self.host)
 
+        # delete properties file
+        os.remove("/tmp/" + unique_filename)
+
         # create properties file and send it to the host before starting the middleware
         child = pexpect.spawn("ssh " + getSSHAddress(self.username, self.host))
         child.expect("Last login:*")
-        command = "java -jar mepas.jar middleware " + propertiesFileName + " 2>>middleware_errors.out"
+        command = "perf stat -o cpu_usage java -jar mepas.jar middleware " + propertiesFileName + " 2>>middleware_errors.out"
         print command
         child.sendline(command)
 
