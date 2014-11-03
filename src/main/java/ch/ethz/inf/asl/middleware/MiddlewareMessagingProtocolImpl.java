@@ -71,6 +71,7 @@ public class MiddlewareMessagingProtocolImpl implements MessagingProtocol {
 //        } catch (SQLException e) {
 //            throw new MessagingProtocolException("failed to delete client" + e.getMessage(), e);
 //        }
+
     }
 
     @Override

@@ -26,8 +26,9 @@ import static org.testng.Assert.*;
 public class SQLFunctionsDatabaseTest {
 
     // for testing `auxiliary_functions`
-    private static final String CREATE_CLIENT = "{ ? = call create_client(?) }";
-    private static final String DELETE_CLIENT = "{ call delete_client(?) }";
+//    FIXME
+//    private static final String CREATE_CLIENT = "{ ? = call create_client(?) }";
+//    private static final String DELETE_CLIENT = "{ call delete_client(?) }";
 
     // initial number of queues and messages contained in the corresponding tables after populating them
     private static int NUMBER_OF_CLIENTS = 6;

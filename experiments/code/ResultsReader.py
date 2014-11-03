@@ -50,30 +50,33 @@ def getTrace(experimentName, clientInstances, totalTimeInSeconds, typeOfMessage)
 
 
         # average throughput every second in order to get standard deviation
-        times = 0
-        sum = 0
-        sdeviation = 0
-        for j in range(i, i + 60 * 1000, 1000):
-            command = "awk -F'\t' '$1 >=" + str(j) + " && $1 < " + str(
-                (j + 1000)) + " { print; }' " + fileName
-
-            output = commands.getstatusoutput(command + " | " + "wc")
-
-            # extract result from wc command
-            numberOfRequests = int(" ".join(output[1].split()).split(' ', 1)[0])
-            sum += numberOfRequests
-            sdeviation += (numberOfRequests * numberOfRequests)
-            times += 1
-
-
-        sdeviation = math.sqrt(sdeviation / times - ((sum / times) * (sum / times)))
-        sys.stdout.write(" " + str(sum / times) + " " + str(sdeviation) + "\n")
-        sys.stdout.flush()
+        # times = 0
+        # sum = 0
+        # sdeviation = 0
+        # for j in range(i, i + 60 * 1000, 1000):
+        #     command = "awk -F'\t' '$1 >=" + str(j) + " && $1 < " + str(
+        #         (j + 1000)) + " { print; }' " + fileName
+        #
+        #     output = commands.getstatusoutput(command + " | " + "wc")
+        #
+        #     # extract result from wc command
+        #     numberOfRequests = int(" ".join(output[1].split()).split(' ', 1)[0])
+        #     sum += numberOfRequests
+        #     sdeviation += (numberOfRequests * numberOfRequests)
+        #     times += 1
+        #
+        #
+        # sdeviation = math.sqrt(sdeviation / times - ((sum / times) * (sum / times)))
+        # sys.stdout.write(" " + str(sum / times) + " " + str(sdeviation) + "\n")
+        # sys.stdout.flush()
+        print
 
         minutes += 1
 
 
-# getTrace("../traceFor1Hour/25", 2, 3600, "RECEIVE_MESSAGE")
+# getTrace("../AGAIN2k10MWThreads10Connections1MWSmallDBxLarge/1", 1, 600, "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
+
+
 
 
 def getAverageAndSd(middlewareInstanceDir, what, column):
@@ -153,9 +156,9 @@ def getData(experimentName, possibleValues, numberOfClientInstances, percentageT
     averageList /= numberOfClientInstances
     sdList /= numberOfClientInstances
 
-    print str(variableValue) + "\t" + str(average) + "\t" + str(sd)
-    print str(variableValue) + "\t" + str(averageSend) + "\t" + str(sdSend)
-    print str(variableValue) + "\t" + str(averageList) + "\t" + str(sdList)
+    print "RECEIVE: " + str(variableValue) + "\t" + str(average) + "\t" + str(sd)
+    print "SEND: " + str(variableValue) + "\t" + str(averageSend) + "\t" + str(sdSend)
+    print "LIST: " + str(variableValue) + "\t" + str(averageList) + "\t" + str(sdList)
     # f = open(resultFile, 'a')
     # f.write(str(variableValue) + "\t" + str(average) + "\t" + str(deviation) + "\t" + str(total_lines) + "\n")
     # f.close()
@@ -165,6 +168,67 @@ def getData(experimentName, possibleValues, numberOfClientInstances, percentageT
 
 # getData("../traceFor1Hour/", [1, 5, 10])
 
+def getThroughput(experimentDir, clientInstances, timeInSeconds, warmUpInSeconds, coolDownInSeconds):
+    # files could be quite big, use wc instead of reading them
+    # every line in a client file contains a successful request
+
+    directoryForTempResults = tempfile.mkdtemp()
+
+    cleanedUpFiles = [] # files with removed warm up and cool down phases
+    for i in range(1, clientInstances + 1):
+        files = []
+        files.extend([f for f in listdir(experimentDir + "/clientInstance" + str(i))])
+
+        for f in files:
+
+            if f == "cpu_usage" or f == "client_errors.out" or f == "all_clients_of_this_instance.csv":
+                continue
+
+            specificFile = experimentDir + "/clientInstance" + str(i) + "/" + f
+
+            lastTimeInMilliseconds = timeInSeconds * 1000
+            command = "awk -F'\t' '$1 >= " + str(warmUpInSeconds * 1000) + " && $1 <= " + \
+                      str(lastTimeInMilliseconds - coolDownInSeconds * 1000) + " { print; }' " + specificFile
+
+            system(command + " > " + directoryForTempResults + "/" + f)
+            cleanedUpFiles.append( directoryForTempResults + "/" + f)
+
+    sum = 0
+    for f in cleanedUpFiles:
+        command = "cat " + f
+        output = commands.getstatusoutput(command + " | " + "wc")
+
+        # extract result from wc command
+        numberOfRequests = int(" ".join(output[1].split()).split(' ', 1)[0])
+        sum += numberOfRequests
+
+    print experimentDir + ":\t" + str(sum / (float(timeInSeconds - (warmUpInSeconds + coolDownInSeconds))))
+    shutil.rmtree(directoryForTempResults)
+
+
+getThroughput("../2k10MWThreads10Connections1MWSmallDBxLarge/1", 1, 600, 120, 60)
+# getThroughput("../2k10MWThreads20Connections1MWSmallDBxLarge/1", 1, 600, 120, 60)
+# getThroughput("../2k20MWThreads10Connections1MWSmallDBxLarge/1", 1, 600, 120, 60)
+# getThroughput("../2k20MWThreads20Connections1MWSmallDBxLarge/1", 1, 600, 120, 60)
+
+getThroughput("../2k10MWThreads10Connections1MWMediumDBxLarge/1", 1, 600, 120, 60)
+getThroughput("../2k10MWThreads20Connections1MWMediumDBxLarge/1", 1, 600, 120, 60)
+getThroughput("../2k20MWThreads10Connections1MWMediumDBxLarge/1", 1, 600, 120, 60)
+getThroughput("../2k20MWThreads20Connections1MWMediumDBxLarge/1", 1, 600, 120, 60)
+
+getThroughput("../2k10MWThreads10Connections1MWSmall/1", 1, 600, 120, 60)
+getThroughput("../2k10MWThreads20Connections1MWSmall/1", 1, 600, 120, 60)
+getThroughput("../2k20MWThreads10Connections1MWSmall/1", 1, 600, 120, 60)
+getThroughput("../2k20MWThreads20Connections1MWSmall/1", 1, 600, 120, 60)
+
+getThroughput("../2k10MWThreads10Connections1MWMedium/1", 1, 600, 120, 60)
+getThroughput("../2k10MWThreads20Connections1MWMedium/1", 1, 600, 120, 60)
+getThroughput("../2k20MWThreads10Connections1MWMedium/1", 1, 600, 120, 60)
+getThroughput("../2k20MWThreads20Connections1MWMedium/1", 1, 600, 120, 60)
+#
+#
+# if True:
+#     exit(1)
 
 def getTimeSpentOnEachComponent(middlewareInstanceDir, percentageToRemove):
     files = [f for f in listdir(middlewareInstanceDir)]
@@ -185,6 +249,13 @@ def getTimeSpentOnEachComponent(middlewareInstanceDir, percentageToRemove):
         percentageInLines = int(math.floor(num_lines * percentageToRemove))
 
         # delete first 10% of the lines
+        #
+        # lastTimeInMilliseconds = timeInSeconds * 1000
+        # command = "awk -F'\t' '$1 >= " + str(warmUpInSeconds * 1000) + " && $1 <= " + \
+        #           str(lastTimeInMilliseconds - coolDownInSeconds * 1000) + " { print; }' " + specificFile
+
+        # system(command + " > " + directoryForTempResults + "/" + f)
+
         system("sed -e '1," + str(
             percentageInLines) + "d' " + specificFile + " > " + directoryForTempResults + "/" + f)
         num_lines = sum(1 for line in open(directoryForTempResults + "/" + f))
@@ -217,8 +288,8 @@ def getTimeSpentOnEachComponent(middlewareInstanceDir, percentageToRemove):
     shutil.rmtree(directoryForTempResults)
 
 
-getTimeSpentOnEachComponent("../2k20MWThreads10Connections1MWSmallDBxLarge/1/middlewareInstance1", 0.1)
+getTimeSpentOnEachComponent("../AGAIN2k10MWThreads10Connections1MWSmall/1/middlewareInstance1", 0.01)
 # getTimeSpentOnEachComponent("../traceFor20Minutes/25/middlewareInstance2", 0.2)
 # #
-getData("../2k20MWThreads20Connections1MWSmallDBxLarge", [1], 1, 0.0)
+getData("../AGAIN2k10MWThreads10Connections1MWSmall", [1], 1, 0.0)
 # getResponseTimeAndThroughput("../trace100clientsWithMoreLogging10ClientsBARZ/10")

@@ -8,6 +8,10 @@ import java.util.Objects;
 
 import ch.ethz.inf.asl.utils.Pair;
 
+/**
+ * This class implements an internal socket. This socket is to be used
+ * together with {@link ch.ethz.inf.asl.middleware.MiddlewareRunnable}.
+ */
 public class InternalSocket {
 
     private Socket socket;
@@ -28,6 +32,11 @@ public class InternalSocket {
 
     private List<byte[]> whatWasRead;
 
+    /**
+     * Initialized a new InternalSocket object based on the given socket.
+     * @param socket socket to be used for the creation of the internal socket
+     * @throws IOException in case socket is not connected or an I/O error occurs
+     */
     public InternalSocket(Socket socket) throws IOException {
         this.socket = socket;
 
@@ -55,10 +64,18 @@ public class InternalSocket {
         this.lastTime = lastTime;
     }
 
+    /**
+     * Gets the output stream of this internal socket.
+     * @return output stream of the socket
+     */
     public DataOutputStream getOutputStream() {
         return oos;
     }
 
+    /**
+     * Gets the input stream of this internal socket.
+     * @return input stream of the socket
+     */
     public DataInputStream getInputStream() {
         return ois;
     }
@@ -67,10 +84,18 @@ public class InternalSocket {
         return lengthIsKnown.getFirst();
     }
 
+    /**
+     * Gets the number of bytes that have been read until now from the current socket.
+     * @return number of bytes read
+     */
     public int getBytesRead() {
         return bytesRead;
     }
 
+    /**
+     * Sets the number of bytes that have been read until now by this socket.
+     * @param bytesRead
+     */
     public void setBytesRead(int bytesRead) {
         this.bytesRead = bytesRead;
     }
@@ -105,6 +130,10 @@ public class InternalSocket {
         return objectData;
     }
 
+    /**
+     * Cleans what has been read by the current socket. This means that a new serialized object
+     * can be read now.
+     */
     public void clean() {
         this.lengthIsKnown = new Pair(false, 0);
         this.bytesRead = 0;

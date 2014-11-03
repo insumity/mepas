@@ -10,6 +10,8 @@ cloud-linux-tools-gerneric
 netghogs
 htop
 dstat
+ptop for databases
+sudo apt-get install postgresql-contrib for pgbench
 
 
 [ALL THE MIDDLEWARES connect to the DB so the ned
