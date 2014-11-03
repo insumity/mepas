@@ -28,7 +28,7 @@ able to handle them and throughput will not increase ...
 
 """
 conf = \
-    {"nameOfTheExperiment": "../2k20MWThreads10Connections1MWSmallDBxLarge",
+    {"nameOfTheExperiment": "../2k20MWThreads20Connections1MWSmallDBxLarge",
 
 
      "numberOfClientInstances": 1,
@@ -44,7 +44,7 @@ conf = \
      "runningTimeInSeconds": 600,
 
      "threadPoolSize": 20,
-     "connectionPoolSize": 10,
+     "connectionPoolSize": 20,
 
      "totalClients": 50,
      "totalQueues": 50,

@@ -557,7 +557,6 @@ status open
 
 \begin_layout Plain Layout
 
-\shape italic
 
 \backslash
 
@@ -1751,6 +1750,14 @@ Clients
 \end_layout
 
 \begin_layout Standard
+Every client is being executed as a thread (of
+\shape italic
+ ClientRunnable
+\shape default
+)
+\end_layout
+
+\begin_layout Standard
 As was said in the previous section, clients use the `MessagingProtocol`
  .
  Clients block when waiting for a response from teh middleware.
@@ -2012,6 +2019,10 @@ name "sec:experimentalsetup"
 \end_layout
 
 \begin_layout Standard
+Never more than one middleware per instance
+\end_layout
+
+\begin_layout Standard
 The code related to experiments can be found in the 
 \family typewriter
 experiments/code
@@ -2120,7 +2131,7 @@ database
 \begin_inset Quotes erd
 \end_inset
 
- h
+ 
 \end_layout
 
 \begin_layout Standard
