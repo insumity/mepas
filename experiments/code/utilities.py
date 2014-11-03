@@ -12,7 +12,7 @@ def cleanMachine(username, host):
     child.expect("ubuntu@*")
     child.sendline("rm -f *_errors.out")
     child.expect("ubuntu@*")
-    child.sendline("rm -f cpu_usage")
+    child.sendline("rm -f *.properties")
     child.expect("ubuntu@*")
     child.sendline("rm *errors.out")
     child.expect("ubuntu@*")

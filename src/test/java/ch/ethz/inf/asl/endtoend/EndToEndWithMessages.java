@@ -1,8 +1,8 @@
 package ch.ethz.inf.asl.endtoend;
 
 import ch.ethz.inf.asl.client.ClientMessagingProtocolImpl;
+import ch.ethz.inf.asl.utils.ConfigurationReader;
 import ch.ethz.inf.asl.common.Message;
-import ch.ethz.inf.asl.common.ReadConfiguration;
 import ch.ethz.inf.asl.logger.EmptyLogger;
 import ch.ethz.inf.asl.middleware.Middleware;
 import ch.ethz.inf.asl.testutils.InitializeDatabase;
@@ -29,7 +29,7 @@ public class EndToEndWithMessages {
         InitializeDatabase.initializeDatabaseWithClientsAndQueues(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD,
                 Connection.TRANSACTION_READ_COMMITTED, new String[]{}, 2, 100);
 
-        final ReadConfiguration middlewareConfiguration =
+        final ConfigurationReader middlewareConfiguration =
                 ConfigurationMocker.mockMiddlewareConfiguration(HOST, String.valueOf(PORT_NUMBER), DATABASE_NAME, USERNAME,
                         PASSWORD, "10", "10",  "middleware1", "6790");
 

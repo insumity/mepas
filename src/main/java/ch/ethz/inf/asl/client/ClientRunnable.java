@@ -44,7 +44,7 @@ public class ClientRunnable implements Runnable {
     }
 
     public ClientRunnable(Logger logger, int userId, int runningTimeInSeconds, String hostName, int portNumber, int totalClients,
-                          int totalQueues, boolean isEndToEndTest) throws IOException {
+                          int totalQueues , boolean isEndToEndTest) throws IOException {
         notNull(logger, "Given logger cannot be null!");
         verifyTrue(runningTimeInSeconds > 0, "Given runningTimeInSeconds cannot be negative or 0!");
         hasText(hostName , "Given hostName cannot be empty or null!");
@@ -88,7 +88,8 @@ public class ClientRunnable implements Runnable {
         int queueId = getRandomQueueId();
 
         protocol.sendMessage(receiverId, queueId, String.valueOf(messageCounter));
-        logger.log((System.currentTimeMillis() - startTime) + "\tSEND_MESSAGE\t" + String.valueOf(messageCounter));
+        logger.log((System.currentTimeMillis() - startTime) + "\tSEND_MESSAGE\t" + "(" + queueId + ", "
+                + receiverId + ", " + String.valueOf(messageCounter) + ")");
     }
 
     // lists all the queues where a message for the user is waiting and issues a receive for one message on all
@@ -97,18 +98,21 @@ public class ClientRunnable implements Runnable {
         long startTime = System.currentTimeMillis();
 
         int[] queues = protocol.listQueues();
-        logger.log((System.currentTimeMillis() - startTime) + "\tLIST_QUEUES\t" + Arrays.toString(queues));
+        logger.log((System.currentTimeMillis() - startTime) + "\tLIST_QUEUES");
 
         for (int queueId: queues) {
             startTime = System.currentTimeMillis();
 
             Optional<Message> message = protocol.receiveMessage(queueId, false);
-            logger.log((System.currentTimeMillis() - startTime) + "\tRECEIVE_MESSAGE\t" + message.get());
 
             if (!message.isPresent()) {
                 throw new AssertionError("There should have been a message received!");
             }
 
+            Message actualMessage = message.get();
+            logger.log((System.currentTimeMillis() - startTime) + "\tRECEIVE_MESSAGE\t" +
+                    "(" + actualMessage.getQueueId() + ", " + actualMessage.getSenderId()
+                    + ", " + actualMessage.getContent() + ")");
         }
 
     }
@@ -150,8 +154,7 @@ public class ClientRunnable implements Runnable {
                 if (toSend) {
                     sendMessage(messageCounter);
                     messageCounter++;
-                }
-                else {
+                } else {
                     listAndReceiveMessage();
                 }
                 toSend = !toSend;

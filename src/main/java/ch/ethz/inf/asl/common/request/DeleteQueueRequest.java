@@ -31,9 +31,14 @@ public class DeleteQueueRequest extends Request<DeleteQueueResponse> {
     }
 
     @Override
+    public String getName() {
+        return "DELETE_QUEUE";
+    }
+
+    @Override
     public String toString() {
         return super.toString() +
-                String.format("(DELETE_QUEUE: [queueId: %s])",  queueId);
+                String.format("(%s: [queueId: %s])",  getName(), queueId);
     }
 
     @Override

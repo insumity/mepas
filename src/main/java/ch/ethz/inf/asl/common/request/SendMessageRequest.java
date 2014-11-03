@@ -49,9 +49,14 @@ public class SendMessageRequest extends Request<SendMessageResponse> {
     }
 
     @Override
+    public String getName() {
+        return "SEND_MESSAGE";
+    }
+
+    @Override
     public String toString() {
-        return super.toString() + String.format("(SEND_MESSAGE: [receiverId: %d], [queueId: %d], [content: \"%s\"])",
-                receiverId, queueId, content);
+        return super.toString() + String.format("(%s: [receiverId: %d], [queueId: %d], [content: \"%s\"])",
+                getName(), receiverId, queueId, content);
     }
 
     @Override

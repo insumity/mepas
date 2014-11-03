@@ -334,6 +334,7 @@ public class ConnectionPool implements AutoCloseable {
 
     // thread-safe
     public Connection getConnection() {
+
         if (numberOfConnectionsCreated < maximumConnections) {
             synchronized (this) {
 

@@ -42,9 +42,14 @@ public class ReadMessageRequest extends Request<ReadMessageResponse> {
     }
 
     @Override
+    public String getName() {
+        return "READ_MESSAGE";
+    }
+
+    @Override
     public String toString() {
-        return super.toString() + String.format("(READ_MESSAGE: [queueId: %d],  [retrieveByArrivalTime: %b])",
-                queueId, retrieveByArrivalTime);
+        return super.toString() + String.format("(%s: [queueId: %d],  [retrieveByArrivalTime: %b])",
+                getName(), queueId, retrieveByArrivalTime);
     }
 
     @Override

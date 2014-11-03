@@ -82,13 +82,13 @@ for variableValue in numberOfClients:
     print ">>> going to clean clients ..."
     for client in clientInstances:
         client.clean()
-        client.getReady()
+        client.startLogging()
     print ">>> clients were cleaned from previous experiments and are ready for the new ones"
 
     print ">>> going to clean middlewares ..."
     for middleware in middlewareInstances:
         middleware.clean()
-        middleware.getReady()
+        middleware.startLogging()
     print ">>> middlewares were cleaned from previous experiments and are ready for the new ones"
 
     print ">>> middlewares are starting ..."

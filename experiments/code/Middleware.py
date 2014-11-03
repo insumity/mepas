@@ -45,7 +45,7 @@ class Middleware:
         # create properties file and send it to the host before starting the middleware
         child = pexpect.spawn("ssh " + getSSHAddress(self.username, self.host))
         child.expect("Last login:*")
-        command = "perf stat -o cpu_usage java -jar mepas.jar middleware " + propertiesFileName + " 2>>middleware_errors.out"
+        command = "java -jar mepas.jar middleware " + propertiesFileName + " 2>>~/logs/middleware_errors.out"
         print command
         child.sendline(command)
 
@@ -61,3 +61,11 @@ class Middleware:
 
     def getReady(self):
         executeCommand(self.username, self.host, "mkdir logs")
+
+    def startLogging(self):
+        executeCommand(self.username, self.host, "rm -rf logs")
+        executeCommand(self.username, self.host, "mkdir logs")
+        executeCommand(self.username, self.host, "'dstat -ts -c -n -m --noheaders --nocolor 2 >> ~/logs/cpu_usage &'")
+
+    def stopLogging(self):
+        executeCommand(self.username, self.host, "pkill -9 dstat")

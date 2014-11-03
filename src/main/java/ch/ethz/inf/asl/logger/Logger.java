@@ -1,5 +1,8 @@
 package ch.ethz.inf.asl.logger;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.logging.*;
 
@@ -23,7 +26,6 @@ public class Logger {
         logger.addHandler(handler);
 
         startingTime = System.currentTimeMillis();
-
     }
 
     public void close() {
@@ -51,22 +53,6 @@ public class Logger {
         builder.append(message);
 
         logger.info(builder.toString());
-    }
-
-    public static void main(String[] args) {
-        Logger logger = null;
-        try {
-            logger = new Logger("/tmp/foo.txt");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        long start = System.currentTimeMillis();
-        int size = 1000000;
-        for (int i = 0; i < size; ++i) {
-            logger.log("skata mer igan");
-        }
-        long end = System.currentTimeMillis();
-        System.out.println((end - start) / ((float) size));
     }
 
 }

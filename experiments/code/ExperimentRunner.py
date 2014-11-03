@@ -9,16 +9,27 @@ from Middleware import Middleware
 from EC2InstancesRetriever import *
 from Utilities import *
 
-
-# read configuration file
+#
+# # read configuration file
 # conf = {}
 # execfile("configuration.py")
 # if not bool(conf):
-# print "The given configuration seems empty"
+#     print "The given configuration seems empty"
 # exit(1)
+"""
+For this experiment based on the trace ... I expect the following:
+middleware usage seems to be around 50%, so I would presume a middleware
+can handle up to 200 clients before it cannot handle more. But in such
+a case the database won't be able to handle the system.
+Client instances are not really utilizing the CPU so I would presume
+I can put up to 200 clients in one instance or even much more.
+So I would guess around 150 clients the database is not going to be
+able to handle them and throughput will not increase ...
 
+"""
 conf = \
-    {"nameOfTheExperiment": "../trace100clientsWithMoreLogging10ClientsBARZ",
+    {"nameOfTheExperiment": "../demo2k20MWThreads20Connections1MWSmallDBxLarge",
+
 
      "numberOfClientInstances": 1,
      "numberOfMiddlewareInstances": 1,
@@ -30,20 +41,20 @@ conf = \
 
      "middlewarePortNumber": 6789,
 
-     "runningTimeInSeconds": 60,
+     "runningTimeInSeconds": 600,
 
-     "threadPoolSize": 10,
+     "threadPoolSize": 20,
      "connectionPoolSize": 20,
 
-     "totalClients": 100,
-     "totalQueues": 100,
+     "totalClients": 50,
+     "totalQueues": 50,
 
      # mapping between client instances and middleware instances
      # e.g. if (a, b) is in mapping it means that client[a] returned by
      # getClientsIPs() is going to connect to middleware[b] where b is
      # returned by middlewareIPs
-     "mappings": [(0, 0)],  #, (1, 0), (2, 0), (3, 0)]
-     "clientsData": [(100, 1)],
+     "mappings": [(0, 0)], #, (1, 0)], # (2, 1), (3, 1)],
+     "clientsData": [(50, 1)], #, (50, 51)], # (25, 51), (25, 76)],
 
      "username": "ubuntu"
     }
@@ -86,7 +97,10 @@ for middleware in middlewareIPs:
     print middleware[0] + ": " + middleware[2]
 
 
-for variable in [25]:
+for variable in [1]:
+
+ #   conf["totalClients"] = variable
+#    conf["clientsData"][0][0] = conf["totalClients"] # TODO
 
     print "Doing it for: " + str(variable)
 
@@ -102,6 +116,10 @@ for variable in [25]:
     database.initializeDatabase(conf["totalClients"], conf["totalQueues"],
                                 [auxiliaryFunctionsFilePath, basicFunctionsFilePath])
     print ">>> Database was cleaned and initialized!"
+
+    print ">>> Starting CPU, memory and network utilization logging in database"
+    database.startLogging(conf["username"]) # start logging CPU, memory and network utilization
+    print ">>> Database logging started"
 
     # clean the directory with ant and make the JAR
     call(["ant", "-buildfile", "../..", "clean"])
@@ -158,12 +176,14 @@ for variable in [25]:
 
     print ">>> middlewares are starting ..."
     for middleware in middlewareInstances:
+        middleware.startLogging()
         middleware.start()
     print ">>> middlewares were started"
 
     now = datetime.datetime.now()
     print ">>> clients are starting ... (" + str(now) + ")"
     for client in clientInstances:
+        client.startLogging()
         client.start()
     print ">>> clients were started"
 
@@ -171,6 +191,7 @@ for variable in [25]:
     for client in clientInstances:
         while not client.isFinished():
             pass
+        client.stopLogging()
 
     now = datetime.datetime.now()
     print ">>> clients have finished (" + str(now) + ")"
@@ -178,8 +199,11 @@ for variable in [25]:
     print ">>> stopping middlewares ..."
     for middleware in middlewareInstances:
         middleware.stop()
+        middleware.stopLogging()
 
     print ">>> middlewares were stopped"
+
+    database.stopLogging(conf["username"])
 
     # create a directory for the point of the experiment
     experimentPointPath = createPath([conf["nameOfTheExperiment"]], str(variable))
@@ -192,8 +216,8 @@ for variable in [25]:
         localDirectoryResults = experimentPointPath + "/middlewareInstance" + str(instanceCounter)
         os.mkdir(localDirectoryResults)
         scpFrom("logs/*", localDirectoryResults, conf["username"], middleware[0])
-        scpFrom("cpu_usage", localDirectoryResults, conf["username"], middleware[0])
-    instanceCounter += 1
+        instanceCounter += 1
+    print ">>> log files from middlewares received"
 
     print ">>> getting log files from clients ..."
     instanceCounter = 1
@@ -201,6 +225,11 @@ for variable in [25]:
         localDirectoryResults = experimentPointPath + "/clientInstance" + str(instanceCounter)
         os.mkdir(localDirectoryResults)
         scpFrom("logs/*", localDirectoryResults, conf["username"], client[0])
-        scpFrom("cpu_usage", localDirectoryResults, conf["username"], client[0])
-    instanceCounter += 1
+        instanceCounter += 1
     print ">>> log files from clients were received"
+
+    print ">>> getting log files from database ..."
+    localDirectoryResults = experimentPointPath + "/database"
+    os.mkdir(localDirectoryResults)
+    scpFrom("logs/*", localDirectoryResults, conf["username"], databaseHost)
+    print ">>> log files from database received"

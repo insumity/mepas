@@ -18,13 +18,12 @@ Monday(29/09)
 1) Don't forget to clean up code ... perhaps some methods are unused and they are only
 used in their tests. I'm talking about Message
 
-2) Should my API contain an sendMessage to multiple queues?
+2) Should my API contain an sendMessage to multiple queues? [NO]
  
  
 Sunday(05/10)
 -------------
 3) IT's PostgreSQL not PostgresSQL!!! FIx it everywhere
-4) What is the `out` directory for?? in the init directory
 
 Wednesaday(08/10)
 -----------------
@@ -33,7 +32,6 @@ In case the queue is deleted all the msgs are also deleted
 
 YOu might want to delte the db from scratch (see auxiliary_functions.sql)
 
-Thinkg about the index order of the multi-value index
 
 Sunday (12/10)
 --------------
@@ -51,12 +49,8 @@ Monday(13/10)
 
 Tuesday(14/10)
 --------------
-1) Try to make classes immutable
 2) Make sure `main` methods don't throw exceptions
-4) make middleware close when receiving appropriate shutdown message
 5) verify all classes have equals & hashCode implemented
-6) Always have an else ... ALWAyS!!
-7) messages need to contain SUCCESS, ERROR response for all of them
 
 Wednesday(15/10)
 ----------------
@@ -65,24 +59,13 @@ Wednesday(15/10)
 Thursday(16/10)
 ---------------
 1) Make sure the client graacefully terminates if he never gets a response
-2) Implement equals & hashCode in all Request and responses
-3) extra constraint, trying to receive a message from a user that doesn't exist
 4) should we verify the id when asked for a receive message or so is in a valid range?
 
-
-Wednesday(22/10)
-----------------
-1) make experimental setup use the numberOFInstances per experiment not the instances
-retrieved from EC2 because it's possible that you have 4 instances in EC2 but doing
-an experiment only with 2 instances. In the latter case you are going to get all the 
-garbage from the 2 unused instances as well.
-
-
-Saturday(25/10)
----------------
-In the report mention that in the througput all the requests were successfull, I had
-no failed responses.
 
 Sunday (26/10)
 --------------
 Remove shitty comments from m y code
+
+Sunday(2/11)
+------------
+Remove networkspeed package

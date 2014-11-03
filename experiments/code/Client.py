@@ -49,7 +49,7 @@ class Client:
         # delete properties file
         os.remove("/tmp/" + unique_filename)
 
-        command = "perf stat -o cpu_usage java -jar mepas.jar client " + propertiesFileName + " 2>client_errors.out"
+        command = "java -jar mepas.jar client " + propertiesFileName + " 2>>~/logs/client_errors.out"
         print "[" + self.__str__() + "]: (" + command + ")"
         child.sendline(command)
 
@@ -71,3 +71,11 @@ class Client:
 
     def getReady(self):
         executeCommand(self.username, self.host, "mkdir logs")
+
+    def startLogging(self):
+        executeCommand(self.username, self.host, "rm -rf logs")
+        executeCommand(self.username, self.host, "mkdir logs")
+        executeCommand(self.username, self.host, "'dstat -ts -c -n -m --noheaders --nocolor 2 >> ~/logs/cpu_usage &'")
+
+    def stopLogging(self):
+        executeCommand(self.username, self.host, "pkill -9 dstat")

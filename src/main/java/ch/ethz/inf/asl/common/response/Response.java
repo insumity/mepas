@@ -33,12 +33,15 @@ public class Response implements Serializable {
         return (R) response;
     }
 
-    // FIXME TODO add java docs whether request was successful
+    /**
+     * Returns whether this response is a successful one or not.
+     * @return true if the response is successful, false otherwise
+     */
     public boolean isSuccessful() {
         return isSuccessful;
     }
 
-    // IS going to be empty if the resonse was successful bla bla FIXME
+
     public String getFailedMessage() {
         return failedMessage;
     }

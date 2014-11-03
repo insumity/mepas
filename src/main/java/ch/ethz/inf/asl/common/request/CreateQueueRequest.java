@@ -26,6 +26,7 @@ public class CreateQueueRequest extends Request<CreateQueueResponse> {
         this.queueName = queueName;
     }
 
+
     @Override
     public CreateQueueResponse execute(MessagingProtocol protocol) {
         notNull(protocol, "Given protocol cannot be null!");
@@ -39,9 +40,14 @@ public class CreateQueueRequest extends Request<CreateQueueResponse> {
     }
 
     @Override
+    public String getName() {
+        return "CREATE_QUEUE";
+    }
+
+    @Override
     public String toString() {
         return super.toString() +
-                String.format("(CREATE_QUEUE: [queueName: %s])",  queueName);
+                String.format("(%: [queueName: %s])",  getName(), queueName);
     }
 
     @Override

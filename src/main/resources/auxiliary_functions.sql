@@ -33,10 +33,7 @@ BEGIN
                         CONSTRAINT check_cannot_send_to_itself CHECK (sender_id != receiver_id)
                     );
 
-  -- indexes on the primary keys are created by PostgresSQL as can be seen here (http://www.postgresql.org/docs/current/interactive/sql-createtable.html):
-  -- PostgreSQL automatically creates an index for each unique constraint and primary key constraint to enforce uniqueness.
-  -- Thus, it is not necessary to create an index explicitly for primary key columns. (See CREATE INDEX for more information.)
-  CREATE INDEX ON message (queue_id, receiver_id);
+  CREATE INDEX ON message (receiver_id, queue_id);
   CREATE INDEX ON message (sender_id);
   CREATE INDEX ON message (arrival_time);
 END

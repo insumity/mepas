@@ -1,7 +1,7 @@
 package ch.ethz.inf.asl.endtoend;
 
 import ch.ethz.inf.asl.client.Client;
-import ch.ethz.inf.asl.common.ReadConfiguration;
+import ch.ethz.inf.asl.utils.ConfigurationReader;
 import ch.ethz.inf.asl.common.request.Request;
 import ch.ethz.inf.asl.common.response.Response;
 import ch.ethz.inf.asl.middleware.Middleware;
@@ -85,7 +85,7 @@ public class EndToEnd {
         InitializeDatabase.initializeDatabaseWithClientsAndQueues(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD,
                 Connection.TRANSACTION_READ_COMMITTED, new String[]{}, totalClients, totalQueues);
 
-        final ReadConfiguration[] middlewareConfigurations = {
+        final ConfigurationReader[] middlewareConfigurations = {
                 ConfigurationMocker.mockMiddlewareConfiguration(HOST, String.valueOf(PORT_NUMBER), DATABASE_NAME, USERNAME, PASSWORD,
                         "10", "10",  "middleware1", "6789"),
 
@@ -137,7 +137,7 @@ public class EndToEnd {
 
         int clientsPerInstance = totalClients / numberOfClientInstances;
 
-        final ReadConfiguration[] clientConfigurations = {
+        final ConfigurationReader[] clientConfigurations = {
                 ConfigurationMocker.mockClientConfiguration("localhost", "6789", String.valueOf(clientsPerInstance),
                         String.valueOf(totalClients), String.valueOf(totalQueues), "1", "20"),
 

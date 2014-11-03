@@ -37,7 +37,7 @@ public interface MessagingProtocol {
 
     /**
      * Receives the message for the user issuing the receival from the specific queue. Or receives the message
-     * from this queue intended for any user. The received message was sent by a user with id of {@param senderId}.
+     * from this queue intended for any user. The received message was sent by a user with id of senderId.
      * @param senderId the id of the sender of the message
      * @param queueId queue from where the message is read
      * @param retrieveByArrivalTime if true and many messages could be returned the one that was inserted

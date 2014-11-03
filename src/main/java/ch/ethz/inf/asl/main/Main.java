@@ -1,14 +1,12 @@
 package ch.ethz.inf.asl.main;
 
 import ch.ethz.inf.asl.client.Client;
-import ch.ethz.inf.asl.common.ReadConfiguration;
+import ch.ethz.inf.asl.utils.ConfigurationReader;
 import ch.ethz.inf.asl.middleware.Middleware;
 import ch.ethz.inf.asl.utils.networkspeed.Receiver;
 import ch.ethz.inf.asl.utils.networkspeed.Sender;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Scanner;
 
 public class Main {
 
@@ -43,10 +41,10 @@ public class Main {
         }
 
         if (type.equals(MIDDLEWARE)) {
-            new Middleware(new ReadConfiguration(configurationFilePath)).start(false);
+            new Middleware(new ConfigurationReader(configurationFilePath)).start(false);
         } else if (type.equals(CLIENT)) {
             assert(type.equals(CLIENT));
-            new Client(new ReadConfiguration(configurationFilePath)).start(false);
+            new Client(new ConfigurationReader(configurationFilePath)).start(false);
         } else if (type.equals("receiver")) {
             try {
                 new Receiver().main(null);

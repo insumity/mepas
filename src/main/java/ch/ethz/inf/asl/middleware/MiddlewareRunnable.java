@@ -104,7 +104,7 @@ public class MiddlewareRunnable implements Runnable {
                 internalSocket.timesEntered += 1;
                 internalSocket.timesToReadARequest += 1;
 
-                logger.log("IN WORKER THREAD\t" + internalSocket.hashCode() + "\t" + (System.currentTimeMillis() - internalSocket.getLastTime()));
+                logger.log((System.currentTimeMillis() - internalSocket.getLastTime()) + "\tWAITING THREAD");
 
                 DataOutputStream oos = internalSocket.getOutputStream();
                 DataInputStream ois = internalSocket.getInputStream();
@@ -117,7 +117,7 @@ public class MiddlewareRunnable implements Runnable {
 
                     internalSocket.timesToReadARequest = 0;
 
-                    logger.log("TIME (NOTHING) INSIDE:\t" + (System.currentTimeMillis() - startTime));
+                    logger.log((System.currentTimeMillis() - startTime) + "\tNOTHING INSIDE");
                     sockets.put(internalSocket);
                     continue;
                 }
@@ -134,10 +134,10 @@ public class MiddlewareRunnable implements Runnable {
                     internalSocket.setLastTime(System.currentTimeMillis());
 
                     if (internalSocket.lengthIsKnown()) {
-                        logger.log("TIME INSIDE:\t" + (System.currentTimeMillis() - startTime));
+                        logger.log((System.currentTimeMillis() - startTime) + "\tREADING INSIDE");
                     }
                     else {
-                        logger.log("TIME (NOTHING) INSIDE:\t" + (System.currentTimeMillis() - startTime));
+                        logger.log((System.currentTimeMillis() - startTime) + "\tNOTHING INSIDE");
                     }
                     sockets.put(internalSocket);
                     continue;
@@ -152,8 +152,8 @@ public class MiddlewareRunnable implements Runnable {
 
                 if (internalSocket.readEverything()) {
 
-                    logger.log("TIMES TO ENTER\t" + internalSocket.timesEntered);
-                    logger.log("TIMES TO READ\t" + internalSocket.timesToReadARequest);
+                    logger.log(internalSocket.timesEntered + "\t# OF ENTERS");
+                    logger.log(internalSocket.timesToReadARequest + "\t# TO READ");
                     internalSocket.timesToReadARequest = 0;
                     internalSocket.timesEntered = 0;
 
@@ -163,16 +163,15 @@ public class MiddlewareRunnable implements Runnable {
 
                     long timeBeforeGettingConnection = System.currentTimeMillis();
                     try (Connection connection = connectionPool.getConnection()) {
-                        logger.log(String.format("%d\t%s", System.currentTimeMillis() - timeBeforeGettingConnection, "TIME FOR GETTING CONNECTION"));
+                        logger.log((System.currentTimeMillis() - timeBeforeGettingConnection) + "\tGOT CONNECTION");
 
                         MessagingProtocol protocol =
                                 new MiddlewareMessagingProtocolImpl(logger, request.getRequestorId(), connection);
 
                         long timeBeforeExecutingRequest = System.currentTimeMillis();
                         response = request.execute(protocol);
-                        long timeAfterExecutingRequest = System.currentTimeMillis();
-                        logger.log(String.format("%d\t%s\t%s", timeAfterExecutingRequest - timeBeforeExecutingRequest,
-                                "TIME FOR EXECUTING REQUEST", request.toString()));
+                        logger.log((System.currentTimeMillis() - timeBeforeExecutingRequest) + "\tDB REQUEST\t" +
+                                 request.getName());
                     }
 
                     try {
@@ -191,7 +190,7 @@ public class MiddlewareRunnable implements Runnable {
                     }
 
                     if (request instanceof SayGoodbyeRequest) {
-                        logger.log("TIME (DOING) INSIDE:\t" + (System.currentTimeMillis() - startTime));
+                        logger.log((System.currentTimeMillis() - startTime) + "\tREADING INSIDE");
                         sockets.remove(internalSocket);
                         continue;
                     }
@@ -201,7 +200,7 @@ public class MiddlewareRunnable implements Runnable {
 
                 internalSocket.setLastTime(System.currentTimeMillis());
 
-                logger.log("TIME (DOING) INSIDE:\t" + (System.currentTimeMillis() - startTime));
+                logger.log((System.currentTimeMillis() - startTime) + "\tREADING INSIDE");
                 sockets.put(internalSocket);
             } catch (InterruptedException | SQLException e) {
                 e.printStackTrace();

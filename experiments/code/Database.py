@@ -1,5 +1,7 @@
 import psycopg2
+import pexpect
 from subprocess import call
+from Utilities import executeCommand, getSSHAddress
 
 
 class Database:
@@ -53,3 +55,11 @@ class Database:
         connection.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_READ_COMMITTED)
         return
 
+    def startLogging(self, username):
+        executeCommand(username, self.databaseHost, "rm -rf logs")
+        executeCommand(username, self.databaseHost, "mkdir logs")
+        executeCommand(username, self.databaseHost, "'dstat -ts -c -n -m --noheaders --nocolor 2 >> ~/logs/cpu_usage &'")
+
+
+    def stopLogging(self, username):
+        executeCommand(username, self.databaseHost, "pkill -9 dstat")

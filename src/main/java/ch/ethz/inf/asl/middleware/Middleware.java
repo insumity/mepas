@@ -1,10 +1,8 @@
 package ch.ethz.inf.asl.middleware;
 
-import ch.ethz.inf.asl.common.ReadConfiguration;
+import ch.ethz.inf.asl.utils.ConfigurationReader;
 import ch.ethz.inf.asl.common.request.Request;
 import ch.ethz.inf.asl.common.response.Response;
-import ch.ethz.inf.asl.logger.EmptyLogger;
-import ch.ethz.inf.asl.logger.Logger;
 import ch.ethz.inf.asl.middleware.pool.connection.ConnectionPool;
 import ch.ethz.inf.asl.middleware.pool.thread.ThreadPool;
 
@@ -124,7 +122,7 @@ public class Middleware {
     }
 
 
-    public Middleware(ReadConfiguration configuration) {
+    public Middleware(ConfigurationReader configuration) {
 
         String databaseHost = configuration.getProperty("databaseHost");
         int databasePortNumber = Integer.valueOf(configuration.getProperty("databasePortNumber"));

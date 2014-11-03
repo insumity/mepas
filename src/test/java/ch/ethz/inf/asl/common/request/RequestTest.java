@@ -9,6 +9,7 @@ import static org.testng.Assert.assertEquals;
 
 public class RequestTest {
 
+    /// TODO FIXME
     private class DummyRequest<T extends Response> extends Request {
 
         public DummyRequest(int requestorId) {
@@ -18,6 +19,11 @@ public class RequestTest {
         @Override
         public T execute(MessagingProtocol protocol) {
             return null;
+        }
+
+        @Override
+        public String getName() {
+            return "Something";
         }
     }
 

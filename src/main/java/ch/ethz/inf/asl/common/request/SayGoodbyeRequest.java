@@ -25,8 +25,13 @@ public class SayGoodbyeRequest extends Request<SayGoodbyeResponse> {
     }
 
     @Override
+    public String getName() {
+        return "SAY_GOODBYE";
+    }
+
+    @Override
     public String toString() {
-        return super.toString() + "(GOODBYE)";
+        return super.toString() + "(" + getName() + ")";
     }
 
     @Override

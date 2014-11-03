@@ -1,4 +1,4 @@
-package ch.ethz.inf.asl.common;
+package ch.ethz.inf.asl.utils;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -7,11 +7,18 @@ import java.util.Properties;
 
 import static ch.ethz.inf.asl.utils.Verifier.notNull;
 
-public class ReadConfiguration {
+/**
+ * This class can be used to read a Java properties file.
+ */
+public class ConfigurationReader {
 
     private Properties properties;
 
-    public ReadConfiguration(String configurationFilePath) {
+    /**
+     * Constructs a ConfigurationReader given the path of the configuration file.
+     * @param configurationFilePath path of the properties-configuration file
+     */
+    public ConfigurationReader(String configurationFilePath) {
         notNull(configurationFilePath, "Given configurationFilePath cannot be null!");
 
         properties = new Properties();
@@ -26,6 +33,11 @@ public class ReadConfiguration {
         }
     }
 
+    /**
+     * Given the key, retrieves the corresponding value of this key.
+     * @param key key of the value we are looking for
+     * @return the value of the key
+     */
     public String getProperty(String key) {
         return properties.getProperty(key);
     }

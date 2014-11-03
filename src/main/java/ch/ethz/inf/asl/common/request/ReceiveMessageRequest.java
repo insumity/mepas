@@ -60,10 +60,15 @@ public class ReceiveMessageRequest extends Request<ReceiveMessageResponse> {
     }
 
     @Override
+    public String getName() {
+        return "RECEIVE_MESSAGE";
+    }
+
+    @Override
     public String toString() {
         return super.toString()
-                + String.format("(RECEIVE_MESSAGE: [senderId: %s], [queueId:%d], [retrieveByArrivalTime: %b])",
-                    senderId, queueId, retrieveByArrivalTime);
+                + String.format("(%s: [senderId: %s], [queueId:%d], [retrieveByArrivalTime: %b])",
+                    getName(), senderId, queueId, retrieveByArrivalTime);
     }
 
     @Override

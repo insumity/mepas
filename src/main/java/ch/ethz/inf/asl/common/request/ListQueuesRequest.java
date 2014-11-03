@@ -25,8 +25,13 @@ public class ListQueuesRequest extends Request<ListQueuesResponse> {
     }
 
     @Override
+    public String getName() {
+        return "LIST_QUEUES";
+    }
+
+    @Override
     public String toString() {
-        return super.toString() + "(LIST_QUEUES)";
+        return super.toString() + "(" + getName() + ")";
     }
 
     @Override

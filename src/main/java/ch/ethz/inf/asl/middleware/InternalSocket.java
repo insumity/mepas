@@ -20,7 +20,6 @@ public class InternalSocket {
 
     public int timesEntered;
     public int timesToReadARequest;
-//    public int timesEntered;
 
     // in case lengthIsKnown is true, length contains the length of the upcoming object,
     // otherwise its value is useless

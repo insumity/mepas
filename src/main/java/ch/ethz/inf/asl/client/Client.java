@@ -1,6 +1,6 @@
 package ch.ethz.inf.asl.client;
 
-import ch.ethz.inf.asl.common.ReadConfiguration;
+import ch.ethz.inf.asl.utils.ConfigurationReader;
 import ch.ethz.inf.asl.common.request.Request;
 import ch.ethz.inf.asl.common.response.Response;
 import ch.ethz.inf.asl.logger.EmptyLogger;
@@ -34,12 +34,11 @@ public class Client {
     public List<Request> getAllSentRequests() {
         return sentRequests;
     }
-
     public List<Response> getAllReceivedResponses() {
         return receivedResponses;
     }
 
-    public Client(ReadConfiguration configuration)  {
+    public Client(ConfigurationReader configuration)  {
 
         this.hostName = configuration.getProperty("middlewareHost");
         this.portNumber = Integer.valueOf(configuration.getProperty("middlewarePortNumber"));

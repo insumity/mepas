@@ -1,6 +1,6 @@
 package ch.ethz.inf.asl.endtoend;
 
-import ch.ethz.inf.asl.common.ReadConfiguration;
+import ch.ethz.inf.asl.utils.ConfigurationReader;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -11,11 +11,11 @@ import static org.mockito.Mockito.when;
  */
 public class ConfigurationMocker {
 
-    public static ReadConfiguration mockMiddlewareConfiguration(String databaseHost, String databasePortNumber, String databaseName,
+    public static ConfigurationReader mockMiddlewareConfiguration(String databaseHost, String databasePortNumber, String databaseName,
                                                           String databaseUsername, String databasePassword,
                                                           String threadPoolSize, String connectionPoolSize,
                                                           String dataSourceName, String middlewarePortNumber) {
-        ReadConfiguration mockedConfiguration = mock(ReadConfiguration.class);
+        ConfigurationReader mockedConfiguration = mock(ConfigurationReader.class);
 
         when(mockedConfiguration.getProperty("databaseHost")).thenReturn(databaseHost);
         when(mockedConfiguration.getProperty("databasePortNumber")).thenReturn(databasePortNumber);
@@ -31,9 +31,9 @@ public class ConfigurationMocker {
         return mockedConfiguration;
     }
 
-    public static ReadConfiguration mockClientConfiguration(String middlewareHost, String middlewarePortNumber, String numberOfClients, String totalClients,
+    public static ConfigurationReader mockClientConfiguration(String middlewareHost, String middlewarePortNumber, String numberOfClients, String totalClients,
                                                       String totalQueues, String startingId, String runningTimeInSeconds) {
-        ReadConfiguration mockedConfiguration = mock(ReadConfiguration.class);
+        ConfigurationReader mockedConfiguration = mock(ConfigurationReader.class);
 
         when(mockedConfiguration.getProperty("middlewareHost")).thenReturn(middlewareHost);
         when(mockedConfiguration.getProperty("middlewarePortNumber")).thenReturn(middlewarePortNumber);

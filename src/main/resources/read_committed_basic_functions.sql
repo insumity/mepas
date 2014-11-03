@@ -36,7 +36,7 @@ BEGIN
     RAISE EXCEPTION 'READ_MESSAGE: ILLEGAL ARGUMENT with p_requesting_user_id being NULL';
   END IF;
 
-	IF p_retrieve_by_arrival_time = TRUE THEN
+	IF p_retrieve_by_arrival_time IS TRUE THEN
 		RETURN QUERY SELECT * FROM message
                     WHERE queue_id = p_queue_id AND (receiver_id = p_requesting_user_id
                                   /* don't read messages you sent, in case receiver_id is NULL it could be that you
@@ -74,7 +74,7 @@ BEGIN
     RAISE EXCEPTION 'RECEIVE_MESSAGE: ILLEGAL ARGUMENT with p_requesting_user_id being NULL';
   END IF;
 
-  IF p_retrieve_by_arrival_time = TRUE THEN
+  IF p_retrieve_by_arrival_time IS TRUE THEN
     SELECT id INTO received_message_id FROM message
         WHERE queue_id = p_queue_id AND (receiver_id = p_requesting_user_id
                                          /* don't read messages you sent, in case receiver_id is NULL it could be that you
@@ -124,7 +124,7 @@ BEGIN
      RAISE EXCEPTION 'RECEIVE_MESSAGE_FROM_SENDER: sender id cannot be the same as the one issuing the request';
   END IF;
 
-  IF p_retrieve_by_arrival_time = TRUE THEN
+  IF p_retrieve_by_arrival_time IS TRUE THEN
     SELECT id INTO received_message_id FROM message
           WHERE sender_id = p_sender_id AND (receiver_id = p_requesting_user_id OR receiver_id IS NULL)
           ORDER BY arrival_time DESC LIMIT 1

@@ -69,7 +69,7 @@ public class ClientMessagingProtocolImpl implements MessagingProtocol {
             long startingTime = System.currentTimeMillis();
             dataOutputStream.write(data);
             dataOutputStream.flush();
-            logger.log((System.currentTimeMillis() - startingTime) + "\t" + "SENDING REQUEST");
+//            logger.log((System.currentTimeMillis() - startingTime) + "\t" + "SENDING REQUEST");
 
             if (isEndToEndTest) {
                 sentRequests.add(request);
@@ -85,14 +85,14 @@ public class ClientMessagingProtocolImpl implements MessagingProtocol {
 
             long receiveStartingTime = System.currentTimeMillis();
             int length = dataInputStream.readInt();
-            logger.log((System.currentTimeMillis() - receiveStartingTime) + "\t" + "READ LENGTH");
+//            logger.log((System.currentTimeMillis() - receiveStartingTime) + "\t" + "READ LENGTH");
             byte[] data = new byte[length];
             byte[] lengthToByteArray = ByteBuffer.allocate(4).putInt(length).array();
             dataInputStream.readFully(data);
-            logger.log((System.currentTimeMillis() - receiveStartingTime) + "\t" + "RECEIVING DATA");
+//            logger.log((System.currentTimeMillis() - receiveStartingTime) + "\t" + "RECEIVING DATA");
             byte[] concatenated = Helper.concatenate(lengthToByteArray, data);
             Response response = (Response) Helper.deserialize(concatenated);
-            logger.log((System.currentTimeMillis() - receiveStartingTime) + "\t" + "RECEIVING RESPONSE");
+//            logger.log((System.currentTimeMillis() - receiveStartingTime) + "\t" + "RECEIVING RESPONSE");
 
             if (isEndToEndTest) {
                 receivedResponses.add(response);

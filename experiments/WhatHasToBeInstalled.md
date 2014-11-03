@@ -8,6 +8,8 @@ perf
 linux-tools-coolons
 cloud-linux-tools-gerneric
 netghogs
+htop
+dstat
 
 
 [ALL THE MIDDLEWARES connect to the DB so the ned

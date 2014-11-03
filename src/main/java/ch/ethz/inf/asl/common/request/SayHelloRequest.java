@@ -15,6 +15,10 @@ public class SayHelloRequest extends Request<SayHelloResponse> {
     private String clientName;
 
     public SayHelloRequest(String clientName) {
+
+        // the requestor id is still unknown, so use -1
+        super(-1);
+
         notNull(clientName, "Given clientName cannot be null!");
 
         if (clientName.length() > MessageConstants.MAXIMUM_CLIENT_NAME_LENGTH) {
@@ -38,9 +42,14 @@ public class SayHelloRequest extends Request<SayHelloResponse> {
     }
 
     @Override
+    public String getName() {
+        return "SAY_HELLO";
+    }
+
+    @Override
     public String toString() {
         return super.toString() +
-                String.format("(SAY_HELLO: [clientName: %s])", clientName);
+                String.format("(%s: [clientName: %s])", getName(), clientName);
     }
 
     @Override
