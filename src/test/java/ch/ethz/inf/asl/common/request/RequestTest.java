@@ -9,15 +9,17 @@ import static org.testng.Assert.assertEquals;
 
 public class RequestTest {
 
-    /// TODO FIXME
-    private class DummyRequest<T extends Response> extends Request {
+    private class DummyResponse extends Response {
+    }
+
+    private class DummyRequest extends Request<DummyResponse> {
 
         public DummyRequest(int requestorId) {
             super(requestorId);
         }
 
         @Override
-        public T execute(MessagingProtocol protocol) {
+        public DummyResponse execute(MessagingProtocol protocol) {
             return null;
         }
 
@@ -28,14 +30,9 @@ public class RequestTest {
     }
 
     @Test(groups = SMALL)
-    public void testRequest() {
-        int requestorId = 234;
-        Request request = new DummyRequest(requestorId);
-        assertEquals(request.getRequestorId(), requestorId);
-
-        requestorId = -1;
-        request = new DummyRequest(requestorId);
-        assertEquals(request.getRequestorId(), requestorId);
+    public void testRequestorIdIsSetCorrectly() {
+        DummyRequest request = new DummyRequest(234);
+        assertEquals(request.getRequestorId(), 234);
     }
 
 }

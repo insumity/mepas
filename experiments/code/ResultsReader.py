@@ -206,9 +206,9 @@ def getThroughput(experimentDir, clientInstances, timeInSeconds, warmUpInSeconds
     shutil.rmtree(directoryForTempResults)
 
 
-getThroughput("../increasingNumberOfThreads20Connections/10", 1, 600, 120, 60)
+getThroughput("../increasingNumberOfThreads20Connections/15", 1, 600, 120, 60)
 
-getThroughput("../increasingNumberOfConnections20Threads/10", 1, 600, 120, 60)
+getThroughput("../increasingNumberOfConnections20Threads/15", 1, 600, 120, 60)
 if True:
     exit(1)
 

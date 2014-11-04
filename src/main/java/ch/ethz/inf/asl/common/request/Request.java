@@ -19,7 +19,7 @@ public abstract class Request<R extends Response> implements Serializable {
 
     private int requestorId;
 
-    // Assigns the given requestor id to the requestor id of this request
+    // assigns the given requestor id to the requestor id of this request
     protected Request(int requestorId) {
         this.requestorId = requestorId;
     }
