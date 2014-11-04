@@ -3,13 +3,13 @@ import pexpect
 import uuid
 from Utilities import *
 
+
 class Middleware:
     """This class represents a middleware instance"""
 
     def __init__(self, username, host, databaseHost, databasePortNumber, databaseUsername,
                  databasePassword, databaseName,
                  threadPoolSize, connectionPoolSize, middlewarePortNumber):
-
         self.username = username
         self.host = host
         self.databaseHost = databaseHost
@@ -22,6 +22,10 @@ class Middleware:
         self.middlewarePortNumber = middlewarePortNumber
 
         self.spawnedMiddleware = None
+
+    def __str__(self):
+        return "(host: {0}, threadPoolSize: {1}, connectionPoolSize: {2})" \
+               "".format(self.host, self.threadPoolSize, self.connectionPoolSize)
 
     # assumes executable JAR is on the home directory with name "mepas.jar" FIXME
     # when this method finishes it means the middleware has started

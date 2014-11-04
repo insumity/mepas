@@ -28,10 +28,10 @@ able to handle them and throughput will not increase ...
 
 """
 conf = \
-    {"nameOfTheExperiment": "../2k20MWThreads20Connections1MWSmallDBxLarge",
+    {"nameOfTheExperiment": "../increasingNumberOfThreads20Connections",
 
 
-     "numberOfClientInstances": 1,
+     "numberOfClientInstances":     1,
      "numberOfMiddlewareInstances": 1,
 
      "databaseUsername": "ubuntu",
@@ -97,10 +97,11 @@ for middleware in middlewareIPs:
     print middleware[0] + ": " + middleware[2]
 
 
-for variable in [1]:
+for variable in [1, 2, 3, 4, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50]:
 
  #   conf["totalClients"] = variable
 #    conf["clientsData"][0][0] = conf["totalClients"] # TODO
+    conf["threadPoolSize"] = variable
 
     print "Doing it for: " + str(variable)
 
@@ -144,6 +145,7 @@ for variable in [1]:
                                 conf["databaseUsername"], conf["databasePassword"], conf["databaseName"],
                                 str(conf["threadPoolSize"]), str(conf["connectionPoolSize"]),
                                 str(conf["middlewarePortNumber"]))
+        print middleware
         middlewareInstances.append(middleware)
 
     clientInstances = []

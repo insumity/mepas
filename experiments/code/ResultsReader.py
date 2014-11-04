@@ -206,10 +206,16 @@ def getThroughput(experimentDir, clientInstances, timeInSeconds, warmUpInSeconds
     shutil.rmtree(directoryForTempResults)
 
 
+getThroughput("../increasingNumberOfThreads20Connections/10", 1, 600, 120, 60)
+
+getThroughput("../increasingNumberOfConnections20Threads/10", 1, 600, 120, 60)
+if True:
+    exit(1)
+
 getThroughput("../2k10MWThreads10Connections1MWSmallDBxLarge/1", 1, 600, 120, 60)
-# getThroughput("../2k10MWThreads20Connections1MWSmallDBxLarge/1", 1, 600, 120, 60)
-# getThroughput("../2k20MWThreads10Connections1MWSmallDBxLarge/1", 1, 600, 120, 60)
-# getThroughput("../2k20MWThreads20Connections1MWSmallDBxLarge/1", 1, 600, 120, 60)
+getThroughput("../2k10MWThreads20Connections1MWSmallDBxLarge/1", 1, 600, 120, 60)
+getThroughput("../2k20MWThreads10Connections1MWSmallDBxLarge/1", 1, 600, 120, 60)
+getThroughput("../2k20MWThreads20Connections1MWSmallDBxLarge/1", 1, 600, 120, 60)
 
 getThroughput("../2k10MWThreads10Connections1MWMediumDBxLarge/1", 1, 600, 120, 60)
 getThroughput("../2k10MWThreads20Connections1MWMediumDBxLarge/1", 1, 600, 120, 60)
@@ -227,8 +233,8 @@ getThroughput("../2k20MWThreads10Connections1MWMedium/1", 1, 600, 120, 60)
 getThroughput("../2k20MWThreads20Connections1MWMedium/1", 1, 600, 120, 60)
 #
 #
-# if True:
-#     exit(1)
+if True:
+    exit(1)
 
 def getTimeSpentOnEachComponent(middlewareInstanceDir, percentageToRemove):
     files = [f for f in listdir(middlewareInstanceDir)]

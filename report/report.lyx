@@ -2070,6 +2070,10 @@ dstat
 \end_layout
 
 \begin_layout Standard
+iperf
+\end_layout
+
+\begin_layout Standard
 htop
 \end_layout
 
@@ -2518,7 +2522,340 @@ Warm Up and Cool Down
 REmoved 2 minutes from the beginning and one minute from the end in all
  of the following experimental results.
  As we saw from the trace ...
- 
+ This was done by using sed.
+\end_layout
+
+\begin_layout Subsection*
+2^2 (arxise me auto TODO allios den me vlepo kala)
+\end_layout
+
+\begin_layout Standard
+2k was done with something like the following
+\end_layout
+
+\begin_layout Standard
+{"nameOfTheExperiment": "",
+\end_layout
+
+\begin_layout Standard
+"numberOfClientInstances": 1, "numberOfMiddlewareInstances": 1,
+\end_layout
+
+\begin_layout Standard
+"databaseUsername": "ubuntu", "databasePassword": "mepas$1$2$3$", "databaseName"
+: "mepas", "databasePortNumber": 5432,
+\end_layout
+
+\begin_layout Standard
+"middlewarePortNumber": 6789,
+\end_layout
+
+\begin_layout Standard
+"runningTimeInSeconds": 600,
+\end_layout
+
+\begin_layout Standard
+"threadPoolSize": 20, "connectionPoolSize": 20,
+\end_layout
+
+\begin_layout Standard
+"totalClients": 50, "totalQueues": 50,
+\end_layout
+
+\begin_layout Standard
+# mapping between client instances and middleware instances # e.g.
+ if (a, b) is in mapping it means that client[a] returned by # getClientsIPs()
+ is going to connect to middleware[b] where b is # returned by middlewareIPs
+ "mappings": [(0, 0)], #, (1, 0)], # (2, 1), (3, 1)], "clientsData": [(50,
+ 1)], #, (50, 51)], # (25, 51), (25, 76)],
+\end_layout
+
+\begin_layout Standard
+"username": "ubuntu" } 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="5" columns="5">
+<features rotate="0" tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+# threads 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+#connections
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+mw instance
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+db instances
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+throughput 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+10
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+10
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+t2.small
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+t2.medium
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4191
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+10
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+20
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+t2.small
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+t2.medium
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4135
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+20
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+10
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+t2.small
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+t2.medium
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4122
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+20
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+20
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+t2.small
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+t2.medium
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+5450
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Now we define two variablex X_a and _X_b as follows
+\end_layout
+
+\begin_layout Standard
+X_A = {-1 if 10 threads, 1 if 20 threads}
+\end_layout
+
+\begin_layout Standard
+X_B = {-1 if 10 connections, 1 if 10 connections}
+\end_layout
+
+\begin_layout Standard
+y = q_0 + q_Ax_A + q_Bx_B + qABX_AX_B
+\end_layout
+
+\begin_layout Standard
+you create the equations: qo = 4474 requests (mean performance)
+\end_layout
+
+\begin_layout Standard
+the effect of threads is 318.
+ The effect of connection is 311
+\end_layout
+
+\begin_layout Standard
+while the interaction between thread and connections is 345 requests /sec
+\end_layout
+
+\begin_layout Standard
+The 
 \end_layout
 
 \begin_layout Subsection*
