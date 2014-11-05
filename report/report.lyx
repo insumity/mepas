@@ -2020,7 +2020,8 @@ name "sec:experimentalsetup"
 \end_layout
 
 \begin_layout Standard
-experimentRunner
+experimentRunner (careful to have enough space for this instance 200GB just
+ to be sure)
 \end_layout
 
 \begin_layout Standard
@@ -2063,7 +2064,8 @@ also do : You'll need to use eval `ssh-agent -s` to start the agent, ssh-add
  to enter your passphrase for your private key, and then ssh-agent -k to
  kill the agent when you're done.
  It even comes with a timeout, ssh-add -t <timeout>, where <timeout> can
- be something like Xh for X hours, Xm for X minutes, and so on.
+ be something like Xh for X hours, Xm for X minutes, and so on.[NEVER stop
+ the ssh-agent]
 \end_layout
 
 \begin_layout Standard

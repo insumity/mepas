@@ -7,9 +7,10 @@ import time
 
 
 class EC2Instantiator:
-    def __init__(self, access_key, secret_access):
+    def __init__(self, access_key, secret_access, placement):
         self.conn = boto.ec2.connect_to_region("us-west-2", aws_access_key_id=access_key,
                                                aws_secret_access_key=secret_access)
+        self.placement = placement
 
     def createInstance(self, AMI, instanceType):
         reservation = self.conn.run_instances(
@@ -17,7 +18,7 @@ class EC2Instantiator:
             instance_type=instanceType,
             security_groups=['everythingIsFine'],
             key_name='mepas',
-            placement='us-west-2c'
+            placement=self.placement
         )
 
         instance = reservation.instances[0]

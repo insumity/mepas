@@ -2020,7 +2020,8 @@ name "sec:experimentalsetup"
 \end_layout
 
 \begin_layout Standard
-experimentRunner
+experimentRunner (careful to have enough space for this instance 200GB just
+ to be sure)
 \end_layout
 
 \begin_layout Standard
@@ -2067,7 +2068,9 @@ also do : You'll need to use eval `ssh-agent -s` to start the agent, ssh-add
 \end_layout
 
 \begin_layout Standard
-so the xperiments can run without the password being asked every time
+so the xperiments can run without the password being asked every time (http://st
+ackoverflow.com/questions/17864306/how-to-make-git-not-ask-me-for-password-when-a
+ccessing-remote-repositories)
 \end_layout
 
 \begin_layout Standard
