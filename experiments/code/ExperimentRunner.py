@@ -140,17 +140,17 @@ for variable in conf["values"]:
     # transfer the JAR to the clients & middlewares
     print ">>> transferring executable JAR to clients & middlewares"
     for client in clientIPs:
-        scpTo(jarFile, "", conf["username"], clientIPs[0])
-        print "JAR moved to client with IP: " + clientIPs[0]
+        scpTo(jarFile, "", conf["username"], client[0])
+        print "JAR moved to client with IP: " + client[0]
 
     for middleware in middlewareIPs:
-        scpTo(jarFile, "", conf["username"], middlewareIPs[0])
-        print "JAR moved to middleware with IP: " + middlewareIPs[0]
+        scpTo(jarFile, "", conf["username"], middleware[0])
+        print "JAR moved to middleware with IP: " + middleware[0]
     print ">>> executable JAR was transferred to the clients & middlewares"
 
     middlewareInstances = []
     for middlewareIP in middlewareIPs:
-        middleware = Middleware(conf["username"], middlewareIPs[0], databaseIP[1], conf["databasePortNumber"],
+        middleware = Middleware(conf["username"], middlewareIP[0], databaseIP[1], conf["databasePortNumber"],
                                 conf["databaseUsername"], conf["databasePassword"], conf["databaseName"],
                                 str(conf["threadPoolSize"]), str(conf["connectionPoolSize"]),
                                 str(conf["middlewarePortNumber"]))
@@ -234,7 +234,7 @@ for variable in conf["values"]:
     for middleware in middlewareIPs:
         localDirectoryResults = experimentPointPath + "/middlewareInstance" + str(instanceCounter)
         os.mkdir(localDirectoryResults)
-        scpFrom("logs/*", localDirectoryResults, conf["username"], middlewareIPs[0])
+        scpFrom("logs/*", localDirectoryResults, conf["username"], middleware[0])
         instanceCounter += 1
     print ">>> log files from middlewares received"
 
@@ -243,7 +243,7 @@ for variable in conf["values"]:
     for client in clientIPs:
         localDirectoryResults = experimentPointPath + "/clientInstance" + str(instanceCounter)
         os.mkdir(localDirectoryResults)
-        scpFrom("logs/*", localDirectoryResults, conf["username"], clientIPs[0])
+        scpFrom("logs/*", localDirectoryResults, conf["username"], client[0])
         instanceCounter += 1
     print ">>> log files from clients were received"
 
