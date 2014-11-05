@@ -4,6 +4,74 @@
     <exclude-output />
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/again2k20MWThreads20Connections1MWSmallDBxLarge/1" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/increasingNumberOfConnections20Threads/1" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/increasingNumberOfThreads20Connections/40" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/increasingNumberOfConnections20Threads/5" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/increasingNumberOfConnections20Threads/2" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/2k10MWThreads20Connections1MWSmallDBxLarge" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/increasingNumberOfConnections20Threads" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/increasingNumberOfConnections20Threads/30" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/2k20MWThreads20Connections1MWMediumDBxLarge" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/increasingNumberOfConnections20Threads/10" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/2k20MWThreads20Connections1MWMedium/1" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/2k10MWThreads10Connections1MWSmallDBxLarge" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/2k20MWThreads10Connections1MWSmallDBxLarge/1" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/increasingNumberOfThreads20Connections/30" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/2k20MWThreads10Connections1MWMediumDBxLarge" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/increasingNumberOfConnections20Threads/4" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/increasingNumberOfThreads20Connections/10" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/increasingNumberOfConnections20Threads/45" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/increasingNumberOfConnections20Threads/25" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/again2k20MWThreads20Connections1MWSmallDBxLarge" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/increasingNumberOfThreads20Connections/3" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/2k20MWThreads10Connections1MWMedium/1" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/increasingNumberOfConnections20Threads/15" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/2k20MWThreads10Connections1MWMedium" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/increasingNumberOfThreads20Connections/45" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/increasingNumberOfThreads20Connections" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/2k10MWThreads20Connections1MWMediumDBxLarge/1" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/increasingNumberOfConnections20Threads/50" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/traceFor1Hour" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/traceFor1Hour/25" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/increasingNumberOfThreads20Connections/15" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/2k10MWThreads10Connections1MWMedium/1" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/increasingNumberOfThreads20Connections/1" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/2k10MWThreads10Connections1MWSmallDBxLarge/1" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/2k10MWThreads20Connections1MWMedium/1" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/increasingNumberOfThreads20Connections/4" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/2k10MWThreads20Connections1MWMediumDBxLarge" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/2k10MWThreads10Connections1MWSmall" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/increasingNumberOfConnections20Threads/35" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/increasingNumberOfThreads20Connections/5" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/2k10MWThreads20Connections1MWMedium" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/2k20MWThreads10Connections1MWSmall/1" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/2k10MWThreads20Connections1MWSmallDBxLarge/1" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/2k10MWThreads10Connections1MWMedium" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/2k10MWThreads10Connections1MWMediumDBxLarge/1" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/increasingNumberOfThreads20Connections/50" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/2k10MWThreads10Connections1MWMediumDBxLarge" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/2k20MWThreads20Connections1MWSmallDBxLarge" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/2k20MWThreads20Connections1MWSmall" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/increasingNumberOfThreads20Connections/25" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/2k20MWThreads10Connections1MWSmall" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/2k20MWThreads20Connections1MWSmallDBxLarge/1" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/2k10MWThreads20Connections1MWSmall" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/2k20MWThreads10Connections1MWSmallDBxLarge" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/AGAINincreasingNumberOfThreads20Connections" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/2k20MWThreads10Connections1MWMediumDBxLarge/1" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/increasingNumberOfThreads20Connections/35" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/increasingNumberOfThreads20Connections/2" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/2k20MWThreads20Connections1MWMedium" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/increasingNumberOfConnections20Threads/3" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/increasingNumberOfConnections20Threads/40" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/2k10MWThreads20Connections1MWSmall/1" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/2k10MWThreads10Connections1MWSmall/1" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/increasingNumberOfConnections20Threads/20" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/increasingNumberOfThreads20Connections/20" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/AGAINincreasingNumberOfThreads20Connections/30" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/2k20MWThreads20Connections1MWSmall/1" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/2k20MWThreads20Connections1MWMediumDBxLarge/1" type="java-resource" />
     </content>
     <orderEntry type="jdk" jdkName="Python 2.7.5 (/usr/bin/python2.7)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />

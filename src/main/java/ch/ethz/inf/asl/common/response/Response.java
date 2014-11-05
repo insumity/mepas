@@ -3,7 +3,10 @@ package ch.ethz.inf.asl.common.response;
 import java.io.Serializable;
 import java.util.Objects;
 
-public class Response implements Serializable {
+/**
+ * This class represents a general Response object that can be either successful or not.
+ */
+public abstract class Response implements Serializable {
 
     private static final long serialVersionUID = 2L;
 
@@ -16,20 +19,24 @@ public class Response implements Serializable {
         this.isSuccessful = true;
     }
 
-    // FIXME: what is this shit? Have you ever wondered in the darkness of your code?
-    // TODO: Have you ever felt the triumph of bad code over decency? Or is it just me?
-    // This code is way to generic? But at the end, does it really matter? FIXME
+    /**
+     * Returns a failed response with the given message and of the given type.
+     * @param message response's fail message
+     * @param responseType the type of the response
+     * @param <R> returned type of the response
+     * @return returns a response of the given type that is a failed one
+     */
     public static <R extends Response> R createFailedResponse(String message, Class<R> responseType) {
         Response response = null;
         try {
             response = responseType.newInstance();
+            response.isSuccessful = false;
+            response.failedMessage = message;
         } catch (InstantiationException e) {
             e.printStackTrace();
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
-        response.isSuccessful = false;
-        response.failedMessage = message;
         return (R) response;
     }
 
@@ -41,7 +48,10 @@ public class Response implements Serializable {
         return isSuccessful;
     }
 
-
+    /**
+     * In case of a failed response, this method returns the failed message of the response.
+     * @return failed message
+     */
     public String getFailedMessage() {
         return failedMessage;
     }

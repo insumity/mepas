@@ -3,6 +3,7 @@ package ch.ethz.inf.asl.common.response;
 import java.util.Objects;
 
 public class DeleteQueueResponse extends Response {
+
         @Override
         public String toString() {
             if (!isSuccessful()) {

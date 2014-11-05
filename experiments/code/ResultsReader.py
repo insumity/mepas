@@ -168,6 +168,11 @@ def getData(experimentName, possibleValues, numberOfClientInstances, percentageT
 
 # getData("../traceFor1Hour/", [1, 5, 10])
 
+def getResponseTime(experimentDir, what):
+    result = os.popen("grep -h '" + what + "' " + experimentDir + "/*" + " | " +
+             "awk -F'\\t' '{ sum += $2; sumsq += $2 * $2; n++ } END { if (n > 0) print sum / n, sqrt(sumsq/n- (sum/n)**2); }' ").read()
+    return result
+
 def getThroughput(experimentDir, clientInstances, timeInSeconds, warmUpInSeconds, coolDownInSeconds):
     # files could be quite big, use wc instead of reading them
     # every line in a client file contains a successful request
@@ -191,7 +196,7 @@ def getThroughput(experimentDir, clientInstances, timeInSeconds, warmUpInSeconds
                       str(lastTimeInMilliseconds - coolDownInSeconds * 1000) + " { print; }' " + specificFile
 
             system(command + " > " + directoryForTempResults + "/" + f)
-            cleanedUpFiles.append( directoryForTempResults + "/" + f)
+            cleanedUpFiles.append(directoryForTempResults + "/" + f)
 
     sum = 0
     for f in cleanedUpFiles:
@@ -202,39 +207,46 @@ def getThroughput(experimentDir, clientInstances, timeInSeconds, warmUpInSeconds
         numberOfRequests = int(" ".join(output[1].split()).split(' ', 1)[0])
         sum += numberOfRequests
 
-    print experimentDir + ":\t" + str(sum / (float(timeInSeconds - (warmUpInSeconds + coolDownInSeconds))))
+    responseAndStd = getResponseTime(directoryForTempResults, "LIST")
+    print experimentDir + "(" + responseAndStd.rstrip() + ")" + ":\t" + str(sum / (float(timeInSeconds - (warmUpInSeconds + coolDownInSeconds))))
     shutil.rmtree(directoryForTempResults)
 
 
-getThroughput("../increasingNumberOfThreads20Connections/15", 1, 600, 120, 60)
+getThroughput("../connectionsIncreasingFor30_35/30", 1, 600, 120, 60)
+exit(1)
 
-getThroughput("../increasingNumberOfConnections20Threads/15", 1, 600, 120, 60)
-if True:
-    exit(1)
+for i in [1, 2, 3, 4, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50]:
+    getThroughput("../increasingNumberOfConnections20Threads/" + str(i), 1, 600, 120, 60)
 
-getThroughput("../2k10MWThreads10Connections1MWSmallDBxLarge/1", 1, 600, 120, 60)
-getThroughput("../2k10MWThreads20Connections1MWSmallDBxLarge/1", 1, 600, 120, 60)
-getThroughput("../2k20MWThreads10Connections1MWSmallDBxLarge/1", 1, 600, 120, 60)
-getThroughput("../2k20MWThreads20Connections1MWSmallDBxLarge/1", 1, 600, 120, 60)
 
-getThroughput("../2k10MWThreads10Connections1MWMediumDBxLarge/1", 1, 600, 120, 60)
-getThroughput("../2k10MWThreads20Connections1MWMediumDBxLarge/1", 1, 600, 120, 60)
-getThroughput("../2k20MWThreads10Connections1MWMediumDBxLarge/1", 1, 600, 120, 60)
-getThroughput("../2k20MWThreads20Connections1MWMediumDBxLarge/1", 1, 600, 120, 60)
+for i in [1, 2, 3, 4, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50]:
+    getThroughput("../increasingNumberOfThreads20Connections/" + str(i), 1, 600, 120, 60)
 
-getThroughput("../2k10MWThreads10Connections1MWSmall/1", 1, 600, 120, 60)
-getThroughput("../2k10MWThreads20Connections1MWSmall/1", 1, 600, 120, 60)
-getThroughput("../2k20MWThreads10Connections1MWSmall/1", 1, 600, 120, 60)
-getThroughput("../2k20MWThreads20Connections1MWSmall/1", 1, 600, 120, 60)
+exit(1)
 
-getThroughput("../2k10MWThreads10Connections1MWMedium/1", 1, 600, 120, 60)
-getThroughput("../2k10MWThreads20Connections1MWMedium/1", 1, 600, 120, 60)
-getThroughput("../2k20MWThreads10Connections1MWMedium/1", 1, 600, 120, 60)
-getThroughput("../2k20MWThreads20Connections1MWMedium/1", 1, 600, 120, 60)
+# getThroughput("../2k10MWThreads10Connections1MWSmallDBxLarge/1", 1, 600, 120, 60)
+# getThroughput("../2k10MWThreads20Connections1MWSmallDBxLarge/1", 1, 600, 120, 60)
+# getThroughput("../2k20MWThreads10Connections1MWSmallDBxLarge/1", 1, 600, 120, 60)
+# getThroughput("../2k20MWThreads20Connections1MWSmallDBxLarge/1", 1, 600, 120, 60)
 #
+# getThroughput("../2k10MWThreads10Connections1MWMediumDBxLarge/1", 1, 600, 120, 60)
+# getThroughput("../2k10MWThreads20Connections1MWMediumDBxLarge/1", 1, 600, 120, 60)
+# getThroughput("../2k20MWThreads10Connections1MWMediumDBxLarge/1", 1, 600, 120, 60)
+# getThroughput("../2k20MWThreads20Connections1MWMediumDBxLarge/1", 1, 600, 120, 60)
 #
-if True:
-    exit(1)
+# getThroughput("../2k10MWThreads10Connections1MWSmall/1", 1, 600, 120, 60)
+# getThroughput("../2k10MWThreads20Connections1MWSmall/1", 1, 600, 120, 60)
+# getThroughput("../2k20MWThreads10Connections1MWSmall/1", 1, 600, 120, 60)
+# getThroughput("../2k20MWThreads20Connections1MWSmall/1", 1, 600, 120, 60)
+#
+# getThroughput("../2k10MWThreads10Connections1MWMedium/1", 1, 600, 120, 60)
+# getThroughput("../2k10MWThreads20Connections1MWMedium/1", 1, 600, 120, 60)
+# getThroughput("../2k20MWThreads10Connections1MWMedium/1", 1, 600, 120, 60)
+# getThroughput("../2k20MWThreads20Connections1MWMedium/1", 1, 600, 120, 60)
+# #
+# #
+# if True:
+#     exit(1)
 
 def getTimeSpentOnEachComponent(middlewareInstanceDir, percentageToRemove):
     files = [f for f in listdir(middlewareInstanceDir)]
@@ -294,8 +306,8 @@ def getTimeSpentOnEachComponent(middlewareInstanceDir, percentageToRemove):
     shutil.rmtree(directoryForTempResults)
 
 
-getTimeSpentOnEachComponent("../AGAIN2k10MWThreads10Connections1MWSmall/1/middlewareInstance1", 0.01)
+getTimeSpentOnEachComponent("../NiceExperimentingIncreasingThreads/50/middlewareInstance1", 0.01)
 # getTimeSpentOnEachComponent("../traceFor20Minutes/25/middlewareInstance2", 0.2)
 # #
-getData("../AGAIN2k10MWThreads10Connections1MWSmall", [1], 1, 0.0)
+# getData("../AGAIN2k10MWThreads10Connections1MWSmall", [1], 1, 0.0)
 # getResponseTimeAndThroughput("../trace100clientsWithMoreLogging10ClientsBARZ/10")

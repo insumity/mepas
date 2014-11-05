@@ -6,9 +6,9 @@ public class CreateQueueResponse extends Response {
 
     private int queueId;
 
+    // needed for creating failedResponse in Response class
     protected CreateQueueResponse() {}
 
-    // needed for creating failedResponse in Response class
     public CreateQueueResponse(int queueId) {
         this.queueId = queueId;
     }

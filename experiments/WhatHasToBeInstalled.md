@@ -39,7 +39,7 @@ host    all             all             0.0.0.0/0            md5
 
 and to accept TCP connections add
 change file /etc/postgresql/9.3/main/postgresql.conf the line
-listen_addresses='localhost'
+listen_addresses='localhost' 
 to listen_addresses='*'
 
 then sudo service postgresql restart
@@ -53,6 +53,11 @@ otherwise the file is ignored.
 For chanianging the password of a postgreSQL user you can do:
 alter user ubuntu with password 'mepas$1$2$3$';
 
+
+--- When installing database an ubuntu role needs to be created
+do "sudo su - postgres" and then psql, then "create role ubuntu"
+kai meta "lter user ubuntu with superuser;" kai auto itan!
+kai meta to password.!!
 
 In local computer boto has to be installed for the pyton script
 as well as psycopg2.

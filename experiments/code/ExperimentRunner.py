@@ -6,7 +6,7 @@ from subprocess import call
 from Database import Database
 from Client import Client
 from Middleware import Middleware
-from EC2InstancesRetriever import *
+from EC2Instantiator import *
 from Utilities import *
 
 #
@@ -14,25 +14,16 @@ from Utilities import *
 # conf = {}
 # execfile("configuration.py")
 # if not bool(conf):
-#     print "The given configuration seems empty"
+# print "The given configuration seems empty"
 # exit(1)
-"""
-For this experiment based on the trace ... I expect the following:
-middleware usage seems to be around 50%, so I would presume a middleware
-can handle up to 200 clients before it cannot handle more. But in such
-a case the database won't be able to handle the system.
-Client instances are not really utilizing the CPU so I would presume
-I can put up to 200 clients in one instance or even much more.
-So I would guess around 150 clients the database is not going to be
-able to handle them and throughput will not increase ...
 
-"""
 conf = \
-    {"nameOfTheExperiment": "../increasingNumberOfThreads20Connections",
+    {"nameOfTheExperiment": "../connectionsIncreasingFor30_35",
 
+     "databaseType": "t2.medium",
 
-     "numberOfClientInstances":     1,
-     "numberOfMiddlewareInstances": 1,
+     "clientInstances": (1, "t2.small"),
+     "middlewareInstances": (1, "t2.small"),
 
      "databaseUsername": "ubuntu",
      "databasePassword": "mepas$1$2$3$",
@@ -53,10 +44,13 @@ conf = \
      # e.g. if (a, b) is in mapping it means that client[a] returned by
      # getClientsIPs() is going to connect to middleware[b] where b is
      # returned by middlewareIPs
-     "mappings": [(0, 0)], #, (1, 0)], # (2, 1), (3, 1)],
-     "clientsData": [(50, 1)], #, (50, 51)], # (25, 51), (25, 76)],
+     "mappings": [(0, 0)],  #, (1, 0)], # (2, 1), (3, 1)],
+     "clientsData": [(50, 1)],  #, (50, 51)], # (25, 51), (25, 76)],
 
-     "username": "ubuntu"
+     "username": "ubuntu",
+
+     "variable": "connectionPoolSize",
+     "values": [30, 35]
     }
 
 
@@ -70,40 +64,57 @@ os.mkdir(conf["nameOfTheExperiment"])
 
 jarFile = "../../mepas.jar"
 
+# clean the directory with ant and make the JAR
+call(["ant", "-buildfile", "../..", "clean"])
+call(["ant", "-buildfile", "../..", "jar"])
+if isfile("../mepas.jar"):
+    print ">> executable JAR was created"
 
 # TODO : experiments names .. config file for running shit ...
-
-
 access_key = "AKIAIV45ZYABLMV25HBQ"
 secret_access = "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"
-instancesRetriever = EC2InstancesRetriever(access_key, secret_access)
+instancesRetriever = EC2Instantiator(access_key, secret_access)
 
-# you always need one database instance for every experiment
-databaseIP = instancesRetriever.getDatabaseIP(1)
-databaseHost = databaseIP[0][0]
+for variable in conf["values"]:
 
-clientIPs = instancesRetriever.getClientsIPs(conf["numberOfClientInstances"])
-middlewareIPs = instancesRetriever.getMiddlewaresIPs(conf["numberOfMiddlewareInstances"])
+    conf[conf["variable"]] = variable
 
-print "IPs of machines that are going to be used"
-print "Database"
-print databaseIP[0][0] + ": " + databaseIP[0][2]
-print "Clients"
-for client in clientIPs:
-    print client[0] + ": " + client[2]
+    # you always need one database instance for every experiment
+    database = instancesRetriever.createDatabase(conf["databaseType"])
 
-print "Middlewares"
-for middleware in middlewareIPs:
-    print middleware[0] + ": " + middleware[2]
+    numberOfClientInstances = conf["clientInstances"][0]
+    clientType = conf["clientInstances"][1]
 
+    clientIPs = []
+    clients = []
+    for i in range(0, numberOfClientInstances):
+        inst = instancesRetriever.createClient(clientType)
+        clients.append(inst)
+        clientIPs.append((inst.ip_address, inst.private_ip_address, inst.instance_type))
 
-for variable in [1, 2, 3, 4, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50]:
+    numberOfMiddlewareInstances = conf["middlewareInstances"][0]
+    middlewareType = conf["middlewareInstances"][1]
 
- #   conf["totalClients"] = variable
-#    conf["clientsData"][0][0] = conf["totalClients"] # TODO
-    conf["threadPoolSize"] = variable
+    middlewareIPs = []
+    middlewares = []
+    for i in range(0, numberOfMiddlewareInstances):
+        inst = instancesRetriever.createMiddleware(middlewareType)
+        middlewares.append(inst)
+        middlewareIPs.append((inst.ip_address, inst.private_ip_address, inst.instance_type))
 
-    print "Doing it for: " + str(variable)
+    databaseIP = (database.ip_address, database.private_ip_address)
+
+    print "IPs of machines that are going to be used"
+    print "Database"
+    print databaseIP[0] + ": " + databaseIP[1]
+    print "Clients"
+    for client in clientIPs:
+        print client[0] + ": " + client[2]
+
+    print "Middlewares"
+    for middleware in middlewareIPs:
+        print middleware[0] + ": " + middleware[2]
+
 
     # clean database
 
@@ -111,22 +122,16 @@ for variable in [1, 2, 3, 4, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50]:
     basicFunctionsFilePath = "../../src/main/resources/read_committed_basic_functions.sql"
 
     print ">>> Going to clean and initialize database"
-    database = Database(databaseHost, conf["databasePortNumber"], conf["databaseName"], conf["databaseUsername"],
+    db = Database(databaseIP[0], conf["databasePortNumber"], conf["databaseName"], conf["databaseUsername"],
                         conf["databasePassword"])
-    database.recreateDatabase()
-    database.initializeDatabase(conf["totalClients"], conf["totalQueues"],
+    db.recreateDatabase()
+    db.initializeDatabase(conf["totalClients"], conf["totalQueues"],
                                 [auxiliaryFunctionsFilePath, basicFunctionsFilePath])
     print ">>> Database was cleaned and initialized!"
 
     print ">>> Starting CPU, memory and network utilization logging in database"
-    database.startLogging(conf["username"]) # start logging CPU, memory and network utilization
+    db.startLogging(conf["username"])  # start logging CPU, memory and network utilization
     print ">>> Database logging started"
-
-    # clean the directory with ant and make the JAR
-    call(["ant", "-buildfile", "../..", "clean"])
-    call(["ant", "-buildfile", "../..", "jar"])
-    if isfile("../mepas.jar"):
-        print ">> executable JAR was created"
 
     # transfer the JAR to the clients & middlewares
     print ">>> transferring executable JAR to clients & middlewares"
@@ -141,7 +146,7 @@ for variable in [1, 2, 3, 4, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50]:
 
     middlewareInstances = []
     for middlewareIP in middlewareIPs:
-        middleware = Middleware(conf["username"], middlewareIP[0], databaseHost, conf["databasePortNumber"],
+        middleware = Middleware(conf["username"], middlewareIP[0], databaseIP[1], conf["databasePortNumber"],
                                 conf["databaseUsername"], conf["databasePassword"], conf["databaseName"],
                                 str(conf["threadPoolSize"]), str(conf["connectionPoolSize"]),
                                 str(conf["middlewarePortNumber"]))
@@ -205,7 +210,7 @@ for variable in [1, 2, 3, 4, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50]:
 
     print ">>> middlewares were stopped"
 
-    database.stopLogging(conf["username"])
+    db.stopLogging(conf["username"])
 
     # create a directory for the point of the experiment
     experimentPointPath = createPath([conf["nameOfTheExperiment"]], str(variable))
@@ -233,5 +238,12 @@ for variable in [1, 2, 3, 4, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50]:
     print ">>> getting log files from database ..."
     localDirectoryResults = experimentPointPath + "/database"
     os.mkdir(localDirectoryResults)
-    scpFrom("logs/*", localDirectoryResults, conf["username"], databaseHost)
+    scpFrom("logs/*", localDirectoryResults, conf["username"], databaseIP[0])
     print ">>> log files from database received"
+
+    instancesRetriever.terminateInstance(database)
+    for client in clients:
+        instancesRetriever.terminateInstance(client)
+
+    for middleware in middlewares:
+        instancesRetriever.terminateInstance(middleware)

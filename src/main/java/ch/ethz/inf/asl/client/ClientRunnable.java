@@ -80,12 +80,33 @@ public class ClientRunnable implements Runnable {
         return new Random().nextInt(totalQueues) + 1;
     }
 
+    // taken from: http://stackoverflow.com/questions/41107/how-to-generate-a-random-alpha-numeric-string
+    static final String AB = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    static Random rnd = new Random();
+
+    // creates a StringBuilder of given length containing random data
+    private StringBuilder randomString(int length) {
+        StringBuilder sb = new StringBuilder(length);
+        for (int i = 0; i < length; i++)
+            sb.append(AB.charAt(rnd.nextInt(AB.length())));
+
+        return sb;
+    }
+
     // sends a message using the underlying message protocol to a random receiver and random queue
     private void sendMessage(int messageCounter) {
         long startTime = System.currentTimeMillis();
 
         int receiverId = getRandomReceiverId();
         int queueId = getRandomQueueId();
+//
+//        StringBuilder builder = new StringBuilder();
+//        if (messageSize > 20) {
+//            builder = randomString(messageSize - 20);
+//        }
+//
+//        String counter = String.format("%020d", messageCounter);
+//        String content = builder.append(counter); // TODO put inside
 
         protocol.sendMessage(receiverId, queueId, String.valueOf(messageCounter));
         logger.log((System.currentTimeMillis() - startTime) + "\tSEND_MESSAGE\t" + "(" + queueId + ", "
@@ -168,4 +189,5 @@ public class ClientRunnable implements Runnable {
         System.out.println("CLOSED");
         logger.close();
     }
+
 }
