@@ -2045,6 +2045,36 @@ Install udo apt-get install libpq-dev and apt-get install python-dev because
 \end_layout
 
 \begin_layout Standard
+do sudo pip install pexpect
+\end_layout
+
+\begin_layout Standard
+also 
+\end_layout
+
+\begin_layout Standard
+also yoy have to disable ssh checking ..
+ http://askubuntu.com/questions/87449/how-to-disable-strict-host-key-checking-in-
+ssh
+\end_layout
+
+\begin_layout Standard
+also do : You'll need to use eval `ssh-agent -s` to start the agent, ssh-add
+ to enter your passphrase for your private key, and then ssh-agent -k to
+ kill the agent when you're done.
+ It even comes with a timeout, ssh-add -t <timeout>, where <timeout> can
+ be something like Xh for X hours, Xm for X minutes, and so on.
+\end_layout
+
+\begin_layout Standard
+so the xperiments can run without the password being asked every time
+\end_layout
+
+\begin_layout Standard
+Run experiments from there and go to sleep
+\end_layout
+
+\begin_layout Standard
 Never more than one middleware per instance
 \end_layout
 

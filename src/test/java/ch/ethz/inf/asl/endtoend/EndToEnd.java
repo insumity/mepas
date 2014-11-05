@@ -139,10 +139,10 @@ public class EndToEnd {
 
         final ConfigurationReader[] clientConfigurations = {
                 ConfigurationMocker.mockClientConfiguration("localhost", "6789", String.valueOf(clientsPerInstance),
-                        String.valueOf(totalClients), String.valueOf(totalQueues), "1", "20"),
+                        String.valueOf(totalClients), String.valueOf(totalQueues), "25", "1", "20"),
 
                 ConfigurationMocker.mockClientConfiguration("localhost", "6790", String.valueOf(clientsPerInstance),
-                        String.valueOf(totalClients),  String.valueOf(totalQueues), "3", "20")};
+                        String.valueOf(totalClients),  String.valueOf(totalQueues), "25", "3", "20")};
 
 
         for (int i = 0; i < numberOfClientInstances; ++i) {
