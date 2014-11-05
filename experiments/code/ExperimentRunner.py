@@ -1,3 +1,4 @@
+import csv
 import os
 import datetime
 from os.path import isfile, isdir
@@ -18,12 +19,12 @@ from Utilities import *
 # exit(1)
 
 conf = \
-    {"nameOfTheExperiment": "../connectionsIncreasingFor30_35",
+    {"nameOfTheExperiment": "../foobarbaz",
 
-     "databaseType": "t2.medium",
+     "databaseType": "m3.large",
 
-     "clientInstances": (1, "t2.small"),
-     "middlewareInstances": (1, "t2.small"),
+     "clientInstances": (1, "m3.large"),
+     "middlewareInstances": (1, "m3.large"),
 
      "databaseUsername": "ubuntu",
      "databasePassword": "mepas$1$2$3$",
@@ -32,13 +33,14 @@ conf = \
 
      "middlewarePortNumber": 6789,
 
-     "runningTimeInSeconds": 600,
+     "runningTimeInSeconds": 1,
 
      "threadPoolSize": 20,
      "connectionPoolSize": 20,
 
      "totalClients": 50,
      "totalQueues": 50,
+     "messageSize": 10,
 
      # mapping between client instances and middleware instances
      # e.g. if (a, b) is in mapping it means that client[a] returned by
@@ -52,6 +54,7 @@ conf = \
      "variable": "connectionPoolSize",
      "values": [30, 35]
     }
+
 
 
 # verify this experiment has not yet been created
@@ -106,7 +109,7 @@ for variable in conf["values"]:
 
     print "IPs of machines that are going to be used"
     print "Database"
-    print databaseIP[0] + ": " + databaseIP[1]
+    print databaseIP[0] + ": " + databaseIP[1] + ":" + database.instance_type
     print "Clients"
     for client in clientIPs:
         print client[0] + ": " + client[2]
@@ -161,6 +164,7 @@ for variable in conf["values"]:
                         str(conf["middlewarePortNumber"]), str(conf["clientsData"][i][0]),
                         str(conf["totalClients"]),
                         str(conf["totalQueues"]),
+                        str(conf["messageSize"]),
                         str(conf["clientsData"][i][1]),
                         str(conf["runningTimeInSeconds"]))
         clientInstances.append(client)
@@ -215,6 +219,13 @@ for variable in conf["values"]:
     # create a directory for the point of the experiment
     experimentPointPath = createPath([conf["nameOfTheExperiment"]], str(variable))
     os.mkdir(experimentPointPath)
+
+    # save given configuration in the experimentPointPath
+    confFile = open(createPath([experimentPointPath], "configuration.csv"), "w")
+    w = csv.writer(confFile)
+    for key, val in conf.items():
+        w.writerow([key, val])
+        confFile.flush()
 
     # gather results and put them back somewhere locally
     print ">>> getting log files from middlewares ..."

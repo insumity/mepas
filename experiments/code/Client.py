@@ -8,23 +8,26 @@ class Client:
     """This class represents a client instance"""
 
     def __init__(self, username, host, middlewareHost, middlewarePortNumber, numberOfClients, totalClients, totalQueues,
-                 startingId, runningTimeInSeconds):
+                 messageSize, startingId, runningTimeInSeconds):
         self.username = username
         self.host = host
         self.middlewareHost = middlewareHost
         self.middlewarePortNumber = middlewarePortNumber
         self.numberOfClients = numberOfClients
+
         self.totalClients = totalClients
         self.totalQueues = totalQueues
+        self.messageSize = messageSize
+
         self.startingId = startingId
         self.runningTimeInSeconds = runningTimeInSeconds
         self.finished = False
 
     def __str__(self):
         return "(host: {0}, middlewareHost: {1}, middlewarePortNumber: {2}, numberOfClients: {3}, " \
-               "totalClients: {4}, totalQueues: {5}, startingId: {6}, runningTimeInSeconds: {7})" \
+               "totalClients: {4}, totalQueues: {5}, messageSize: {6}, startingId: {7}, runningTimeInSeconds: {8})" \
                "".format(self.host, self.middlewareHost, self.middlewarePortNumber, self.numberOfClients,
-                         self.totalClients, self.totalQueues, self.startingId, self.runningTimeInSeconds)
+                         self.totalClients, self.totalQueues, self.messageSize, self.startingId, self.runningTimeInSeconds)
 
 
     def __startThreadCode(self):
@@ -34,6 +37,7 @@ class Client:
         properties = [("middlewareHost", self.middlewareHost), ("middlewarePortNumber", self.middlewarePortNumber),
                       ("numberOfClients", self.numberOfClients),
                       ("totalClients", self.totalClients), ("totalQueues", self.totalQueues),
+                      ("messageSize", self.messageSize),
                       ("startingId", self.startingId),
                       ("runningTimeInSeconds", self.runningTimeInSeconds)]
 

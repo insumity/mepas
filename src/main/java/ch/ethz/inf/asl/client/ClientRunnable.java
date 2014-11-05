@@ -26,6 +26,9 @@ public class ClientRunnable implements Runnable {
     private int totalClients;
     private int totalQueues;
 
+    // size of messages in number of characters
+    private int messageSize;
+
     private Logger logger;
     private int runningTimeInSeconds;
 
@@ -44,13 +47,14 @@ public class ClientRunnable implements Runnable {
     }
 
     public ClientRunnable(Logger logger, int userId, int runningTimeInSeconds, String hostName, int portNumber, int totalClients,
-                          int totalQueues , boolean isEndToEndTest) throws IOException {
+                          int totalQueues, int messageSize, boolean isEndToEndTest) throws IOException {
         notNull(logger, "Given logger cannot be null!");
         verifyTrue(runningTimeInSeconds > 0, "Given runningTimeInSeconds cannot be negative or 0!");
         hasText(hostName , "Given hostName cannot be empty or null!");
         verifyTrue(portNumber > 0, "Given portNumber cannot be 0 or negative!");
         verifyTrue(totalClients > 0, "Given totalClients cannot be 0 or negative!");
         verifyTrue(totalQueues > 0, "Given totalQueues cannot be 0 or negative!");
+        verifyTrue(messageSize > 0, "Given messageSize cannot be 0 or negative!");
 
         this.runningTimeInSeconds = runningTimeInSeconds;
         this.userId = userId;
@@ -59,6 +63,7 @@ public class ClientRunnable implements Runnable {
 
         this.totalClients = totalClients;
         this.totalQueues = totalQueues;
+        this.messageSize = messageSize;
 
         this.logger = logger;
 
@@ -94,21 +99,25 @@ public class ClientRunnable implements Runnable {
     }
 
     // sends a message using the underlying message protocol to a random receiver and random queue
-    private void sendMessage(int messageCounter) {
+    private void sendMessage(int messageCounter, int messageSize) {
         long startTime = System.currentTimeMillis();
 
         int receiverId = getRandomReceiverId();
         int queueId = getRandomQueueId();
-//
-//        StringBuilder builder = new StringBuilder();
-//        if (messageSize > 20) {
-//            builder = randomString(messageSize - 20);
-//        }
-//
-//        String counter = String.format("%020d", messageCounter);
-//        String content = builder.append(counter); // TODO put inside
 
-        protocol.sendMessage(receiverId, queueId, String.valueOf(messageCounter));
+        String content;
+        StringBuilder builder;
+        if (messageSize > 20) {
+            builder = randomString(messageSize - 20);
+            String counter = String.format("%020d", messageCounter);
+            content = builder.append(counter).toString();
+        }
+        else {
+            content = randomString(messageSize).toString();
+        }
+
+
+        protocol.sendMessage(receiverId, queueId, content);
         logger.log((System.currentTimeMillis() - startTime) + "\tSEND_MESSAGE\t" + "(" + queueId + ", "
                 + receiverId + ", " + String.valueOf(messageCounter) + ")");
     }
@@ -173,7 +182,7 @@ public class ClientRunnable implements Runnable {
 
             try {
                 if (toSend) {
-                    sendMessage(messageCounter);
+                    sendMessage(messageCounter, messageSize);
                     messageCounter++;
                 } else {
                     listAndReceiveMessage();

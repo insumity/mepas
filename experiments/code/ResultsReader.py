@@ -212,9 +212,6 @@ def getThroughput(experimentDir, clientInstances, timeInSeconds, warmUpInSeconds
     shutil.rmtree(directoryForTempResults)
 
 
-getThroughput("../connectionsIncreasingFor30_35/30", 1, 600, 120, 60)
-exit(1)
-
 for i in [1, 2, 3, 4, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50]:
     getThroughput("../increasingNumberOfConnections20Threads/" + str(i), 1, 600, 120, 60)
 
@@ -306,7 +303,7 @@ def getTimeSpentOnEachComponent(middlewareInstanceDir, percentageToRemove):
     shutil.rmtree(directoryForTempResults)
 
 
-getTimeSpentOnEachComponent("../NiceExperimentingIncreasingThreads/50/middlewareInstance1", 0.01)
+getTimeSpentOnEachComponent("../connectionsIncreasingFor30_35/30/middlewareInstance1", 0.01)
 # getTimeSpentOnEachComponent("../traceFor20Minutes/25/middlewareInstance2", 0.2)
 # #
 # getData("../AGAIN2k10MWThreads10Connections1MWSmall", [1], 1, 0.0)

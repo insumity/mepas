@@ -26,6 +26,7 @@ public class Client {
 
     private int totalClients;
     private int totalQueues;
+    private int messageSize;
 
     private int runningTimeInSeconds;
     private ClientRunnable[] runnables;
@@ -47,6 +48,7 @@ public class Client {
 
         this.totalClients = Integer.valueOf(configuration.getProperty("totalClients"));
         this.totalQueues = Integer.valueOf(configuration.getProperty("totalQueues"));
+        this.messageSize = Integer.valueOf(configuration.getProperty("messageSize"));
 
         this.startingId = Integer.valueOf(configuration.getProperty("startingId"));
 
@@ -73,7 +75,7 @@ public class Client {
                 }
 
                 runnables[i] = new ClientRunnable(logger, startingId + i, runningTimeInSeconds, hostName,
-                        portNumber, totalClients, totalQueues, isEndToEndTest);
+                        portNumber, totalClients, totalQueues, messageSize, isEndToEndTest);
                 clients[i] = new Thread(runnables[i]);
             } catch (IOException e) {
                 e.printStackTrace();

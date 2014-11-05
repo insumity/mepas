@@ -2020,6 +2020,35 @@ name "sec:experimentalsetup"
 \end_layout
 
 \begin_layout Standard
+experimentRunner
+\end_layout
+
+\begin_layout Standard
+-> put key ssh-add pemas.pem for all the other instances 
+\end_layout
+
+\begin_layout Standard
+-> create .pgpass file, install postgresql ?? is needed
+\end_layout
+
+\begin_layout Standard
+-> git clone (install git)
+\end_layout
+
+\begin_layout Standard
+install python pip
+\end_layout
+
+\begin_layout Standard
+Install udo apt-get install libpq-dev and apt-get install python-dev because
+ it's needed to udo pip install psycopg2
+\end_layout
+
+\begin_layout Standard
+do sudo pip install pexpect
+\end_layout
+
+\begin_layout Standard
 Never more than one middleware per instance
 \end_layout
 
@@ -2534,7 +2563,7 @@ REmoved 2 minutes from the beginning and one minute from the end in all
 \end_layout
 
 \begin_layout Standard
-{"nameOfTheExperiment": "",
+{"nameOfTheExperiment": " ",
 \end_layout
 
 \begin_layout Standard
