@@ -96,7 +96,7 @@ Advanced System Lab
 \end_inset
 
  project.
- The report starts with an introduction on the system created for this milestone.
+ The report starts with an introduction of the system created for this milestone.
  Afterwards, in Section 
 \begin_inset CommandInset ref
 LatexCommand ref
@@ -130,7 +130,7 @@ reference "sec:experiments"
 
 \end_inset
 
- we continue with describing the experiments done and their evaluation.
+ we continue by describing the experiments that were done and their evaluation.
  We conclude the report in Section 
 \begin_inset CommandInset ref
 LatexCommand ref
@@ -153,26 +153,13 @@ name "sec:introduction"
 \end_layout
 
 \begin_layout Standard
-This report describes 
-\series bold
-mepas
-\series default
-, the system developed for 
-\begin_inset Quotes eld
-\end_inset
-
-Advanced Systems Lab
-\begin_inset Quotes erd
-\end_inset
-
- project.
- Goal of this milestone was to create a message passing system platform
- supporting persistent queues and a simple message format.
+Goal of this milestone was to create a message passing system supporting
+ persistent queues and a simple message format.
  Furthermore to experimentally evaluate it and determine its performance
  characteristics.
  The desired message passing system consists of three tiers.
  The first one implements the persistent queues using a database, which
- form now on we will refer to as the 
+ from now on will be referred as the 
 \begin_inset Quotes eld
 \end_inset
 
@@ -188,7 +175,7 @@ database
 \begin_inset Quotes erd
 \end_inset
 
-.
+ (db).
  The second tier implements the messaging system and is responsible of all
  the logic related to system management, also it is the one tier that is
  using the database in order to implement its functionality.
@@ -208,7 +195,7 @@ middleware
 \begin_inset Quotes erd
 \end_inset
 
- (MW).
+ (mw).
  Finally, the third tier that implements the clients that send and receive
  messages using the middleware, this tier is going to be referred to as
  
@@ -228,12 +215,60 @@ clients
 \end_inset
 
 .
- Figure [TODO] depicts the three tiers and they way they are connected to
- each other.
+ Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tiers"
+
+\end_inset
+
+ depicts the three tiers and they way they are connected to each other.
  As can been seen in the figure there is only one database while there can
- be more than one identical middlewares connected to the database.
- There can be many clients connection to different middlewares as well.
+ be more than one middlewares that are identical to each other and are connected
+ to the database, as well as many clients connecting to different middlewares.
  
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename images/tiers.png
+	lyxscale 20
+	scale 25
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+The Three Tiers
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "tiers"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Section
@@ -249,17 +284,17 @@ name "sec:systemdesign"
 
 \begin_layout Standard
 In this section we describe the design of our system.
- We start by describing the code structure of our system and its interfaces
- and aftewards we look more thoroughly at every tier and how its functionality
- was implemented.
+ We start by describing the code structure of our implementation and its
+ main interface and aftewards we look more thoroughly at every tier and
+ how its functionality was implemented.
 \end_layout
 
 \begin_layout Subsection*
-Code Structure and Interface Overview
+Code Structure and Interfaces Overview
 \end_layout
 
 \begin_layout Standard
-All the code for the client and the middleware was implement in subpackages
+All the code for the client and the middleware was implemented in subpackages
  of 
 \shape italic
 ch.ethz.inf.asl
@@ -345,11 +380,11 @@ Request
 \end_layout
 
 \begin_layout Plain Layout
-response :: contains all the possible response classes and the general 
+response :: contains all the possible response classes and the
 \shape italic
-Response
+ Response
 \shape default
- class
+ abstract class
 \end_layout
 
 \end_inset
@@ -479,27 +514,50 @@ name "packages"
 \end_layout
 
 \begin_layout Standard
-While designing the system I came to the realization that the communication
- protocol, e.g.
- send message, receive message between the clients and the middleware could
- be the same between the middleware and the database.
- Because of this, the interface that can be seen in Figure 
+While designing the system we came to the realization that the communication
+ protocol, meaning the messages that are being sent, for example send message,
+ receive message etc.
+ are the same between the clients and the middleware and bewteen the middleware
+ and the database.
+ They are the same in the sense that when a client wants to send a message
+ he has to issue some kind of send message request to the middleware.
+ Similarly when the middleware wants to serve a send message request or
+ the client he can issue a send message to the database.
+ Because of this we created the interface that can be seen in Figure 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "protocol"
 
 \end_inset
 
- was created.
- This interface can be found in src/main/ ...
- and is implemented by both ClientMessagingProtocolImpl and MiddlewareMessagingP
-rotocolImpl.
+.
+ This interface can be found in the 
+\shape italic
+MessagingProtocol
+\shape default
+ interface and is implemented by both 
+\shape italic
+ClientMessagingProtocolImpl
+\shape default
+ and 
+\shape italic
+MiddlewareMessagingProtocolImpl
+\shape default
+ classes.
  The difference between the two implementations is that in the client implementa
-tion when for example sendMessage() is called, a message is sent from the
+tion when for example 
+\shape italic
+sendMessage(...)
+\shape default
+ is called an underlying connection is used to a send a message from the
  client to the middleware that informs the middleware of the desire of the
  client to send a message.
- While on the other hand when the middleware calls sendMessage the middleware
- is calling a stored function from the database to actually 
+ While on the other hand when the middleware calls 
+\shape italic
+sendMessage(...)
+\shape default
+ the middleware is calling a stored function from the database to actually
+ 
 \begin_inset Quotes eld
 \end_inset
 
@@ -508,6 +566,8 @@ save
 \end_inset
 
  the message in the database.
+ More on how this interface waas implemented by the client and the middleware
+ is given in their corresponding subsections.
 \end_layout
 
 \begin_layout Standard
@@ -635,90 +695,8 @@ name "protocol"
 
 \end_layout
 
-\begin_layout Standard
-MENTION that serializtion is used
-\end_layout
-
-\begin_layout Subsubsection*
-Why are we having one Request/Response class per request/response?
-\end_layout
-
-\begin_layout Standard
-It might seem weird having one request and one response class for every
- possible request and response.
- But this was done to make the code more extensible if needed to add new
- requests and for simplifying the work of the middleware.
- As can been seen the Request class contains the abstract execute method
- that receives as a parameter a MessagingProtocol implementation.
- Now when the middleware receives a request, after deserializing it it can
- just do `request.execute(...)` and it knows that the correct execute method
- is going to be called.
- For example `SendMessageRequest` implements execute as following.
- Therefore by taking advantage of polymorphism the Middleware doesn't need
- a long and error-prone list of if-else like this `if request is SendMessage
- do this ...
- else if ...
- `.
- 
-\end_layout
-
-\begin_layout Standard
-In order to create one more request for the system, the method has to be
- inserted in the MessagingProtocol and then implement it in ClientMessagingProto
-colImpl and MiddlewareMessagingProtocolImpl and the correct REquest - Response
- classes to be implemented and that is it.
- There is no need to go around and introduce one more enum value or put
- one more `else-if` at some part of the code.
-\end_layout
-
-\begin_layout Subsubsection*
-Code conventions
-\end_layout
-
-\begin_layout Standard
-Initially we were planning to run the system at Dryad cluster for testing
- purposes where we were said Java 7 would be installed.
- For this reason I re-implemented part of the Optiona class found in Java
- 8.
- Also almost everywhere the try-with-resources, a feature that appeared
- in Java 7 is being used so we can be assured that the close() is going
- to be called.
-\end_layout
-
 \begin_layout Subsection*
 Database
-\end_layout
-
-\begin_layout Standard
-Channging checkpoints cnfiguration file:
-\end_layout
-
-\begin_layout Standard
-s; sync files=17, longest=0.035 s, average=0.006 s 2014-11-03 12:10:07 UTC
- LOG: checkpoint starting: xlog 2014-11-03 12:10:20 UTC LOG: checkpoint
- complete: wrote 1179 buffers (7.2%); 0 transaction log file(s) added, 0
- removed, 3 recycled; write=13.352 s, sync=0.050 s, total=13.425 s; sync files=11,
- longest=0.012 s, average=0.004 s 2014-11-03 12:10:34 UTC LOG: checkpoints
- are occurring too frequently (27 seconds apart) 2014-11-03 12:10:34 UTC
- HINT:
-\end_layout
-
-\begin_layout Standard
----
-\end_layout
-
-\begin_layout Standard
-Consider increasing the configuration parameter "checkpoint_segments".
-\end_layout
-
-\begin_layout Standard
-------
-\end_layout
-
-\begin_layout Standard
-checkpoint_segments = 1000 # in logfile segments, min 1, 16MB each checkpoint_ti
-meout = 1h # range 30s-1h checkpoint_completion_target = 0.5 # checkpoint
- target duration, 0.0 - 1.0 checkpoint_warning = 30s # 0 disables 
 \end_layout
 
 \begin_layout Standard
@@ -1139,7 +1117,7 @@ The
 \shape italic
 check_length
 \shape default
- constraint checks that a message cannot contain a message with too mich
+ constraint checks that a message cannot contain a message with too much
  content, in this case one with more than 2000 characters.
  (TODO talk about text vs varchar) The second constraint was added because
  it was considered meaningless for a client to send a message to himself.
@@ -1152,7 +1130,7 @@ receiver_id
 \shape italic
 NULL
 \shape default
-), this is also checked in the SQL functions and is expalined below (TODO).
+), this is also checked in the stored function and is explained later on.
 \end_layout
 
 \begin_layout Standard
@@ -1176,7 +1154,7 @@ Adding a primary key will automatically create a unique btree index on the
 \end_inset
 
 .
- The extras indexes that were introduced are the following: 
+ The extra indexes that were introduced are the following: 
 \end_layout
 
 \begin_layout Enumerate
@@ -1208,11 +1186,12 @@ and on a
 queue_id
 \shape default
 .
- The field 
+ Note that the field 
 \shape italic
 receiver_id
 \shape default
- appears first on the index as its most commonly used
+ appears first on this multicolumn index, this was not a random choice since
+ it is known
 \begin_inset Foot
 status open
 
@@ -1230,8 +1209,18 @@ status open
 
 \end_inset
 
- and in some cases its used alone, e.g.
- when listing the queues where a message for a user exists.
+ that the in a multicolumn index the leftmost column can also be efficiently
+ used solo.
+ The case where 
+\shape italic
+receiver_id
+\shape default
+ is used alone and not in combination with 
+\shape italic
+queue_id
+\shape default
+ is the listing queues query that lists the queues where a message for a
+ client exists.
  The second index was created to speed up receiving of messages from a specific
  sender.
  The third index was introduced since some of the receiving messages functions
@@ -1258,10 +1247,14 @@ Stored Functions
 
 \begin_layout Standard
 Stored functions were created using the PL/pgSQL procedural language to
- reduce the network communication times between the middleware and the database.
+ reduce the network communication time between the middleware and the database.
  Also stored functions have the advantage that they are compiled already
  by the DBMS and their query plan has been generated so they can be reused
- and therefore increasing performance.
+ and therefore increa
+\emph on
+se
+\emph default
+ performance.
  The code for the stored functions can be found in 
 \family typewriter
 read_committed_basic_functions.sql
@@ -1270,13 +1263,46 @@ read_committed_basic_functions.sql
 \family typewriter
 src/main/resources
 \family default
+ and all of them are used to be able to implement the interface shown in
+ Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "protocol"
+
+\end_inset
+
 .
 \end_layout
 
 \begin_layout Standard
-Sta tests sinithos aplos calo ta statements etsi ...
- (den kalo ta callable statements) Stored procedures not used everywhere
- only where it made sense, e.g.
+The stored functions 
+\shape italic
+read_message
+\shape default
+ and 
+\shape italic
+receive_message
+\shape default
+ specifically check that if a message has no receiver it is not being returned
+ to the client that sent it since this cannot be catched by the 
+\shape italic
+check_cannot_send_to_itself
+\shape default
+ constraint because in those cases the 
+\shape italic
+receiver_id
+\shape default
+ is 
+\shape italic
+NULL
+\shape default
+.
+\end_layout
+
+\begin_layout Standard
+Stored functions were not used everywhere, only where it made sense.
+ For example in cases where the same SQL queries did not need to be executed
+ many times, simple queries were sent to the database instead, e.g.
  management console.
 \end_layout
 
@@ -1292,7 +1318,14 @@ In this subsection we discuss isolation levels and why they are important
 \shape italic
 receive_message
 \shape default
- stored function that takes as parameters the 
+ stored function, seen in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "receiveMessage"
+
+\end_inset
+
+, that takes two parameters, the 
 \shape italic
 p_requesting_user_id
 \shape default
@@ -1300,27 +1333,78 @@ p_requesting_user_id
 \shape italic
 p_queue_id
 \shape default
- and is looking for a message for the requesting user in the queue with
- the given id for receiving a message with no isolation levels in mind:
-\end_layout
+ and is trying to find a message for the requesting user in the given queue.
+\begin_inset Float figure
+wide false
+sideways false
+status open
 
-\begin_layout Standard
+\begin_layout Plain Layout
+\align center
+
+\shape italic
+\begin_inset Box Boxed
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+status collapsed
+
+\begin_layout Plain Layout
 
 \shape italic
 SELECT id INTO received_message_id FROM message WHERE queue_id = p_queue_id
  AND receiver_id = p_requesting_user_id LIMIT 1;
 \end_layout
 
-\begin_layout Standard
+\begin_layout Plain Layout
 
 \shape italic
 RETURN QUERY SELECT * FROM message WHERE id = received_message_id;
 \end_layout
 
-\begin_layout Standard
+\begin_layout Plain Layout
 
 \shape italic
 DELETE FROM message where id = received_message_id; 
+\end_layout
+
+\end_inset
+
+
+\shape default
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Simplified Version of 
+\shape italic
+receive_message
+\shape default
+ Body 
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "receiveMessage"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -1353,20 +1437,20 @@ happen
 
  completely, i.e.
  all their effects take place, or not at all.
- But still problems could arise as will be explained.
- The default isolation level in PostgreSQL is READ COMMITTED
+ But still problems could arise! The default isolation level in PostgreSQL
+ is READ COMMITTED
 \begin_inset Foot
 status open
 
 \begin_layout Plain Layout
-\begin_inset Quotes eld
+http://www.postgresql.org/docs/9.3/static/transaction-iso.html
+\begin_inset CommandInset label
+LatexCommand label
+name "fn:transactionsLink"
+
 \end_inset
 
-Read Committed is the default isolation level in PostgreSQL.
-\begin_inset Quotes erd
-\end_inset
 
- (http://www.postgresql.org/docs/9.3/static/transaction-iso.html)
 \end_layout
 
 \end_inset
@@ -1382,26 +1466,35 @@ Read Committed is the default isolation level in PostgreSQL.
 \end_inset
 
 
-\begin_inset Foot
-status open
+\begin_inset script superscript
 
 \begin_layout Plain Layout
-http://www.postgresql.org/docs/9.3/static/transaction-iso.html
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fn:transactionsLink"
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
 
 .
  So with such an isolation level it is possible for two concurrent transactions
- to read the same message, one of them to delete it and both of them will
- return the same message.
- This of course is not acceptable behaviour since we want a specific message
- to be read by only one user.
+ to read the exact same message, only one of them will delete it, but both
+ of them will return it.
+ This of course is not acceptable since we want a message to be read by
+ only one client.
  In order to solve this problem there are at least two approaches:
 \end_layout
 
 \begin_layout Enumerate
-Use FOR UPDATE
+Use 
+\shape italic
+FOR UPDATE
+\shape default
+
 \begin_inset Foot
 status open
 
@@ -1420,7 +1513,7 @@ FOR UPDATE causes the rows retrieved by the SELECT statement to be locked
 \begin_inset Quotes eld
 \end_inset
 
-hat is, other transactions that attempt UPDATE, DELETE, SELECT FOR UPDATE,
+That is, other transactions that attempt UPDATE, DELETE, SELECT FOR UPDATE,
  SELECT FOR NO KEY UPDATE, SELECT FOR SHARE or SELECT FOR KEY SHARE of these
  rows will be blocked until the current transaction ends.
  
@@ -1428,6 +1521,13 @@ hat is, other transactions that attempt UPDATE, DELETE, SELECT FOR UPDATE,
 \end_inset
 
  (http://www.postgresql.org/docs/9.3/static/sql-select.html#SQL-FOR-UPDATE-SHARE)
+\begin_inset CommandInset label
+LatexCommand label
+name "fn:FOR-UPDATE-causes"
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -1455,11 +1555,16 @@ This level is different from Read Committed in that a query in a repeatable
 \end_inset
 
 
-\begin_inset Foot
-status open
+\begin_inset script superscript
 
 \begin_layout Plain Layout
-http://www.postgresql.org/docs/9.3/static/transaction-iso.html
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fn:transactionsLink"
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -1479,33 +1584,84 @@ problem
 \begin_inset Quotes erd
 \end_inset
 
- with the second approach is that transaction could find concurrent update
- errors and will have to be re-executed
-\begin_inset Foot
-status open
-
-\begin_layout Plain Layout
+ with the second approach is that a transaction could find concurrent update
+ errors and will have to be re-executed: 
 \begin_inset Quotes eld
 \end_inset
 
 ...it should abort the current transaction and retry the whole transaction
  from the beginning.
-\begin_inset Quotes eld
+\begin_inset Quotes erd
 \end_inset
 
-(http://www.postgresql.org/docs/9.3/static/transaction-iso.html)
+
+\begin_inset script superscript
+
+\begin_layout Plain Layout
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fn:transactionsLink"
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
 
 .
- For the above reasons I used the first approach since it made my application
+ For the above reasons we used the first approach since it made our application
  code easier, i.e.
  not having to repeat a transaction.
 \end_layout
 
 \begin_layout Standard
-Talk about FOR UPDATE and ORDER BY --- have a look
+We have to mention here that the 
+\shape italic
+SELECT
+\shape default
+ command combined with 
+\shape italic
+FOR UPDATE
+\shape default
+ and 
+\shape italic
+ORDER BY
+\shape default
+ could have some problems: 
+\begin_inset Quotes eld
+\end_inset
+
+It is possible for a SELECT command running at the READ COMMITTED transaction
+ isolation level and using 
+\shape italic
+ORDER BY
+\shape default
+ and a locking clause to return rows out of order.
+\begin_inset Quotes erd
+\end_inset
+
+
+\begin_inset script superscript
+
+\begin_layout Plain Layout
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fn:FOR-UPDATE-causes"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+.
+ This is because ordering of the rows occurs before locking them, so it
+ is possible that when the rows are locked some columns might have been
+ modified.
+ This is not a problem in our implementation since we delete the selected
+ row.
 \end_layout
 
 \begin_layout Subsubsection*
@@ -1530,16 +1686,19 @@ http://jdbc.postgresql.org/download.html
 What is being logged?
 \end_layout
 
-\begin_layout Subsubsection*
-Setting up the Database
+\begin_layout Standard
+The only thingthat is being logged in the database while it is being used
+ ithe the CPU, network and memory utilization using the dstat
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+http://dag.wiee.rs/home-made/dstat/
 \end_layout
 
-\begin_layout Standard
-This is coolness!!
-\end_layout
+\end_inset
 
-\begin_layout Standard
-Wha
+ tool.
 \end_layout
 
 \begin_layout Subsubsection*
@@ -1555,7 +1714,7 @@ Manager
 \shape italic
 console
 \shape default
- package) to easily check the contents a database in a remote machine.
+ package) to easily check the contents of a database in a remote machine.
  The console is a GUI application and can be seen Figure 
 \begin_inset CommandInset ref
 LatexCommand ref
@@ -1583,8 +1742,8 @@ Refresh
 \begin_inset Quotes erd
 \end_inset
 
- buttons he check the current data of the client, queue or message table.
- For retrieving the data from the database 
+ buttons he can check the current data of the client, queue or message table.
+ For retrieving the data from the database simple 
 \begin_inset Quotes erd
 \end_inset
 
@@ -1596,7 +1755,8 @@ SELECT * FROM ...
 \begin_inset Quotes eld
 \end_inset
 
- queries were issued on the database.
+ queries were issued on the database, no stored functions were created for
+ this since they are only used for the console and quite sparingly.
 \end_layout
 
 \begin_layout Standard
@@ -1647,66 +1807,223 @@ Middleware
 
 \begin_layout Standard
 The middleware implements the messaging system, it receives requests/messages
- from clients and has to use the database in order to persist those msssagess,
+ from clients and has to use the database in order to persist those messagess,
  as well as retrieve the messages from the database to return to the clients.
- Before explainging the general architecture of the middleware, the interface
- clients can use will be explained.
- This interface can be seen in Figure ?.
+ Obviously if we want to be able to support more than one client the middleware
+ needs to be multi-threaded.
+ The interface that the middleware has to implement can be seen in Figure
+ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "protocol"
+
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Standard
-This interface satisfies the desired functionality of our system
+Our middleware follows a non-blocking approach using simple Java IO.
+ This seems hard to believe at first but nevertheless this is the case as
+ will be explained later on.
+ But before doing so, let us see some of the possible approaches that can
+ be used to implement a middleware.
 \end_layout
 
-\begin_layout Standard
-The middleware follows a non-blocking approach using simple Java I/O.
- This seems hard to believe at first place but it is going to be explained
- later on.
- Before doing so, let us see some of the possible approaches that can be
- used to implement a middleware.
-\end_layout
-
-\begin_layout Enumerate
-First approach would be to have some worker threads on the middleware which
- every one of them waits for a connection from the client.
- When a conneciton is established it waits for a arequest from the clients,
- when it receives the request it alls the middleware below it and returens
- the response to the client.
- Afterwards it closes the connection and waits for the next clent connection.
- This approach seems quite wasteful/slow since for every request-response
- interaction the client has to establish a connection with the middleware.
- Pseudocode of this solution can be seen:
-\end_layout
-
-\begin_layout Enumerate
-Have a worker thread for every client.
- This solutions seems to have scalability issues since the number of clients
- the middleware could possibly handled is bounded by the number of conncurent
- ?threads the system can support.
+\begin_layout Itemize
+In this approach the middleware would have some threads, also known as worker
+ threads, on the middleware and every one of them waits for a connection
+ from the client.
+ When a connection is established the thread blocks and waits for a request
+ from the client.
+ When it receives the request it, it executes the request meaning it issues
+ the corresponding operations to the database and then returns the response
+ back to the client.
+ Afterwards it closes the connection and waits for the next client connection.
+ Although this approach can support an arbitrary number of client it is
+ quite wasteful and slow since for every request-response interaction the
+ client has to establish a connection with the middleware.
  
 \end_layout
 
-\begin_layout Enumerate
-Use Java New IO and use a selector thread ...
- blocking approach
+\begin_layout Itemize
+With this approach we have a worker thread for every client.
+ A worker thread is created when a client connects and then it is used for
+ this client until the end.
+ The advantage of this approach in constrast to the previous is that there
+ does not have to be an establishment of a connection for every request
+ between the client and the middleware.
+ But this solution seems to have scalability issues since the number of
+ clients the middleware could possibly support is bounded by the number
+ of threads the system can support.
+ 
 \end_layout
 
-\begin_layout Enumerate
-My approach was to have a queue of sockets corresponding to connections
- for the clients and have some worker threads operating in a round-robin
- approach on those sockets and check if there is something to read from
- the underlying input stream of the socket.
- Benefits of this approach is that I can support more clients than the number
- of threads in my system, as well as avoiding to establish a connection
- for every request.
- + BufferedInputStream The non-blocking nature of this approach can be achieved
- by using InputStream's ? available method that can return the number of
- bytes that can be read whithout blocking.
- Available is also a non-blocking method.
- So a blocking read is called only when available showed that there are
- bytes available.
- Figure gives a graphical depiction of this approach.
- As can be seen.
+\begin_layout Itemize
+This approach uses Java New IO.
+ The rough idea is having a thread, called selector thread, that blocks
+ until a new connection from a clien is established or data from some already
+ established connection are received.
+ When data from a connection are received the reading of the data can be
+ passed to a worker thread that is going to do the actual reading and the
+ one that is going to send the response back to the client.
+ This solution has none of the above problems.
+\end_layout
+
+\begin_layout Standard
+Our approach followed a different way.
+ Its main idea is to have a queue of sockets corresponding to connections
+ from the clients.
+ Everytime a client connects to the middleware the socket is being added
+ to this queue.
+ Then there are also some worker threads operating in a round-robin approach
+ on this queue and check if there is something to read from the underlying
+ input stream of the socket.
+ If yes they read the data, use the database to perform their operation
+ and send the response back to the client.
+ This approach has none of the problems described in the first two approaches.
+ Our implementation of this approach is non-blocking since a worker thread
+ never blocks to wait for data from a specific connection, if there are
+ no data in a connection it just puts the connection back to the queue and
+ continues with the next connection.
+ The non-blocking implemenation was achieved by using 
+\shape italic
+InputStream
+\shape default
+'s 
+\shape italic
+available()
+\shape default
+ method that can return the number of bytes that can be read whithout blocking.
+ 
+\shape italic
+available()
+\shape default
+ is of course a non-blocking method which means a worker thread issues a
+ blocking 
+\shape italic
+read()
+\shape default
+ method call only when 
+\shape italic
+available()
+\shape default
+ showed that a number of bytes can be read without blocking.
+ In Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "middlewareArchitecture"
+
+\end_inset
+
+ we can see the architecture of our middleware.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename images/overviewOfRequest.png
+	lyxscale 15
+	scale 40
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Middleware Architecture
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "middlewareArchitecture"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+Overview of a request being served
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename images/workerThread.png
+	lyxscale 30
+	scale 50
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+MENTION that serializtion is used
+\end_layout
+
+\begin_layout Standard
+In the following figure we can see how the implementation of the MessagingProtoc
+ol are used by both the client and the middleware to server their purposes.
+\end_layout
+
+\begin_layout Standard
+General overview on how a 
+\end_layout
+
+\begin_layout Subsubsection*
+Why are we having one Request/Response class per request/response?
+\end_layout
+
+\begin_layout Standard
+It might seem weird having one request and one response class for every
+ possible request and response.
+ But this was done to make the code more extensible if needed to add new
+ requests and for simplifying the work of the middleware.
+ As can been seen the Request class contains the abstract execute method
+ that receives as a parameter a MessagingProtocol implementation.
+ Now when the middleware receives a request, after deserializing it it can
+ just do `request.execute(...)` and it knows that the correct execute method
+ is going to be called.
+ For example `SendMessageRequest` implements execute as following.
+ Therefore by taking advantage of polymorphism the Middleware doesn't need
+ a long and error-prone list of if-else like this `if request is SendMessage
+ do this ...
+ else if ...
+ `.
+ 
+\end_layout
+
+\begin_layout Standard
+In order to create one more request for the system, the method has to be
+ inserted in the MessagingProtocol and then implement it in ClientMessagingProto
+colImpl and MiddlewareMessagingProtocolImpl and the correct REquest - Response
+ classes to be implemented and that is it.
+ There is no need to go around and introduce one more enum value or put
+ one more `else-if` at some part of the code.
 \end_layout
 
 \begin_layout Subsubsection*
@@ -1781,6 +2098,26 @@ What is being logged?
 Starting the Clients
 \end_layout
 
+\begin_layout Subsection*
+General Remarks 
+\end_layout
+
+\begin_layout Standard
+Initially we were planning to test our system using the Dryad cluster which
+ has Java 7 installed.
+ For this reason wes re-implemented part of the 
+\shape italic
+Optional
+\shape default
+ class found in Java 8.
+ Also almost everywhere the try-with-resources, a feature that appeared
+ in Java 7, is being used so we can be assured that the respective 
+\shape italic
+close()
+\shape default
+ method is called.
+\end_layout
+
 \begin_layout Section
 Testing
 \begin_inset CommandInset label
@@ -1820,7 +2157,7 @@ https://github.com/mockito/mockito
 
 \end_inset
 
- mocking framework was used.
+ framework was used for mocking.
  TestNG is similar to JUnit while Mockito allows the developer to easily
  and fast mock objects that would be quite expensive to construct.
  For example, the configuration files were mocked in the end-to-end tests
@@ -1863,8 +2200,8 @@ TestConstants
 \shape italic
 testutils
 \shape default
- packages, are using the local database which is being accessed by the constants
- given in the sdame file.
+ package, are using the local database which is being accessed by the constants
+ given in the same file.
 \end_layout
 
 \begin_layout Subsection*
@@ -1932,8 +2269,8 @@ EndToEnd
 \end_layout
 
 \begin_layout Standard
-This test is as close as possible to how the system is being used using
- the 
+This test is as close as possible to how the system is being executed and
+ uses the 
 \shape italic
 Client
 \shape default
@@ -2008,6 +2345,30 @@ General Encountered Problems
 Problems that werent bugs
 \end_layout
 
+\begin_layout Standard
+When running experiment increase number of message I got the following error
+ from the client logs:
+\end_layout
+
+\begin_layout Standard
+ch.ethz.inf.asl.exceptions.MessagingProtocolException: failed to send messageERROR:
+ could not extend file "base/16389/16427.6": No space left on device Hint:
+ Check free disk space.
+ Where: SQL statement "INSERT INTO message (sender_id, receiver_id, queue_id,
+ arrival_time, message) VALUES (p_sender_id, p_receiver_id, p_queue_id,
+ p_arrival_time, p_message)" PL/pgSQL function send_message(integer,integer,inte
+ger,timestamp without time zone,text) line 3 at SQL statement at ch.ethz.inf.asl.cli
+ent.ClientMessagingProtocolImpl.receiveResponse(Unknown Source) at ch.ethz.inf.asl.cli
+ent.ClientMessagingProtocolImpl.sendMessage(Unknown Source) at ch.ethz.inf.asl.client.C
+lientRunnable.sendMessage(Unknown Source) at ch.ethz.inf.asl.client.ClientRunnable.run(
+Unknown Source) at java.lang.Thread.run(Thread.java:745) ubuntu@ip-172-31-14-163:~/l
+ogs$
+\end_layout
+
+\begin_layout Standard
+increased size of database
+\end_layout
+
 \begin_layout Section
 Experimental Setup
 \begin_inset CommandInset label
@@ -2017,6 +2378,18 @@ name "sec:experimentalsetup"
 \end_inset
 
 
+\end_layout
+
+\begin_layout Subsubsection*
+Setting up the Database
+\end_layout
+
+\begin_layout Standard
+This is coolness!! SHOULD BE hre
+\end_layout
+
+\begin_layout Standard
+Wha
 \end_layout
 
 \begin_layout Standard
@@ -2064,7 +2437,8 @@ also do : You'll need to use eval `ssh-agent -s` to start the agent, ssh-add
  to enter your passphrase for your private key, and then ssh-agent -k to
  kill the agent when you're done.
  It even comes with a timeout, ssh-add -t <timeout>, where <timeout> can
- be something like Xh for X hours, Xm for X minutes, and so on.
+ be something like Xh for X hours, Xm for X minutes, and so on.[NEVER stop
+ the ssh-agent]
 \end_layout
 
 \begin_layout Standard
@@ -3803,6 +4177,20 @@ Different througput values based on the number of threads, number of connections
 
 \begin_layout Subsection*
 Increasing the Message Size
+\end_layout
+
+\begin_layout Standard
+2014-11-05 21:29:30 UTC HINT: Consider increasing the configuration parameter
+ "checkpoint_segments".
+ 2014-11-05 21:29:32 UTC LOG: checkpoints are occurring too frequently (2
+ seconds apart) 2014-11-05 21:29:32 UTC HINT: Consider increasing the configurat
+ion parameter "checkpoint_segments".
+ (in the 40000 characters per message)
+\end_layout
+
+\begin_layout Standard
+DISABLE CONSTRAINT ...
+ 
 \end_layout
 
 \begin_layout Subsection*

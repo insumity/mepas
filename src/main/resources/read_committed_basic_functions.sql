@@ -2,6 +2,60 @@
    The functions in this file, including receive_message and receive_message_from_sender
    can be executed correctly with READ_COMMITTED transactional isolation level. */
 
+-- create a client and return the id of the newly created client
+CREATE FUNCTION create_client(p_name varchar(20))
+  RETURNS integer AS $$
+DECLARE
+	inserted_client_id integer;
+BEGIN
+	INSERT INTO client (name) VALUES (p_name) RETURNING id INTO inserted_client_id;
+	RETURN inserted_client_id;
+END
+$$ LANGUAGE plpgsql;
+
+
+-- delete client given it's id
+CREATE FUNCTION delete_client(p_client_id integer)
+  RETURNS void AS $$
+BEGIN
+	IF (SELECT count(id) FROM client WHERE id = p_client_id) != 0 THEN
+		DELETE FROM client WHERE id = p_client_id;
+	ELSE
+		RAISE EXCEPTION 'DELETE_CLIENT: trying to delete a non existent client';
+	END IF;
+END
+$$ LANGUAGE plpgsql;
+
+
+-- Creates a queue and returns the id of the newly created queue
+CREATE FUNCTION create_queue(p_name varchar(20))
+  RETURNS integer AS $$
+DECLARE
+	inserted_queue_id integer;
+BEGIN
+	INSERT INTO queue(name) VALUES(p_name) RETURNING id INTO inserted_queue_id;
+	RETURN inserted_queue_id;
+END
+$$ LANGUAGE plpgsql;
+
+
+-- Deletes a queue given its id
+CREATE FUNCTION delete_queue(p_queue_id integer)
+  RETURNS void AS $$
+BEGIN
+  IF p_queue_id IS NULL THEN
+    RAISE EXCEPTION 'DELETE_QUEUE: ILLEGAL ARGUMENT with p_queue_id being NULL';
+  END IF;
+
+	IF (SELECT count(id) FROM queue WHERE id = p_queue_id) != 0 THEN
+		DELETE FROM queue WHERE id = p_queue_id;
+	ELSE
+		RAISE EXCEPTION 'DELETE_QUEUE: trying to delete a non existent queue';
+	END IF;
+END
+$$ LANGUAGE plpgsql;
+
+
 -- Sends a message by inserting message in the relation.
 -- In case receiver_id is NULL this means there is no specific receiver
 CREATE FUNCTION send_message(p_sender_id integer, p_receiver_id integer, p_queue_id integer,

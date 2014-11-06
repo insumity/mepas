@@ -7,7 +7,7 @@ from subprocess import call
 from Database import Database
 from Client import Client
 from Middleware import Middleware
-from EC2Instantiator import *
+from EC2InstantiatorFORMESSAGE import *
 from Utilities import *
 
 #
@@ -19,7 +19,7 @@ from Utilities import *
 # exit(1)
 
 conf = \
-    {"nameOfTheExperiment": "../NEW_increasing_threads_20_conns",
+    {"nameOfTheExperiment": "../NEW_increasing_message_size",
      "placement": "us-west-2c",
 
      "databaseType": "m3.large",
@@ -52,10 +52,8 @@ conf = \
 
      "username": "ubuntu",
 
-     "variable": "threadPoolSize",
-     "values": [1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100]
-     # "values": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28,
-     #            29, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100]
+     "variable": "messageSize",
+     "values": [1, 500, 1000, 5000, 10000, 20000, 30000, 40000, 50000, 100000, 150000, 200000, 500000, 1000000]
     }
 
 
@@ -124,7 +122,7 @@ for variable in conf["values"]:
 
     # clean database
 
-    auxiliaryFunctionsFilePath = "../../src/main/resources/auxiliary_functions.sql"
+    auxiliaryFunctionsFilePath = "../../src/main/resources/auxiliary_functionsNOLIMIT.sql"
     basicFunctionsFilePath = "../../src/main/resources/read_committed_basic_functions.sql"
 
     print ">>> Going to clean and initialize database"

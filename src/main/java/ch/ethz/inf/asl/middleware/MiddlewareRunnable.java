@@ -114,10 +114,8 @@ public class MiddlewareRunnable implements Runnable {
                 if (bytesCanReadWithoutBlocking == 0) {
                     // cannot read anything right now without blocking
                     internalSocket.setLastTime(System.currentTimeMillis());
-
                     internalSocket.timesToReadARequest = 0;
 
-                    logger.log((System.currentTimeMillis() - startTime) + "\tNOTHING INSIDE");
                     sockets.put(internalSocket);
                     continue;
                 }
@@ -136,9 +134,7 @@ public class MiddlewareRunnable implements Runnable {
                     if (internalSocket.lengthIsKnown()) {
                         logger.log((System.currentTimeMillis() - startTime) + "\tREADING INSIDE");
                     }
-                    else {
-                        logger.log((System.currentTimeMillis() - startTime) + "\tNOTHING INSIDE");
-                    }
+
                     sockets.put(internalSocket);
                     continue;
                 }

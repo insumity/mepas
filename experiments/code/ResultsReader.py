@@ -178,6 +178,7 @@ def getThroughput(experimentDir, clientInstances, timeInSeconds, warmUpInSeconds
     # every line in a client file contains a successful request
 
     directoryForTempResults = tempfile.mkdtemp()
+    print directoryForTempResults
 
     cleanedUpFiles = [] # files with removed warm up and cool down phases
     for i in range(1, clientInstances + 1):
@@ -212,12 +213,14 @@ def getThroughput(experimentDir, clientInstances, timeInSeconds, warmUpInSeconds
     shutil.rmtree(directoryForTempResults)
 
 
-for i in [1, 2, 3, 4, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50]:
-    getThroughput("../increasingNumberOfConnections20Threads/" + str(i), 1, 600, 120, 60)
+for i in [2, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100]:
+    getThroughput("../NEW_increasing_number_Of_Clients/" + str(i), 1, 360, 120, 60)
+
+exit(1)
 
 
-for i in [1, 2, 3, 4, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50]:
-    getThroughput("../increasingNumberOfThreads20Connections/" + str(i), 1, 600, 120, 60)
+for i in [2, 5, 10, 15, 20, 25, 30, 35, 40, 45]:
+    getThroughput("../NEW_increasing_number_of_Clients/" + str(i), 1, 600, 120, 60)
 
 exit(1)
 

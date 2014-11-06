@@ -140,9 +140,13 @@ public class ClientRunnable implements Runnable {
             }
 
             Message actualMessage = message.get();
+            String content = actualMessage.getContent();
+            // only log 5 characters max from the content so the logs aren't that big
+            int maxLength = (content.length() > 5)? 5: content.length();
+
             logger.log((System.currentTimeMillis() - startTime) + "\tRECEIVE_MESSAGE\t" +
                     "(" + actualMessage.getQueueId() + ", " + actualMessage.getSenderId()
-                    + ", " + actualMessage.getContent() + ")");
+                    + ", " + content.substring(0, maxLength) + ")");
         }
 
     }

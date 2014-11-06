@@ -32,7 +32,6 @@
       <sourceFolder url="file://$MODULE_DIR$/increasingNumberOfThreads20Connections" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/2k10MWThreads20Connections1MWMediumDBxLarge/1" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/increasingNumberOfConnections20Threads/50" type="java-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/traceFor1Hour" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/traceFor1Hour/25" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/increasingNumberOfThreads20Connections/15" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/2k10MWThreads10Connections1MWMedium/1" type="java-resource" />
@@ -72,6 +71,11 @@
       <sourceFolder url="file://$MODULE_DIR$/AGAINincreasingNumberOfThreads20Connections/30" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/2k20MWThreads20Connections1MWSmall/1" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/2k20MWThreads20Connections1MWMediumDBxLarge/1" type="java-resource" />
+      <excludeFolder url="file://$MODULE_DIR$/NEW_increasing_connections_20_threads" />
+      <excludeFolder url="file://$MODULE_DIR$/NEW_increasing_message_size" />
+      <excludeFolder url="file://$MODULE_DIR$/NEW_increasing_number_of_Clients" />
+      <excludeFolder url="file://$MODULE_DIR$/NEW_increasing_threads_20_conns" />
+      <excludeFolder url="file://$MODULE_DIR$/traceFor1Hour" />
     </content>
     <orderEntry type="jdk" jdkName="Python 2.7.5 (/usr/bin/python2.7)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />

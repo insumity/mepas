@@ -105,8 +105,7 @@ public class MiddlewareMessagingProtocolImpl implements MessagingProtocol {
 
     private void sendMessageCommon(Integer receiverId, int queueId, String content) {
 
-        // TODO use constants, I have them in MessageConstants
-        if (content.length() > 2000) {
+        if (content.length() > MessageConstants.MAXIMUM_MESSAGE_LENGTH) {
             throw new IllegalArgumentException("Given content has invalid length");
         }
 

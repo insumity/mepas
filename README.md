@@ -1,7 +1,3 @@
-[![Build Status](https://magnum.travis-ci.com/insumity/mepas.svg?token=zwxMV6HFTjurdrTshKys&branch=master)](https://magnum.travis-ci.com/insumity/mepas)
-
-
-
 
 In the following text I'll try to write down my ideas about the project and why
 I followed some design decisions. Hopefully it will help me later on creating
@@ -53,40 +49,6 @@ http://stackoverflow.com/questions/4848964/postgresql-difference-between-text-an
 [check here]
 
 
-Thursday (25/09)
-----------------
-
-probably (receiver_id, queue_id) would go together in all the receive messages it's going
-to be SELECT * FROM message WHERE receiver_id = passed_requestor_user_id AND queue_id = passed_queue_id
-also maybe one in arrival_time (will also help when used in ORDER BY)
-
-SO we should have an INDEX on both of them (receiver_id, queue_id) but perhaps in different order
-so we help the list_queues stored procedure (left-most are more important: read here: http://www.postgresql.org/docs/9.3/static/indexes-bitmap-scans.html
- "This index would typically be more efficient than index combination for queries involving both columns, but as discussed in Section 11.3, it would be almost useless for queries involving only y, so it should not be the only index"
- )
-
-, read here about multicolumn indexes:
-http://www.postgresql.org/docs/9.3/static/indexes-multicolumn.html
-"A multicolumn B-tree index can be used with query conditions that involve any subset of the index's columns, but the index is 
-most efficient when there are constraints on the leading (leftmost) columns. The exact rule is that equality constraints on
-leading columns, plus any inequality constraints on the first column that does not have an equality constraint, will be used 
-to limit the portion of the index that is scanned. Constraints on columns to the right of these columns are checked in the index, 
-so they save visits to the table proper, but they do not reduce the portion of the index that has to be scanned. For example, given 
-an index on (a, b, c) and a query condition WHERE a = 5 AND b >= 42 AND c < 77, the index would have to be scanned from the first 
-entry with a = 5 and b = 42 up through the last entry with a = 5. Index entries with c >= 77 would be skipped, but they'd still 
-have to be scanned through. This index could in principle be used for queries that have constraints on b and/or c with no 
-constraint on a — but the entire index would have to be scanned, so in most cases the planner would prefer a sequential 
-table scan over using the index."
-
-
-for 7) maybe an index on sender_id INDEX(sender_id)  
-and maybe one for retrieval_time  INDEX(retrieval_time)
-those indexes should be unique and we are going to base ourselves in index-combination to work for them 
-(http://www.postgresql.org/docs/9.3/static/indexes-bitmap-scans.html)
-
-
-
-
 Monday (6/10/2014)
 ------------------
 1) for reading postgres net messages, use lo0 interface and filter with `tcp.port eq 5432` the port
@@ -104,8 +66,6 @@ Saturday(18/10/2014)
 --------------------
 Always have to add "PYTON_PATH /usr/local/lib/python2.7/site-packages" for
 python to find boto, etc. in IntelliJ 
-
-
 
 
 Wednesay(22/10/2014)
@@ -128,12 +88,6 @@ Thursday (23/10/2014)
 queueing time is done on arrival time in the mw is writte in the repotrt.
 "The second tier implemets the queueing system ... "
 
-
-
-Saturday (25/10/2014)
----------------------
-Used rsync with compression to send and receive files form the instances:
-http://unix.stackexchange.com/questions/70581/scp-and-compress-at-the-same-time-no-intermediate-save
 
 Sunday (26/10/2014)
 ------------------
