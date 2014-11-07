@@ -2,8 +2,10 @@ package ch.ethz.inf.asl.logger;
 
 import org.testng.annotations.Test;
 
-import java.io.*;
-import java.nio.file.Files;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 
 import static ch.ethz.inf.asl.testutils.TestConstants.SMALL;
 import static org.testng.Assert.assertNull;

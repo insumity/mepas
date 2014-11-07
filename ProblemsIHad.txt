@@ -1,32 +1,9 @@
 
-
-
-While doing db integration testing
-
-1) Inside an SQL function I had:
-        RETURN QUERY SELECT id INTO received_message_id ...
- and although this was passing from PostgresSQL I received
- error message in Java when trying to execute the query. The
- error message was: 'PSQLException ERROR: cannot open SELECT query as cursor'
-
-2) Another error I found was the following. In receive_message_from_sender
-I had SELECT * FROM
-     WHERE sender_id = p_sender_id AND receiver_id = p_requesting_user_id OR
-           receiver_id IS NULL
-Here I forgot to have the paranthesis so because of operator precendence
-(http://www.postgresql.org/docs/7.2/static/sql-precedence.html) it ended up
-doing this instead:
-(sender_id = p_sender_id AND receiver_id = p_requesting_user_id) OR
-           receiver_id IS NULL
-
 3) on the tests I had the problem with the expected exception message. I fixed
 this by using "(?s) .." which transforms the regex in single line mode:
 "(?s) for "single line mode" makes the dot match all characters, including line breaks. Not supported by Ruby or JavaScript. In Tcl, (?s) also makes the caret and dollar match at the start and end of the string only."
 from http://www.regular-expressions.info/modifiers.html ... The problem was
 that the exception message contained new lines
-
-4) While testing I found a nullPointerexception bug in Message equals. I had this.receiverId.equals(other.receiverId)
-and receiverId can be null
 
 5) Arrays.asList(POSSIBLE_MESSAGE_LENGTHS) ... where array is of primitive type will return a list containing only
 one element the array. REad more here (in the comments section): http://stackoverflow.com/questions/1128723/in-java-how-can-i-test-if-an-array-contains-a-certain-value
@@ -36,93 +13,3 @@ yerguds: indeed, this does not work for primitives. In java primitive types can'
 when he says Goodbye I had this problem. When the client was about to be deleted there were perhaps stil lmessages from him
 in the system ... and therefore we got a foreign key constraint violation. I could use CASCADE to delete the messages
 but I didn't belive this is correct.
-
-7) About making the users register by themselves .. I had quite some problems ... e.g when creating the clients
-other clients could already start sending messages to their peers but they don't exist yet. So we get failed messages
-although this should never happen, or at least if it never happened it would be easier to test an experiment was correct.
-Also, if the clients create the queues by themselves it could be that other clients already start sending messages
-to the queue. If many clients try to create a qeueu, with the current API we could end up with multiple queues.
-For these reasons and for th ereason afforementioned in 6) I chose not to let the clients to regiester when the
-get in the middleware.
-
-8) While creating the code for the experimental setup, sinc eI'm neewbie to python I had
-        thread = threading.Thread(target=self.__startThreadCode(), args=())
-        instead
-        of         thread = threading.Thread(target=self.__startThreadCode, args=())
-check here http://stackoverflow.com/questions/15946075/python-threading-blocks why this was wrong
-
-9) found NullPointerException quickly because of end to end tests. Had new ClientRunanble[totalClients]
-instead of new ClientRunanble[numberOfClients] in the Client class.
-
-
-10) Biggest problems of them all ...:
-CREATE FUNCTION receive_message(
-  p_requesting_user_id integer, /* id of the user issuing the receive message request */
-  p_queue_id integer, /* id of the queue from where the message is retrieved */
-  p_retrieve_by_arrival_time boolean /* if true returns the newest, i.e. one closest to the current time,
-                                        message based on its timestamp */
-
-)
-  RETURNS SETOF message_type AS $$
-DECLARE
-  received_message_id integer;
-BEGIN
-  IF p_requesting_user_id IS NULL THEN
-    RAISE EXCEPTION 'RECEIVE_MESSAGE: ILLEGAL ARGUMENT with p_requesting_user_id being NULL';
-  END IF;
-
-  IF p_retrieve_by_arrival_time = TRUE THEN
-    SELECT id INTO received_message_id FROM message
-        WHERE queue_id = p_queue_id AND (receiver_id = p_requesting_user_id
-                                         /* don't read messages you sent, in case receiver_id is NULL it could be that you
-                                            are the sender of the message. In case receiver_id is not NULL we know for sure
-                                            that sender_id != receiver_id because of the `check_cannot_send_to_itself`
-                                            constraint in the message relation */
-                                         OR (receiver_id IS NULL AND sender_id != p_requesting_user_id))
-        ORDER BY arrival_time DESC LIMIT 1
-        FOR UPDATE;
-
-    RETURN QUERY SELECT * FROM message WHERE id = received_message_id;
-
-    RETURN QUERY SELECT * FROM message
-                    WHERE queue_id = p_queue_id AND (receiver_id = p_requesting_user_id
-                                     /* don't read messages you sent, in case receiver_id is NULL it could be that you
-                                        are the sender of the message. In case receiver_id is not NULL we know for sure
-                                        that sender_id != receiver_id because of the `check_cannot_send_to_itself`
-                                        constraint in the message relation */
-                                     OR (receiver_id IS NULL AND sender_id != p_requesting_user_id))
-                    ORDER BY arrival_time DESC LIMIT 1;
-  ELSE
-    SELECT id INTO received_message_id FROM message
-      WHERE queue_id = p_queue_id AND (receiver_id = p_requesting_user_id
-                                   OR (receiver_id IS NULL AND sender_id != p_requesting_user_id))
-      LIMIT 1
-      FOR UPDATE;
-
---     RETURN QUERY SELECT * FROM message WHERE id = received_message_id;
-    RETURN QUERY SELECT * FROM message
-                    WHERE queue_id = p_queue_id AND (receiver_id = p_requesting_user_id
-                                     OR (receiver_id IS NULL AND sender_id != p_requesting_user_id))
-                    LIMIT 1;
-  END IF;
-
-  DELETE FROM message where id = received_message_id;
-END;
-$$ LANGUAGE plpgsql;
-
-
-
-epestrefe to idio minima, diegrafe diaforetiko ...
-
-11) Similar problem ,notices less/more messages than supposed to be in the system. It was because
-I wasn't closing the connections of the connections pool, so those transactions were never being
-committed!!
-
-12) Closing connections form connection pool I had:
- for (int i = 0; i < connections.size(); ++i) {
-            InternalConnection connection;
-            try {
-                connection = connections.take();
-
-because connections.size() was changing, only half of the connection were closed every time.
-Tests helped me find it.

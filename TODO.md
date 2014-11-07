@@ -17,8 +17,6 @@ Wednesaday(08/10)
 You can use `ON CASCADE` in the definition of the message table in queue_id, client_id.
 In case the queue is deleted all the msgs are also deleted
 
-YOu might want to delte the db from scratch (see auxiliary_functions.sql)
-
 
 Sunday (12/10)
 --------------
@@ -34,25 +32,14 @@ Monday(13/10)
 3) CATCH MessageProtocolException in higher levels ... !!! clients were dying!!! [FIXME]
 4) !!!! MAKE sure you don't have any notNull imported from Mockito into non-testing code!!!
 
-Tuesday(14/10)
---------------
-2) Make sure `main` methods don't throw exceptions
 5) verify all classes have equals & hashCode implemented
 
-Wednesday(15/10)
-----------------
-1) Console Manager, refresh buttons not on the correct position
 
 Thursday(16/10)
 ---------------
 1) Make sure the client graacefully terminates if he never gets a response
-4) should we verify the id when asked for a receive message or so is in a valid range?
 
 
 Sunday (26/10)
 --------------
 Remove shitty comments from m y code
-
-Sunday(2/11)
-------------
-Remove networkspeed package
