@@ -79,7 +79,7 @@ CREATE TYPE message_type AS (id integer, sender_id integer, receiver_id integer,
 CREATE FUNCTION read_message(
   p_requesting_user_id integer, /* id of the user issuing the read message request */
   p_queue_id integer, /* id of the queue from where the message is retrieved */
-  p_retrieve_by_arrival_time boolean /* if true returns the newest, i.e. one closest to the current time,
+  p_retrieve_by_arrival_time boolean /* if true returns the oldest, i.e. one more far away to the current time,
                                         message based on its timestamp */
 )
   RETURNS SETOF message_type AS $$
@@ -98,7 +98,7 @@ BEGIN
                                      that sender_id != receiver_id because of the `check_cannot_send_to_itself`
                                      constraint in the message relation */
                                      OR (receiver_id IS NULL AND sender_id != p_requesting_user_id))
-                    ORDER BY arrival_time DESC LIMIT 1;
+                    ORDER BY arrival_time ASC LIMIT 1;
 	ELSE
 		RETURN QUERY SELECT * FROM message
                     WHERE queue_id = p_queue_id AND (receiver_id = p_requesting_user_id
@@ -116,7 +116,7 @@ $$ LANGUAGE plpgsql;
 CREATE FUNCTION receive_message(
   p_requesting_user_id integer, /* id of the user issuing the receive message request */
   p_queue_id integer, /* id of the queue from where the message is retrieved */
-  p_retrieve_by_arrival_time boolean /* if true returns the newest, i.e. one closest to the current time,
+  p_retrieve_by_arrival_time boolean /* if true returns the oldest, i.e. one more far away to the current time,
                                         message based on its timestamp */
 
 )
@@ -136,7 +136,7 @@ BEGIN
                                             that sender_id != receiver_id because of the `check_cannot_send_to_itself`
                                             constraint in the message relation */
                                          OR (receiver_id IS NULL AND sender_id != p_requesting_user_id))
-        ORDER BY arrival_time DESC LIMIT 1
+        ORDER BY arrival_time ASC LIMIT 1
         FOR UPDATE;
 
     RETURN QUERY SELECT * FROM message WHERE id = received_message_id;
@@ -160,9 +160,9 @@ $$ LANGUAGE plpgsql;
 -- function is assumed to be interested in receiving a message in general from this sender without
 -- caring for the queue from which the message is received
 CREATE FUNCTION receive_message_from_sender(
-  p_requesting_user_id INTEGER, /* id of the user issuing the receive message from sender request */
-  p_sender_id          INTEGER, /* id of the sender of the message */
-  p_retrieve_by_arrival_time BOOLEAN /* if true returns the newest, i.e. one closest to the current time,
+  p_requesting_user_id integer, /* id of the user issuing the receive message from sender request */
+  p_sender_id          integer, /* id of the sender of the message */
+  p_retrieve_by_arrival_time boolean /* if true returns the oldest, i.e. one more far away to the current time,
                                         message based on its timestamp */
 )
   RETURNS SETOF message_type AS $$

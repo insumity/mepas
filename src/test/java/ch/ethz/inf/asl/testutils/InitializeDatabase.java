@@ -42,7 +42,7 @@ public class InitializeDatabase {
 
     /* drops the current database and creates one with the same name to be used by the middleware */
     public static void initializeDatabase(String host, int portNumber, String databaseName, String username, String password,
-                                          int isolationLevel, String[] filePathsToBeExecutedForThisDatabase)
+                                          String[] filePathsToBeExecutedForThisDatabase)
             throws ClassNotFoundException, SQLException, IOException, InterruptedException {
 
         final String INITIALIZE_DATABASE = "{ call initialize_database() }";
@@ -59,16 +59,7 @@ public class InitializeDatabase {
         // load all the functions from `auxiliary_function.sql` and `***_basic_functions.sql` depending
         // on the isolation level
         loadSQLFile(username, databaseName, "src/main/resources/auxiliary_functions.sql");
-
-        if (isolationLevel == Connection.TRANSACTION_READ_COMMITTED) {
-            loadSQLFile(username, databaseName, "src/main/resources/read_committed_basic_functions.sql");
-        }
-        else if (isolationLevel == Connection.TRANSACTION_REPEATABLE_READ) {
-            loadSQLFile(username, databaseName, "src/main/resources/repeatable_read_basic_functions.sql");
-        }
-        else {
-            throw new IllegalArgumentException("Given level can only be READ_COMMITTED or REPEATABLE_READ!");
-        }
+        loadSQLFile(username, databaseName, "src/main/resources/read_committed_basic_functions.sql");
 
         // create all the relations: queue, client and message
         try (Connection connection = getConnection(host, portNumber, databaseName, username, password);
@@ -101,11 +92,11 @@ public class InitializeDatabase {
 
     /* drops the current database and creates one with the same name to be used by the middleware */
     public static void initializeDatabaseWithClientsAndQueues(String host, int portNumber, String databaseName, String username,
-                                                              String password, int isolationLevel, String[] filePathsToBeExecutedForThisDatabase,
+                                                              String password, String[] filePathsToBeExecutedForThisDatabase,
                                                               int numberOfClients, int numberOfQueues)
             throws ClassNotFoundException, SQLException, IOException, InterruptedException {
 
-        initializeDatabase(host, portNumber, databaseName, username, password, isolationLevel, filePathsToBeExecutedForThisDatabase);
+        initializeDatabase(host, portNumber, databaseName, username, password, filePathsToBeExecutedForThisDatabase);
 
         final String CREATE_CLIENT = "{ ? = call create_client(?) }";
         final String CREATE_QUEUE = "{ ? = call create_queue(?) }";

@@ -32,15 +32,11 @@ public class MiddlewareMessagingProtocolImpl implements MessagingProtocol {
     static final String RECEIVE_MESSAGE_FROM_SENDER = "{ call receive_message_from_sender(?, ?, ?) }";
     static final String LIST_QUEUES = "{ call list_queues(?) }";
 
-    private Logger logger;
-
-    public MiddlewareMessagingProtocolImpl(Logger logger, int requestingUserId, Connection connection) {
-        notNull(logger, "Given logger cannot be null!");
+    public MiddlewareMessagingProtocolImpl(int requestingUserId, Connection connection) {
         notNull(connection, "Given connection cannot be null!");
 
         this.requestingUserId = requestingUserId;
         this.connection = connection;
-        this.logger = logger;
     }
 
     @Override

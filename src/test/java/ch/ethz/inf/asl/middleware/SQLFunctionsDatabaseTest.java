@@ -25,10 +25,6 @@ import static org.testng.Assert.*;
  */
 public class SQLFunctionsDatabaseTest {
 
-    // for testing `auxiliary_functions`
-//    FIXME
-//    private static final String CREATE_CLIENT = "{ ? = call create_client(?) }";
-//    private static final String DELETE_CLIENT = "{ call delete_client(?) }";
 
     // initial number of queues and messages contained in the corresponding tables after populating them
     private static int NUMBER_OF_CLIENTS = 6;
@@ -81,8 +77,7 @@ public class SQLFunctionsDatabaseTest {
     @BeforeMethod(groups = DATABASE)
     public void initialize() throws ClassNotFoundException, SQLException, IOException, InterruptedException {
         String populateDatabaseCode = "src/test/resources/populate_database.sql";
-        InitializeDatabase.initializeDatabase(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD,
-                Connection.TRANSACTION_READ_COMMITTED, new String[]{populateDatabaseCode});
+        InitializeDatabase.initializeDatabase(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD, new String[]{populateDatabaseCode});
     }
 
     @Test(groups = DATABASE)
@@ -200,7 +195,7 @@ public class SQLFunctionsDatabaseTest {
             int receiverId = 3;
             int queueId = 5;
             Timestamp arrivalTime = Timestamp.valueOf("2014-12-12 12:34:12");
-            String message = Utilities.createStringWith(MAXIMUM_MESSAGE_LENGTH, 'A');
+            String message = Utilities.createStringWith(20, 'A');
             stmt.setInt(1, senderId);
             stmt.setInt(2, receiverId);
             stmt.setInt(3, queueId);
@@ -225,7 +220,7 @@ public class SQLFunctionsDatabaseTest {
             int senderId = 4;
             int queueId = 2;
             Timestamp arrivalTime = Timestamp.valueOf("2014-12-12 12:34:12");
-            String message = Utilities.createStringWith(MAXIMUM_MESSAGE_LENGTH, 'A');
+            String message = Utilities.createStringWith(20, 'A');
             stmt.setInt(1, senderId);
             stmt.setNull(2, Types.INTEGER);
             stmt.setInt(3, queueId);
@@ -251,7 +246,7 @@ public class SQLFunctionsDatabaseTest {
             int receiverId = 4;
             int queueId = 2;
             Timestamp arrivalTime = Timestamp.valueOf("2014-12-12 12:34:12");
-            String message = Utilities.createStringWith(MAXIMUM_MESSAGE_LENGTH, 'A');
+            String message = Utilities.createStringWith(20, 'A');
             stmt.setNull(1, Types.INTEGER);
             stmt.setInt(2, receiverId);
             stmt.setInt(3, queueId);
@@ -270,7 +265,7 @@ public class SQLFunctionsDatabaseTest {
             int senderId = 1;
             int receiverId = 4;
             Timestamp arrivalTime = Timestamp.valueOf("2014-12-12 12:34:12");
-            String message = Utilities.createStringWith(MAXIMUM_MESSAGE_LENGTH, 'A');
+            String message = Utilities.createStringWith(20, 'A');
             stmt.setInt(1, senderId);
             stmt.setInt(2, receiverId);
             stmt.setNull(3, Types.INTEGER);
@@ -289,7 +284,7 @@ public class SQLFunctionsDatabaseTest {
             int senderId = 1;
             int receiverId = 4;
             int queueId = 3;
-            String message = Utilities.createStringWith(MAXIMUM_MESSAGE_LENGTH, 'A');
+            String message = Utilities.createStringWith(20, 'A');
             stmt.setInt(1, senderId);
             stmt.setInt(2, receiverId);
             stmt.setInt(3, queueId);
@@ -327,27 +322,7 @@ public class SQLFunctionsDatabaseTest {
             int receiverId = 2;
             int queueId = 3;
             Timestamp arrivalTime = Timestamp.valueOf("2014-12-12 12:34:12");
-            String message = Utilities.createStringWith(MAXIMUM_MESSAGE_LENGTH, 'A');
-            stmt.setInt(1, senderId);
-            stmt.setInt(2, receiverId);
-            stmt.setInt(3, queueId);
-            stmt.setTimestamp(4, arrivalTime);
-            stmt.setString(5, message);
-            stmt.execute();
-        }
-    }
-
-    @Test(groups = DATABASE, expectedExceptions = PSQLException.class,
-            expectedExceptionsMessageRegExp = "(?s).*violates check constraint \"check_length\".*")
-    public void testSendMessageWithInvalidContentLength() throws SQLException, ClassNotFoundException {
-        try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD);
-             CallableStatement stmt = connection.prepareCall(SEND_MESSAGE)) {
-
-            int senderId = 2;
-            int receiverId = 5;
-            int queueId = 3;
-            Timestamp arrivalTime = Timestamp.valueOf("2014-12-12 12:34:12");
-            String message = Utilities.createStringWith(MAXIMUM_MESSAGE_LENGTH + 1, 'A');
+            String message = Utilities.createStringWith(20, 'A');
             stmt.setInt(1, senderId);
             stmt.setInt(2, receiverId);
             stmt.setInt(3, queueId);
@@ -544,7 +519,7 @@ public class SQLFunctionsDatabaseTest {
             assertTrue(thereAreRows);
 
             DatabaseMessage actualMessage = createMessage(rs);
-            DatabaseMessage expectedMessage = new DatabaseMessage(8, 5, 2, queueId, Timestamp.valueOf("2001-01-08 04:05:06"), MESSAGE_CONSTANT);
+            DatabaseMessage expectedMessage = new DatabaseMessage(1, 1, 2, queueId, Timestamp.valueOf("1999-01-08 04:05:06"), MESSAGE_CONSTANT);
 
             assertEquals(actualMessage, expectedMessage);
 
@@ -588,7 +563,7 @@ public class SQLFunctionsDatabaseTest {
             assertTrue(thereAreRows);
 
             DatabaseMessage actualMessage = createMessage(rs);
-            DatabaseMessage expectedMessage = new DatabaseMessage(1, 1, 2, queueId, Timestamp.valueOf("1999-01-08 04:05:06"), MESSAGE_CONSTANT);
+            DatabaseMessage expectedMessage = new DatabaseMessage(8, 5, 2, queueId, Timestamp.valueOf("2001-01-08 04:05:06"), MESSAGE_CONSTANT);
 
             assertEquals(actualMessage, expectedMessage);
 

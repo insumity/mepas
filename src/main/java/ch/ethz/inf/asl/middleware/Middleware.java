@@ -75,7 +75,7 @@ public class Middleware {
     // This code corresponds to a thread that is going to be looking(in a blocking way) at the system input
     // of the middleware and when it reads "STOP" it's going to close the middleware in a gracefully manner
     // by stopping all the middleware runnable threads
-    private class StoppingMiddleware implements Runnable {
+    private class MiddlewareStopper implements Runnable {
         // gracefully stop middleware
 
         @Override
@@ -102,7 +102,7 @@ public class Middleware {
             started = true;
 
             // keep an eye on the system input and stop the middleware if needed
-            new Thread(new StoppingMiddleware()).start();
+            new Thread(new MiddlewareStopper()).start();
 
             System.out.println("STARTED");
             while (!finished) {

@@ -46,22 +46,20 @@ public class SQLFunctionsConcurrentCallsDatabaseTest {
         }
     }
 
-    @DataProvider(name = "twoIsolationLevels")
+    @DataProvider(name = "fromSenderOrNot")
     public static Object[][] twoIsolationLevels() {
         return new Object[][] {
-                {Connection.TRANSACTION_READ_COMMITTED, true},
-                {Connection.TRANSACTION_READ_COMMITTED, false},
-                {Connection.TRANSACTION_REPEATABLE_READ, true},
-                {Connection.TRANSACTION_REPEATABLE_READ, false}
+                {true},
+                {false},
         };
     }
 
 
-    @Test(groups = DATABASE, dataProvider = "twoIsolationLevels",
+    @Test(groups = DATABASE, dataProvider = "fromSenderOrNot",
             description = "The idea of the test is to fill the system with " +
             "many messages, e.g. X messages, with receiver id being NULL and then create some concurrent readers " +
             "that try to read these messages. In total the concurrent readers should have only read X messages. ")
-    public void testMessagesAreReceivedOnlyOnce(final int isolationLevel, final boolean fromSender)
+    public void testMessagesAreReceivedOnlyOnce(final boolean fromSender)
             throws SQLException, ClassNotFoundException, InterruptedException, IOException {
 
         // serialization failures return an SQL_STATE value of '40001'
@@ -76,7 +74,7 @@ public class SQLFunctionsConcurrentCallsDatabaseTest {
         // found in the system
         final int NUMBER_OF_QUEUES = 1;
         InitializeDatabase.initializeDatabaseWithClientsAndQueues(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD,
-                isolationLevel, new String[]{}, NUMBER_OF_CONCURRENT_READERS + 1, NUMBER_OF_QUEUES);
+                new String[]{}, NUMBER_OF_CONCURRENT_READERS + 1, NUMBER_OF_QUEUES);
 
         // numberOfReadMessagesByReader[i] contains the number of messages the i-th reader read
         final int[] numberOfReadMessagesByReader = new int[NUMBER_OF_CONCURRENT_READERS];
@@ -105,13 +103,6 @@ public class SQLFunctionsConcurrentCallsDatabaseTest {
                 try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD)) {
                     for (int i = 0; i < NUMBER_OF_MESSAGES; ++i) {
 
-                        if (isolationLevel == Connection.TRANSACTION_REPEATABLE_READ) {
-                            connection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
-                        } else {
-                            assertTrue(isolationLevel == Connection.TRANSACTION_READ_COMMITTED);
-                        }
-
-
                         String callToPrepare = RECEIVE_MESSAGE;
                         if (fromSender) {
                             callToPrepare = RECEIVE_MESSAGE_FROM_SENDER;
@@ -131,20 +122,7 @@ public class SQLFunctionsConcurrentCallsDatabaseTest {
                             stmt.setBoolean(3, retrieveByArrivalTime);
 
                             ResultSet rs = null;
-                            try {
-                                rs = stmt.executeQuery();
-                            } catch (PSQLException e) {
-
-                                // only repeat the read if you are in REPEATABLE_READ isolation level
-                                // in READ_COMMITTED there is no need to repeat the transaction
-                                if (isolationLevel == Connection.TRANSACTION_REPEATABLE_READ) {
-                                    String errorSQLState = e.getServerErrorMessage().getSQLState();
-
-                                    if (errorSQLState.equals(CONCURRENT_UPDATE_ERROR_SQL_STATE)) {
-                                        continue;
-                                    }
-                                }
-                            }
+                            rs = stmt.executeQuery();
                             boolean thereAreRows = rs.next();
                             if (thereAreRows) {
                                 String content = rs.getString(6);

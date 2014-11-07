@@ -9,7 +9,6 @@ import ch.ethz.inf.asl.utils.Optional;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
@@ -99,27 +98,20 @@ public class ClientRunnable implements Runnable {
     }
 
     // sends a message using the underlying message protocol to a random receiver and random queue
-    private void sendMessage(int messageCounter, int messageSize) {
+    private void sendMessage(int messageSize) {
         long startTime = System.currentTimeMillis();
 
         int receiverId = getRandomReceiverId();
         int queueId = getRandomQueueId();
 
-        String content;
-        StringBuilder builder;
-        if (messageSize > 20) {
-            builder = randomString(messageSize - 20);
-            String counter = String.format("%020d", messageCounter);
-            content = builder.append(counter).toString();
-        }
-        else {
-            content = randomString(messageSize).toString();
-        }
-
+        String content = randomString(messageSize).toString();
 
         protocol.sendMessage(receiverId, queueId, content);
+
+        // do not log the whole content of the message
+        int maxLength = (content.length() > 5)? 5: content.length();
         logger.log((System.currentTimeMillis() - startTime) + "\tSEND_MESSAGE\t" + "(" + queueId + ", "
-                + receiverId + ", " + String.valueOf(messageCounter) + ")");
+                + receiverId + ", " + content.substring(0, maxLength) + ")");
     }
 
     // lists all the queues where a message for the user is waiting and issues a receive for one message on all
@@ -157,7 +149,7 @@ public class ClientRunnable implements Runnable {
         Socket socket = null;
         try {
             socket = new Socket(hostName, portNumber);
-            protocol = new ClientMessagingProtocolImpl(logger, socket, userId, isEndToEndTest);
+            protocol = new ClientMessagingProtocolImpl(socket, userId, isEndToEndTest);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -169,7 +161,6 @@ public class ClientRunnable implements Runnable {
 
         // sending and list-receiving is done alternately
         boolean toSend = true;
-        int messageCounter = 1;
 
         while (true) {
             long elapseTimeInSeconds = (System.currentTimeMillis() - startingTime) / 1000;
@@ -186,8 +177,7 @@ public class ClientRunnable implements Runnable {
 
             try {
                 if (toSend) {
-                    sendMessage(messageCounter, messageSize);
-                    messageCounter++;
+                    sendMessage(messageSize);
                 } else {
                     listAndReceiveMessage();
                 }

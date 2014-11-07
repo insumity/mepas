@@ -26,8 +26,6 @@ public class ClientMessagingProtocolImpl implements MessagingProtocol {
     private DataInputStream dataInputStream;
     private DataOutputStream dataOutputStream;
 
-    private Logger logger;
-
     // for end-to-end testing
     private List<Request> sentRequests;
     private List<Response> receivedResponses;
@@ -42,11 +40,9 @@ public class ClientMessagingProtocolImpl implements MessagingProtocol {
         return receivedResponses;
     }
 
-    public ClientMessagingProtocolImpl(Logger logger, Socket socket, int requestorId, boolean isEndToEndTest) throws IOException {
-        notNull(logger, "Given logger cannot be null!");
+    public ClientMessagingProtocolImpl(Socket socket, int requestorId, boolean isEndToEndTest) throws IOException {
         notNull(socket, "Given socket cannot be null!");
 
-        this.logger = logger;
         this.requestorId = requestorId;
 
         try {
@@ -66,11 +62,8 @@ public class ClientMessagingProtocolImpl implements MessagingProtocol {
         try {
             byte[] data = Helper.serialize(request);
 
-            long startingTime = System.currentTimeMillis();
             dataOutputStream.write(data);
             dataOutputStream.flush();
-//            logger.log((System.currentTimeMillis() - startingTime) + "\t" + "SENDING REQUEST");
-
             if (isEndToEndTest) {
                 sentRequests.add(request);
             }
@@ -79,20 +72,16 @@ public class ClientMessagingProtocolImpl implements MessagingProtocol {
         }
     }
 
-    // perhaps put TODO Class<T> returnType as a parameter of this function
     private <R extends Response> R receiveResponse() {
         try {
 
-            long receiveStartingTime = System.currentTimeMillis();
             int length = dataInputStream.readInt();
-//            logger.log((System.currentTimeMillis() - receiveStartingTime) + "\t" + "READ LENGTH");
             byte[] data = new byte[length];
             byte[] lengthToByteArray = ByteBuffer.allocate(4).putInt(length).array();
             dataInputStream.readFully(data);
-//            logger.log((System.currentTimeMillis() - receiveStartingTime) + "\t" + "RECEIVING DATA");
+
             byte[] concatenated = Helper.concatenate(lengthToByteArray, data);
             Response response = (Response) Helper.deserialize(concatenated);
-//            logger.log((System.currentTimeMillis() - receiveStartingTime) + "\t" + "RECEIVING RESPONSE");
 
             if (isEndToEndTest) {
                 receivedResponses.add(response);
@@ -128,7 +117,7 @@ public class ClientMessagingProtocolImpl implements MessagingProtocol {
     public void sayGoodbye() {
         Request request = new SayGoodbyeRequest(requestorId);
         sendRequest(request);
-        receiveResponse(); // CHECK That response is valid TODO
+        receiveResponse();
     }
 
     @Override

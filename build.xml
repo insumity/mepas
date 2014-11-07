@@ -35,17 +35,6 @@
     </jar>
   </target>
 
-  <target name="run" depends="jar" description="execute the jar file" >
-    <java classname="${main-class}" fork="true">
-      <classpath>
-        <path refid="classpath"/>
-        <path location="${ant.project.name}.jar"/>
-      </classpath>
-      <arg value="${user}"/>
-      <arg value="${password}"/>
-    </java>
-  </target>
-
   <taskdef name="testng" classpathref="classpath"
              classname="org.testng.TestNGAntTask"/>
 

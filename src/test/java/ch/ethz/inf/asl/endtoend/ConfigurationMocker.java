@@ -41,7 +41,7 @@ public class ConfigurationMocker {
         when(mockedConfiguration.getProperty("numberOfClients")).thenReturn(numberOfClients);
         when(mockedConfiguration.getProperty("totalClients")).thenReturn(totalClients);
         when(mockedConfiguration.getProperty("totalQueues")).thenReturn(totalQueues);
-        when(mockedConfiguration.getProperty(messageSize)).thenReturn(messageSize);
+        when(mockedConfiguration.getProperty("messageSize")).thenReturn(messageSize);
 
         when(mockedConfiguration.getProperty("startingId")).thenReturn(startingId);
 

@@ -71,10 +71,16 @@
       <sourceFolder url="file://$MODULE_DIR$/AGAINincreasingNumberOfThreads20Connections/30" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/2k20MWThreads20Connections1MWSmall/1" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/2k20MWThreads20Connections1MWMediumDBxLarge/1" type="java-resource" />
+      <excludeFolder url="file://$MODULE_DIR$/NEW_NEW_increasing_clients" />
+      <excludeFolder url="file://$MODULE_DIR$/NEW_NEW_increasing_number_of_clients" />
+      <excludeFolder url="file://$MODULE_DIR$/NEW_NEW_increasing_number_of_clients/90" />
+      <excludeFolder url="file://$MODULE_DIR$/NEW_NEW_increasing_threads" />
+      <excludeFolder url="file://$MODULE_DIR$/NEW_increasing_both" />
+      <excludeFolder url="file://$MODULE_DIR$/NEW_increasing_both/1" />
       <excludeFolder url="file://$MODULE_DIR$/NEW_increasing_connections_20_threads" />
       <excludeFolder url="file://$MODULE_DIR$/NEW_increasing_message_size" />
-      <excludeFolder url="file://$MODULE_DIR$/NEW_increasing_number_of_Clients" />
       <excludeFolder url="file://$MODULE_DIR$/NEW_increasing_number_of_Clients_from_200" />
+      <excludeFolder url="file://$MODULE_DIR$/NEW_increasing_number_of_clients" />
       <excludeFolder url="file://$MODULE_DIR$/NEW_increasing_threads_20_conns" />
       <excludeFolder url="file://$MODULE_DIR$/traceFor1Hour" />
     </content>

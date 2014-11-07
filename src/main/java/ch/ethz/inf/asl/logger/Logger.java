@@ -6,6 +6,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.logging.*;
 
+import static ch.ethz.inf.asl.utils.Verifier.hasText;
+
 public class Logger {
     private java.util.logging.Logger logger;
 
@@ -16,11 +18,13 @@ public class Logger {
 
     }
 
-    public Logger(String fileName) throws IOException {
-        logger = java.util.logging.Logger.getLogger(fileName);
+    public Logger(String filePath) throws IOException {
+        hasText(filePath, "Given filePath cannot be empty!");
+
+        logger = java.util.logging.Logger.getLogger(filePath);
         logger.setUseParentHandlers(false);
 
-        FileHandler handler = new FileHandler(fileName, true);
+        FileHandler handler = new FileHandler(filePath, true);
         handler.setLevel(Level.INFO);
         handler.setFormatter(new Formatter());
         logger.addHandler(handler);

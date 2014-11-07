@@ -272,7 +272,7 @@ name "tiers"
 \end_layout
 
 \begin_layout Section
-System Design
+System Design and Implementation
 \begin_inset CommandInset label
 LatexCommand label
 name "sec:systemdesign"
@@ -693,6 +693,33 @@ name "protocol"
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+As can be seen from Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "protocol"
+
+\end_inset
+
+ the retrieving messages methods use the 
+\shape italic
+retrieveByArrivalTime
+\shape default
+ parameter.
+ If this parameter is true then the message retrieved is the oldest one.
+ The 
+\shape italic
+readMessage()
+\shape default
+ method is different to its corresponding 
+\shape italic
+receiveMessage()
+\shape default
+ method since it only reads a message from the system but is not actually
+ removing it.
+ 
 \end_layout
 
 \begin_layout Subsection*
@@ -1688,7 +1715,7 @@ What is being logged?
 
 \begin_layout Standard
 The only thingthat is being logged in the database while it is being used
- ithe the CPU, network and memory utilization using the dstat
+ is he the CPU, network and memory utilization using the dstat
 \begin_inset Foot
 status open
 
@@ -1769,6 +1796,7 @@ status open
 \align center
 \begin_inset Graphics
 	filename images/management.png
+	lyxscale 20
 	scale 40
 
 \end_inset
@@ -1916,7 +1944,14 @@ reference "middlewareArchitecture"
 
 \end_inset
 
- we can see the architecture of our middleware.
+ the architecture of our middleware is depicted while in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "workerThread"
+
+\end_inset
+
+ it is shown how a middleware's worker thread operates.
 \end_layout
 
 \begin_layout Standard
@@ -1932,9 +1967,9 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
-	filename images/overviewOfRequest.png
-	lyxscale 15
-	scale 40
+	filename images/middlewareArchitecture.png
+	lyxscale 20
+	scale 21
 
 \end_inset
 
@@ -1957,6 +1992,70 @@ name "middlewareArchitecture"
 
 \end_layout
 
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+As can be seen in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "middlewareArchitecture"
+
+\end_inset
+
+ the worker threads of the middleware interact with the sockets queue, as
+ well as with the connection pool in order to get a connection to the database
+ for issuing their request.
+ Note furthermore that the 
+\begin_inset Quotes eld
+\end_inset
+
+waiting for a connection
+\begin_inset Quotes erd
+\end_inset
+
+ part of the middleware is blocking.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename images/workerThread.png
+	lyxscale 10
+	scale 22
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Worker Thread of the Middleware
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "workerThread"
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Plain Layout
 
 \end_layout
@@ -1967,63 +2066,315 @@ name "middlewareArchitecture"
 \end_layout
 
 \begin_layout Subsubsection*
-Overview of a request being served
+Middleware Implementation
 \end_layout
 
 \begin_layout Standard
-\begin_inset Graphics
-	filename images/workerThread.png
-	lyxscale 30
-	scale 50
-
-\end_inset
-
-
+The implementation of the middleware is located under the package with the
+ same name: 
+\shape italic
+ch.ethz.inf.asl.middleware
+\shape default
+.
+ This package contains the following classes:
 \end_layout
 
-\begin_layout Standard
-MENTION that serializtion is used
+\begin_layout Itemize
+
+\shape italic
+Middleware
+\shape default
+: this is the class that needs to be instantiated to start the middleware.
+ It is constructed using a configuration, what is needed for the configuration
+ is explained later on.
+ By calling its 
+\shape italic
+start()
+\shape default
+ method the middleware initializes the thread pool and waits for upcoming
+ connections from clients.
+ When a client connects his corresponding connection is inserted into the
+ sockets queue.
 \end_layout
 
-\begin_layout Standard
-In the following figure we can see how the implementation of the MessagingProtoc
-ol are used by both the client and the middleware to server their purposes.
+\begin_layout Itemize
+
+\shape italic
+MiddlewareRunnable
+\shape default
+: this class corresponds to a worker thread.
+ It is being constructed with the middleware's sockets queue as well as
+ the connection pool created from the middleware.
 \end_layout
 
-\begin_layout Standard
-General overview on how a 
+\begin_layout Itemize
+
+\series bold
+\shape italic
+InternalSocket
+\series default
+\shape default
+: the middleware socket queue does not actually contain immediate
+\shape italic
+ Socket (javat.net.Socket)
+\shape default
+ objects but actually 
+\shape italic
+InternalSocket
+\shape default
+ objects.
+ An internal socket contains internally a normal Java socket as well as
+ some extra methods.
+ For instance it has a method that returns the last time this socket was
+ worked on (
+\shape italic
+getLastTime()
+\shape default
+), this method is helpful for logging purposes, i.e.
+ we can now know how much a socket was waiting on the sockets queue before
+ it was picked by a worker thread.
+ This class also supports reading data in chunks! Because we use the 
+\shape italic
+available()
+\shape default
+ method as was said previously it is possible to have only 1 byte available
+ per time and in such cases we need somehow to accumulate the read bytes
+ until we have read the full request.
+ 
+\shape italic
+InternalSocket
+\shape default
+ achieves this operation by calling 
+\shape italic
+addData(byte[] readData)
+\shape default
+ every time we read some bytes and we can get the accumulated bytes until
+ now by calling 
+\shape italic
+getObjectData()
+\shape default
+.
+\end_layout
+
+\begin_layout Itemize
+
+\shape italic
+MiddlewareMessagingProtocolImpl
+\shape default
+: this class implements the 
+\shape italic
+MessagingProtocol
+\shape default
+ interface and is the one that actually calls the stored functions.
 \end_layout
 
 \begin_layout Subsubsection*
-Why are we having one Request/Response class per request/response?
+Thread & Connection Pool
 \end_layout
 
 \begin_layout Standard
-It might seem weird having one request and one response class for every
- possible request and response.
- But this was done to make the code more extensible if needed to add new
- requests and for simplifying the work of the middleware.
- As can been seen the Request class contains the abstract execute method
- that receives as a parameter a MessagingProtocol implementation.
- Now when the middleware receives a request, after deserializing it it can
- just do `request.execute(...)` and it knows that the correct execute method
- is going to be called.
- For example `SendMessageRequest` implements execute as following.
- Therefore by taking advantage of polymorphism the Middleware doesn't need
- a long and error-prone list of if-else like this `if request is SendMessage
- do this ...
- else if ...
- `.
+Our own thread and connection pools were implemented, their code can be
+ found under the 
+\shape italic
+ch.ethz.inf.asl.middleware.pool.thread
+\shape default
+ and 
+\shape italic
+ch.ethz.inf.asl.middleware.pool.connection
+\shape default
+ packages in the 
+\shape italic
+ThreadPool
+\shape default
+ and 
+\shape italic
+ConnectionPool
+\shape default
+ classes respectively.
+ Let us see each of these classes:
+\end_layout
+
+\begin_layout Itemize
+
+\shape italic
+ThreadPool
+\shape default
+: this class is instatiated given the number of threads the desired pool
+ needs to have.
+ This class creates the given amount of threads and executes them, every
+ one of those threads waits to receive another thread submitted by the user
+ of the thread pool to execute it.
+ In order to execute a thread we just have to call the pool's 
+\shape italic
+execute(Runnable command)
+\shape default
+ method that just adds the 
+\shape italic
+command
+\shape default
+ in the queue to be executed.
+ The 
+\shape italic
+execute()
+\shape default
+ method might block if the underlying queue is full.
+ The queue of the threads that is used internally by this classes to 
+\begin_inset Quotes eld
+\end_inset
+
+save
+\begin_inset Quotes erd
+\end_inset
+
+ the commands is a Java's 
+\shape italic
+ArrayBlockingQueue
+\shape default
+ queue, that is, a thread-safe bounded queue implemenation that orders elements
  
+\series bold
+FIFO
+\series default
+ (first-in-first-out).
+\end_layout
+
+\begin_layout Itemize
+
+\shape italic
+ConnectionPool
+\shape default
+: this class can be constructed given the maximum amount of connections
+ we need and the login credentials of the database.
+ Afterwards a call to 
+\shape italic
+getConnection()
+\shape default
+ returns a 
+\shape italic
+Connection
+\shape default
+ object.
+ Until the maximum number of connections is reached, new connections are
+ being created on every call to 
+\shape italic
+getConnection()
+\shape default
+, afterwards they are being re-used.
+ The 
+\shape italic
+getConnection()
+\shape default
+ method blocks when there are no more available connections at the moment.
+ When the 
+\shape italic
+close()
+\shape default
+ method is called on a 
+\shape italic
+Connection
+\shape default
+ object returned by 
+\shape italic
+getConnection()
+\shape default
+ the closed connection is not actually closed but just returned back to
+ the pool to be re-used.
+ This was achieved by creating the 
+\shape italic
+InternalConnection
+\shape default
+ inner class tha contains a Java's 
+\shape italic
+Connection
+\shape default
+ object internally and also extends the 
+\shape italic
+Connection
+\shape default
+ class.
+ Whenever a call to an 
+\shape italic
+InternalConnection
+\shape default
+ method is issued the corresponding 
+\shape italic
+Connection
+\shape default
+ object method is called.
+ Except in the case when the 
+\shape italic
+close()
+\shape default
+ method is called in which case the specific connection is returned back
+ to the pool.
+ The connection pool can also be closed by calling its respective 
+\shape italic
+close() 
+\shape default
+method which is going to close all the connections currently existing in
+ the pool, or it can be used in a try-with-resources statement since it
+ implements the 
+\shape italic
+AutoCloseable
+\shape default
+ interface.
+ Internally the connection pool uses 
+\shape italic
+ArrayBlockingQueue
+\shape default
+ similarly to the thread pool implementation.
+ This means that requests to 
+\shape italic
+getConnection()
+\shape default
+ that are waiting are waiting in a FIFO way.
+\end_layout
+
+\begin_layout Subsubsection*
+Serialization of Messages
 \end_layout
 
 \begin_layout Standard
-In order to create one more request for the system, the method has to be
- inserted in the MessagingProtocol and then implement it in ClientMessagingProto
-colImpl and MiddlewareMessagingProtocolImpl and the correct REquest - Response
- classes to be implemented and that is it.
- There is no need to go around and introduce one more enum value or put
- one more `else-if` at some part of the code.
+A question that might arise by reading this report until now might be how
+ are requests and responses formatted before being transmitted between the
+ clients and the middleware.
+ Answer: they are serialized.
+ All the requests and all the responses implement the 
+\shape italic
+Serializable
+\shape default
+ interface, so they can easily be serialized to a 
+\shape italic
+byte
+\shape default
+ array.
+ This array's length is calculated and the created length is transformed
+ to bytes as well, to exactly 4 bytes (1 
+\shape italic
+int
+\shape default
+).
+ The transformed length is concatenated with the serialized byte array,
+ with the length being in the front.
+ This concatanted array is what is being transmitted between the client
+ and the middleware.
+ The length is added to so when the middleware starts reading data from
+ the client it can read the length of the upcoming object (look 
+\shape italic
+InternalSocket
+\shape default
+) and know when to stop reading.
+ When it reads the whole data, it removes the length part and deserializes
+ the remaining byte array to get the 
+\shape italic
+Request
+\shape default
+ object.
+ The middleware formats the response in the exact same way before sending
+ it to the client.
+ Although this is not necessary for the client since the client blocks until
+ he reads the response, it was done for consistency reasons so the clients
+ and the middlewares send and receive in the same way.
 \end_layout
 
 \begin_layout Subsubsection*
@@ -2031,7 +2382,14 @@ Where do requests get queued up?
 \end_layout
 
 \begin_layout Standard
-FIFO FIFO FIFO
+From the above description of the system it is easy to see that there are
+ two main parts of the system were a request could stuck waiting.
+ The one is in the sockets queue waiting until its socket is being worked
+ on by a worker thread.
+ The second part is waiting for the connection, after getting the request
+ the middleware might have to wait for others worker threads to finish their
+ database requests until it is able to proceed with its own.
+ Until then it waits in the connection queue of the connection pool.
 \end_layout
 
 \begin_layout Subsubsection*
@@ -2039,7 +2397,261 @@ What is being logged?
 \end_layout
 
 \begin_layout Standard
-DB request and the type of the request
+Every worker thread in the middleware logs its own data.
+ This was done so they worker threads do not contend with each other while
+ logging.
+ Afterwards the logs can be merged and be sorted by time to be analyzed.
+\end_layout
+
+\begin_layout Standard
+A snippet of some middleware logs can been seen in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "middlewareLog"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Box Boxed
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+status open
+
+\begin_layout Plain Layout
+16045 5 WAITING THREAD 
+\end_layout
+
+\begin_layout Plain Layout
+16167 25 # OF ENTERS 
+\end_layout
+
+\begin_layout Plain Layout
+16167 1 # TO READ 
+\end_layout
+
+\begin_layout Plain Layout
+16340 110 GOT CONNECTION 
+\end_layout
+
+\begin_layout Plain Layout
+16365 25 DB REQUEST SEND_MESSAGE 
+\end_layout
+
+\begin_layout Plain Layout
+16366 321 READING INSIDE 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Middleware Log Snippet
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "middlewareLog"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+In the snippet of Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "middlewareLog"
+
+\end_inset
+
+ the left column corresponds to the time in milliseconds (ms) since when
+ this worker thread starting working.
+ So, we can infer that this snippet was taken from the 16th second of the
+ log.
+ All the time values in the snippet are counted in milliseconds.
+ We can see 6 types of logs in the snippet, those are all the possible types
+ that are logged.
+ Let us see each one of them:
+\end_layout
+
+\begin_layout Enumerate
+\begin_inset Quotes eld
+\end_inset
+
+WAITING THREAD
+\begin_inset Quotes erd
+\end_inset
+
+: corresponds to the time the connection was waiting until it got picked
+ up by a worker thread, in the snippet this was 5ms.
+\end_layout
+
+\begin_layout Enumerate
+\begin_inset Quotes eld
+\end_inset
+
+# OF ENTERS
+\begin_inset Quotes erd
+\end_inset
+
+: corresponds to the times this socket has been picked by a worker thread
+ but at the time did not contain any data.
+ In this case the specific socket has been picked up by a worker thread
+ 25 times and all of them except the last one the socket did not contain
+ any data for reading.
+\end_layout
+
+\begin_layout Enumerate
+\begin_inset Quotes eld
+\end_inset
+
+# TO READ
+\begin_inset Quotes erd
+\end_inset
+
+: is the times the socket had been picked by a worker thread (after it started
+ having data) in order for it to read its whole request.
+ As it was said it is possible to have very few bytes available every time
+ a socket contains data, which means those bytes are read and then the socket
+ is returned back to its queue.
+ This number merely shows how many times the socket entered the queue from
+ the moment it had data for reading until all its data (one request) were
+ read.
+ In the above snippet the number is 1 which means the moment the whole request
+ was read at once (all the data were there) by the worker thread.
+\end_layout
+
+\begin_layout Enumerate
+\begin_inset Quotes eld
+\end_inset
+
+GOT CONNECTION
+\begin_inset Quotes erd
+\end_inset
+
+: corresponds to the time it took a thread to get a connection from the
+ connection pool.
+ In the snippet case this is 110ms.
+\end_layout
+
+\begin_layout Enumerate
+\begin_inset Quotes eld
+\end_inset
+
+DB_REQUEST
+\begin_inset Quotes erd
+\end_inset
+
+: corresponds to the time it took for a database request.
+ In the snippet's case it took 25ms for a 
+\begin_inset Quotes eld
+\end_inset
+
+SEND_MESSAGE
+\begin_inset Quotes erd
+\end_inset
+
+ request.
+ Request could also be 
+\begin_inset Quotes eld
+\end_inset
+
+RECEIVE_MESSAGE
+\begin_inset Quotes erd
+\end_inset
+
+ or 
+\begin_inset Quotes eld
+\end_inset
+
+LIST_QUEUES
+\begin_inset Quotes erd
+\end_inset
+
+.
+ The value of this log actually also contains the time for request to be
+ sent to the database, executed in the database and then sent back to the
+ middleware.
+ 
+\end_layout
+
+\begin_layout Enumerate
+\begin_inset Quotes eld
+\end_inset
+
+READING INSIDE
+\begin_inset Quotes erd
+\end_inset
+
+: corresponds to the time it took the thread to finish its job from the
+ beginning when it picked a socket that had data till the end.
+ In the snippet's case this is 321ms.
+ 
+\end_layout
+
+\begin_layout Standard
+Obviously it should be the case that the time of time(
+\begin_inset Quotes eld
+\end_inset
+
+READING INSIDE
+\begin_inset Quotes erd
+\end_inset
+
+) >= time(
+\begin_inset Quotes eld
+\end_inset
+
+GOT CONNECTION
+\begin_inset Quotes erd
+\end_inset
+
+) + time(
+\begin_inset Quotes eld
+\end_inset
+
+DB REQUEST
+\begin_inset Quotes erd
+\end_inset
+
+).
+ 
+\end_layout
+
+\begin_layout Standard
+Similarly to the database the CPU, memory and network utilization are logged.
+ 
 \end_layout
 
 \begin_layout Subsubsection*
@@ -2047,11 +2659,159 @@ Starting the Middleware
 \end_layout
 
 \begin_layout Standard
-Many identical middlewares can be started
+A middleware can be started by executing the 
+\shape italic
+main() 
+\shape default
+method of the 
+\shape italic
+Main
+\shape default
+ class giving two program arguments, the string 
+\begin_inset Quotes eld
+\end_inset
+
+middleware
+\begin_inset Quotes erd
+\end_inset
+
+ and the file path contatining the configuration of the middleware.
+ For example assuming we have an executable JAR file named 
+\begin_inset Quotes eld
+\end_inset
+
+mepas.jar
+\begin_inset Quotes erd
+\end_inset
+
+, then we can start the middleware by doing 
+\begin_inset Quotes eld
+\end_inset
+
+java -jar mepas.jar middleware middleware.properties
+\begin_inset Quotes erd
+\end_inset
+
+ where the properties file is similar to the one shown in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "mwPropertiesFile"
+
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Standard
-TAK ABOUT Implementing thread pool and connection pool bymyselfss
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Box Boxed
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+status open
+
+\begin_layout Plain Layout
+databaseHost=172.31.12.119
+\end_layout
+
+\begin_layout Plain Layout
+databasePortNumber=5432
+\end_layout
+
+\begin_layout Plain Layout
+databaseName=mepas 
+\end_layout
+
+\begin_layout Plain Layout
+databaseUsername=ubuntu 
+\end_layout
+
+\begin_layout Plain Layout
+databasePassword=mepas$1$2$3$ 
+\end_layout
+
+\begin_layout Plain Layout
+threadPoolSize=10 
+\end_layout
+
+\begin_layout Plain Layout
+connectionPoolSize=20 
+\end_layout
+
+\begin_layout Plain Layout
+middlewarePortNumber=6789
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Middleware Properties File
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "mwPropertiesFile"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Most of the properties in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "mwPropertiesFile"
+
+\end_inset
+
+ are self explanatory, obviously the middleware needs the database credentials
+ in order to start as well as the thread pool and connection pool sizes.
+ The 
+\begin_inset Quotes eld
+\end_inset
+
+middlewarePortNumber
+\begin_inset Quotes erd
+\end_inset
+
+ corresponds to the port where the middleware is going to accept connections
+ from.
 \end_layout
 
 \begin_layout Subsubsection*
@@ -2059,7 +2819,40 @@ Stopping the Middleware
 \end_layout
 
 \begin_layout Standard
-GRACEFUL termination
+The 
+\shape italic
+Middleware
+\shape default
+ creates a thread when started based on the 
+\shape italic
+MiddlewareStopper
+\shape default
+ inner class that is always running on the background.
+ This thread blocks and waits in the standard input for a 
+\begin_inset Quotes eld
+\end_inset
+
+STOP
+\begin_inset Quotes erd
+\end_inset
+
+ string.
+ When this string is entered the middleware is gracefully stopped by stopping
+ the worker threads and by closing the connection pool and middleware's
+ 
+\shape italic
+ServerSocket
+\shape default
+.
+ This way of stopping the middleware is useful for the experimental setup
+ as will be explained in Section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:experimentalsetup"
+
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Subsection*
@@ -2067,39 +2860,556 @@ Clients
 \end_layout
 
 \begin_layout Standard
-Every client is being executed as a thread (of
+The implementation of the clients can be found in the 
 \shape italic
- ClientRunnable
+ch.ethz.inf.asl.client
 \shape default
-).
+ package.
+ It contains the following three classes:
+\end_layout
+
+\begin_layout Itemize
+
+\shape italic
+Client
+\shape default
+: is the class that needs to be instantiated to start the clients.
+ Every client corresponds to a thread that is being executed, a 
+\shape italic
+ClientRunnable
+\shape default
+ thread.
+\end_layout
+
+\begin_layout Itemize
+
+\shape italic
+ClientRunnable
+\shape default
+: corresponds to a client.
+ The way a client communicates with the middleware is implemented in this
+ class.
+\end_layout
+
+\begin_layout Itemize
+
+\shape italic
+ClientMessagingProtocolImpl
+\shape default
+: this class implements the 
+\shape italic
+MessagingProtocol
+\shape default
+ interface.
+ It is responsible for serializing the requests before sent, deserializing
+ the responses when they are received and actually sending and receiving
+ the requests and the responses to the middleware.
+\end_layout
+
+\begin_layout Subsubsection*
+Workload
+\end_layout
+
+\begin_layout Standard
+While thinking of the workload of the clients we wanted to have a stable
+ workload and one that does not arbitrarily increases the size of the 
+\shape italic
+message
+\shape default
+ table in the database.
+ So we came up with the following workload, where every client executes
+ what is shown in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "workload"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename images/clientWorkload.png
+	lyxscale 10
+	scale 25
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Client's Workload
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "workload"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+The clients have no thinking time, they just send requests to the middleware
+ as fast as possible.
+ Also in every iteration of a loop a client sends one message, list the
+ queues once and might call receive message multiple times for diferrent
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+This is because of the way the 
+\shape italic
+list_queues
+\shape default
+ stored function is implemented.
+ It returns distinct queue ids.
+\end_layout
+
+\end_inset
+
+ queues.
+ This way we noticed that the number of messages in the database was always
+ in the around a hundred.
+ This workload also has the benefit of using three different types of requests.
+ Also notice that our clients do not use the 
+\shape italic
+sayHello()
+\shape default
+, 
+\shape italic
+createQueue()
+\shape default
+ or 
+\shape italic
+deleteQueue()
+\shape default
+ methods.
+ This was done to simplify our experiments.
+ Since the 
+\shape italic
+message
+\shape default
+ table has foreign keys to the 
+\shape italic
+client
+\shape default
+ and 
+\shape italic
+queue
+\shape default
+ tables it was possible when a client was trying to send a message to another
+ that the other client has not yet been created.
+ In such a case an error is logged and a failed response message is returned
+ to the client.
+ For this reason we chose to avoid that types of requests.
+\end_layout
+
+\begin_layout Standard
+Initially clients were not sending random strings as content to each other
+ but instead where sending a counter that was increased after every send.
+ This was helpful for verifying that the system was operating correctly.
+ This counter was replaced with random string during the 
+\begin_inset Quotes eld
+\end_inset
+
+increasing the message size
+\begin_inset Quotes erd
+\end_inset
+
+ experiment which is presented later in this report.
+\end_layout
+
+\begin_layout Subsubsection*
+What is being logged?
+\end_layout
+
+\begin_layout Standard
+As with the database and the middleware, clients also log the CPU, network
+ and memory utilization using dstat.
  
 \end_layout
 
 \begin_layout Standard
-As was said in the previous section, clients use the `MessagingProtocol`
- .
- Clients block when waiting for a response from teh middleware.
- How do they clients operate?
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Box Boxed
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+status open
+
+\begin_layout Plain Layout
+27581 28 SEND_MESSAGE (88, 37, HW8Z2) 
+\end_layout
+
+\begin_layout Plain Layout
+27604 23 LIST_QUEUES 
+\end_layout
+
+\begin_layout Plain Layout
+27629 25 RECEIVE_MESSAGE (49, 40, 1FJFY) 
+\end_layout
+
+\begin_layout Plain Layout
+27653 24 RECEIVE_MESSAGE (68, 78, ITCI6) 
+\end_layout
+
+\begin_layout Plain Layout
+27679 26 RECEIVE_MESSAGE (71, 85, 9XL3S)
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Client Log Snippet
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "clientLog"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
-How do check the system is correct?
-\end_layout
+Every client thread logs for itself and at the end the logs are combined.
+ This was done so there is no contention between the clients while logging.
+ In Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "clientLog"
 
-\begin_layout Standard
-Talk about graceful termination
-\end_layout
+\end_inset
 
-\begin_layout Subsubsection*
-What is being logged? 
+ we can see a snippet on what a client logs.
+ As can be seen on the left column the time since the logging started is
+ logged similarly to the middleware logs.
+ The second column contains the time in milliseconds it took for the given
+ request to be served.
+ This time includes the time for the request to be sent in the middleware,
+ served by the middleware and sent back to the client.
+ For example it took 23ms for the listing of the queues in the above log.
+ The parentheses next to 
+\begin_inset Quotes eld
+\end_inset
+
+SEND_MESSSAGE
+\begin_inset Quotes erd
+\end_inset
+
+ and 
+\begin_inset Quotes eld
+\end_inset
+
+RECEIVE_MESSAGE
+\begin_inset Quotes erd
+\end_inset
+
+ correspond to (queueId, senderId, first five characters of the content)
+ and (queueId, receiverId, first five characters of the content) respectively.
+ Only the first five characters of the content are used to reduce the generated
+ logs size.
 \end_layout
 
 \begin_layout Subsubsection*
 Starting the Clients
 \end_layout
 
+\begin_layout Standard
+Similarly to the middleware the clients can be started by executing the
+ 
+\shape italic
+main()
+\shape default
+ method of the 
+\shape italic
+Main
+\shape default
+ class.
+ Two arguments need to provided, the first one should always be 
+\begin_inset Quotes eld
+\end_inset
+
+client
+\begin_inset Quotes erd
+\end_inset
+
+ while the second one corresponds to the file path of the configuration
+ of the clients.
+ Such a configuration can been seen in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "clientProperties"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Box Boxed
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+status open
+
+\begin_layout Plain Layout
+middlewareHost=172.31.8.29 
+\end_layout
+
+\begin_layout Plain Layout
+middlewarePortNumber=6789 
+\end_layout
+
+\begin_layout Plain Layout
+numberOfClients=50 
+\end_layout
+
+\begin_layout Plain Layout
+totalClients=50 
+\end_layout
+
+\begin_layout Plain Layout
+totalQueues=50 
+\end_layout
+
+\begin_layout Plain Layout
+startingId=1
+\end_layout
+
+\begin_layout Plain Layout
+messageSize=20
+\end_layout
+
+\begin_layout Plain Layout
+runningTimeInSeconds=600
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Client Properties File
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "clientProperties"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Obviously the client needs to be aware of where the middleware resides,
+ therefore 
+\begin_inset Quotes eld
+\end_inset
+
+middlewareHost
+\begin_inset Quotes erd
+\end_inset
+
+ and 
+\begin_inset Quotes eld
+\end_inset
+
+middlewarePortNumber
+\begin_inset Quotes erd
+\end_inset
+
+ exist in the client configuration.
+ The 
+\begin_inset Quotes eld
+\end_inset
+
+numberOfClients
+\begin_inset Quotes erd
+\end_inset
+
+ corresponds to the 
+\begin_inset Quotes eld
+\end_inset
+
+numberOfClients
+\begin_inset Quotes erd
+\end_inset
+
+ (number of threads) that are going to be executed by these
+\shape italic
+ Client
+\shape default
+ execution while 
+\begin_inset Quotes eld
+\end_inset
+
+totalClients
+\begin_inset Quotes erd
+\end_inset
+
+ are the total clients currently in the system, i.e.
+ where a client can send a message.
+ Since many 
+\shape italic
+Client
+\shape default
+'s executions could possibly be running from different machines the 
+\begin_inset Quotes eld
+\end_inset
+
+startingId
+\begin_inset Quotes erd
+\end_inset
+
+ is used so a specific 
+\shape italic
+Client
+\shape default
+ execution knows how to assing ids to its clients.
+ The 
+\begin_inset Quotes eld
+\end_inset
+
+messageSize
+\begin_inset Quotes erd
+\end_inset
+
+ corresponds to the length of the content of a message that is being sent
+ in characters.
+ After 
+\begin_inset Quotes eld
+\end_inset
+
+runningTimeInSeconds
+\begin_inset Quotes erd
+\end_inset
+
+ the clients stop working and leave the system.
+\end_layout
+
 \begin_layout Subsection*
 General Remarks 
+\end_layout
+
+\begin_layout Subsubsection*
+Building with Ant
+\end_layout
+
+\begin_layout Standard
+Ant was used to build the project.
+ Ant's build file is 
+\family typewriter
+build.xml
+\family default
+ and can be found in the root directory of the project.
+ It contains the following targes:
+\end_layout
+
+\begin_layout Itemize
+compile: which just builds the system.
+\end_layout
+
+\begin_layout Itemize
+jar: creates the executable JAR.
+\end_layout
+
+\begin_layout Itemize
+test: runs all the tests of the system.
+ Beware that all the tests might take some time to get executed and also
+ a database needs to exist in the system for some of the tests to successfully
+ get executed.
+\end_layout
+
+\begin_layout Itemize
+clean: removes the generated class files and the executable JAR.
 \end_layout
 
 \begin_layout Standard
@@ -2115,7 +3425,214 @@ Optional
 \shape italic
 close()
 \shape default
- method is called.
+ method is called, even in case of an exception.
+\end_layout
+
+\begin_layout Subsubsection*
+One Request and One Response Class Per Request Type
+\end_layout
+
+\begin_layout Standard
+For every type of request the client can send to the middleware there exists
+ a respective class for this request.
+ And for every specific request there is a corresponding response class.
+ The related to requests and responses classes can be found under the 
+\shape italic
+ch.ethz.inf.asl.common.request
+\shape default
+ and 
+\shape italic
+ch.ethz.inf.asl.common.response
+\shape default
+ packages.
+ In Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "requestAndResponse"
+
+\end_inset
+
+ we can see the 
+\shape italic
+Request
+\shape default
+ and 
+\shape italic
+Response
+\shape default
+ abstract classes with some of their basic methods.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename images/requestAndResponse.png
+	lyxscale 15
+	scale 21
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Request and Response Classes
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "requestAndResponse"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The classes that extend 
+\shape italic
+Request
+\shape default
+ are all of the format
+\shape italic
+ xRequest
+\shape default
+ where 
+\shape italic
+x
+\shape default
+ is the type of request.
+ Similarly the classes that extend the 
+\shape italic
+Response
+\shape default
+ class are all of the format 
+\shape italic
+xResponse
+\shape default
+ where 
+\shape italic
+x
+\shape default
+ is the type of request related with this response.
+ It might seem weird having one request and one response class for every
+ possible request and response.
+ But this was done to make the code extensible in case it is needed to add
+ new types of requests.
+ It was also done in order to simplify the implementation of the middleware.
+ The implementation can be simplified because in order to create one more
+ request for the system, the method has to be inserted in the 
+\shape italic
+MessagingProtocol
+\shape default
+ and then be implemented in both the 
+\shape italic
+ClientMessagingProtocolImpl
+\shape default
+ and 
+\shape italic
+MiddlewareMessagingProtocolImpl
+\shape default
+.
+ Also one subclass of 
+\shape italic
+Request
+\shape default
+ and one of 
+\shape italic
+Response
+\shape default
+ have to be be implemented.
+ There is no need to go around and introduce one more enum value or one
+ more `else-if` statement at some part of the code
+\end_layout
+
+\begin_layout Standard
+The way the described flexibility is achieved is because of the 
+\shape italic
+execute()
+\shape default
+ method.
+ As can been seen the 
+\shape italic
+Request
+\shape default
+ class contains the abstract 
+\shape italic
+execute()
+\shape default
+ method that receives as a parameter a 
+\shape italic
+MessagingProtocol
+\shape default
+.
+ This method is being overriden by all the subclasses of 
+\shape italic
+Request
+\shape default
+ and every one calls its correspond protocol method.
+ For example the 
+\shape italic
+execute()
+\shape default
+ method in the 
+\shape italic
+SendMessageRequest
+\shape default
+ does 
+\shape italic
+protocol.sendMessage(...) 
+\shape default
+while the 
+\shape italic
+execute()
+\shape default
+ method in 
+\shape italic
+ListQueuesRequest
+\shape default
+ does 
+\shape italic
+protocol.listQueues()
+\shape default
+.
+ Now when the middleware receives a request, after deserializing it it can
+ just issue 
+\shape italic
+request.execute(...)
+\shape default
+ and the corresponding protocol method is going to be called.
+ Therefore by taking advantage of polymorphism the middleware does not need
+ a long and error-prone list of 
+\begin_inset Quotes eld
+\end_inset
+
+if-else-...
+\begin_inset Quotes erd
+\end_inset
+
+ statements like this: `if request is of type send message do this ...
+ else if request is of list queues do this ...
+ `.
+ 
 \end_layout
 
 \begin_layout Section
@@ -2132,7 +3649,7 @@ name "sec:testing"
 \begin_layout Standard
 Correctness of our system was of foremost importance, therefore testing
  played an important role while developing the system.
- The system has been tested exhaustively (TODO) with unit tests.
+ Parts of the system have been tested with unit tests.
  Although testing the system took its fair amount of time we do believe
  it was worth it since it helped us find bugs while still working locally
  with the system that if they appeared when running experiments would be
@@ -2221,13 +3738,13 @@ SQLFunctionsDatabaseTest
 \shape default
  class and actually check that the stored functions actually do what they
  are supposed to do.
- For testing this the database is populated with some fake data taken from
+ For testing them the database is populated with some fake data taken from
  the file 
 \family typewriter
 src/test/resouces/populate_database.sql
 \family default
- and the stored functions are applied to this database, after the stored
- functions are applied we verify the expected results.
+ and the stored functions are applied to this populated database, after
+ the stored functions are applied we verify the expected results.
 \end_layout
 
 \begin_layout Standard
@@ -2240,6 +3757,10 @@ SQLFunctionsConcurrentCallsDatabaseTest
  This test actually creates many concurrent readers that issue receive message
  requests and at the end it is verified that no message was read more than
  once and that all messages were read.
+\end_layout
+
+\begin_layout Standard
+TODO mention other isolation level
 \end_layout
 
 \begin_layout Subsection*
@@ -2299,9 +3820,9 @@ getAllRequests
 Middleware
 \shape default
  class.
- This was done halfheartedly since it confuses tests with the code, but
- at the end this test was useful since after every change in the system
- by running this test we could be assured that everything was still in place.
+ This was done halfheartedly since it mixes tests with the code, but at
+ the end this test was useful since after every change in the system by
+ running this test we could be assured that everything was still in place.
 \end_layout
 
 \begin_layout Subsubsection*
@@ -2313,6 +3834,15 @@ This test uses one middleware and 2 clients that send and receive specific
  messages with each other.
  It is verified that every client actually receives the messages sent by
  the other and with the expected content.
+ In order to so do it uses the 
+\shape italic
+ClientMessagingProtocolImpl
+\shape default
+ class immediately and not the 
+\shape italic
+Client
+\shape default
+ class.
 \end_layout
 
 \begin_layout Subsection*
@@ -2320,21 +3850,83 @@ Encountered Bugs
 \end_layout
 
 \begin_layout Standard
-Verification errors while debugging ..
- forgotten notNull Found the InstantiationException in the newInstance()
- thing.
- Because I had requests with not a nullable Constructor.
- (This was found while mocking to get the messages with failed response).
+Here we present a view of the bugs we found by running the created tests.
 \end_layout
 
-\begin_layout Standard
-While writing the endtoend test I realized I was immediately closing the
- connection to the clent from the middlware when the client was saying goodbye
- so the user was waiting forever for a response from the middleware.
- I though it was the middleware that wasn't finishing in the test so I Started
- making all the thread daemon threads to see what will happen.
- Found bugs in equals methods ...
- 
+\begin_layout Itemize
+Inside a stored function we had 
+\shape italic
+RETURN QUERY SELECT id INTO received_message_id ...
+
+\shape default
+ and although this was not raising any problems with PostgresSQL it was
+ throwing this error message when tested: 
+\begin_inset Quotes eld
+\end_inset
+
+PSQLException ERROR: cannot open SELECT query as cursor
+\begin_inset Quotes erd
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Itemize
+In the 
+\shape italic
+receive_message_from_sender
+\shape default
+ stored function we had 
+\shape italic
+SELECT * FROM WHERE sender_id = p_sender_id AND receiver_id = p_requesting_user_
+id OR receiver_id IS NULL
+\shape default
+.
+ Our tests were failing and we realized we were missing a paranthesis, it
+ should be 
+\shape italic
+...
+ sender_id = p_sender_id AND (receiver_id = p_requesting_user_id OR receiver_id
+ IS NULL)
+\shape default
+ instead.
+\end_layout
+
+\begin_layout Itemize
+Quite some 
+\shape italic
+NullPointerException
+\shape default
+.
+ One of them was in the 
+\shape italic
+Message
+\shape default
+'s
+\shape italic
+ equals()
+\shape default
+ method we had 
+\shape italic
+this.receiverId.equals(other.receiverId)
+\shape default
+ and 
+\shape italic
+receiverId
+\shape default
+ could possibly be 
+\shape italic
+NULL
+\shape default
+.
+\end_layout
+
+\begin_layout Itemize
+As was said previously the idea of having the clients create themselves
+ and the queues intiailly lead to problems because a client could have tried
+ to send a message to a client that is not in the syste yet.
+ This was immediately noticed after implementing this functionality and
+ running the end-to-end test.
 \end_layout
 
 \begin_layout Subsection*
@@ -2342,35 +3934,227 @@ General Encountered Problems
 \end_layout
 
 \begin_layout Standard
-Problems that werent bugs
+Unfortunately not all bugs were found by the tests.
+ The most sneaky one was the following that allowed clients to receive the
+ exact same message.
+ This was done because the 
+\shape italic
+receive_message
+\shape default
+ stored function was like the one shown in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "buggyReceive"
+
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Standard
-When running experiment increase number of message I got the following error
- from the client logs:
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Box Boxed
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+status open
+
+\begin_layout Plain Layout
+
+\shape italic
+SELECT id INTO received_message_id FROM message WHERE queue_id = p_queue_id
+ ...;
+\end_layout
+
+\begin_layout Plain Layout
+
+\shape italic
+RETURN QUERY SELECT * FROM message WHERE queue_id = p_queue_id AND ...;
+\end_layout
+
+\begin_layout Plain Layout
+
+\shape italic
+DELETE FROM message where id = received_message_id;
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Buggy 
+\shape italic
+receive_message
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "buggyReceive"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
-ch.ethz.inf.asl.exceptions.MessagingProtocolException: failed to send messageERROR:
- could not extend file "base/16389/16427.6": No space left on device Hint:
- Check free disk space.
- Where: SQL statement "INSERT INTO message (sender_id, receiver_id, queue_id,
- arrival_time, message) VALUES (p_sender_id, p_receiver_id, p_queue_id,
- p_arrival_time, p_message)" PL/pgSQL function send_message(integer,integer,inte
-ger,timestamp without time zone,text) line 3 at SQL statement at ch.ethz.inf.asl.cli
-ent.ClientMessagingProtocolImpl.receiveResponse(Unknown Source) at ch.ethz.inf.asl.cli
-ent.ClientMessagingProtocolImpl.sendMessage(Unknown Source) at ch.ethz.inf.asl.client.C
-lientRunnable.sendMessage(Unknown Source) at ch.ethz.inf.asl.client.ClientRunnable.run(
-Unknown Source) at java.lang.Thread.run(Thread.java:745) ubuntu@ip-172-31-14-163:~/l
-ogs$
+The problem with the shown receive is that a message is found and selected
+ but then when returning it with 
+\shape italic
+RETURN QUERY SELECT * FROM
+\shape default
+ another message could possibly be returned.
+ So although the 
+\shape italic
+FOR UPDATE
+\shape default
+ explained earlier in the report was protecting us from two clients deleting
+ the same message, it was not protecting us from two clients returning the
+ same message.
+ This bug was solved by just changing the return statement to: 
+\shape italic
+RETURN QUERY SELECT * FROM message WHERE id = received_message_id
+\shape default
+.
+ The afforementioned bug was not found using tests but was noticed through
+ the use of counter in the content of the messages, it was quickly noticed
+ that different clients received messages with the exact same counter.
 \end_layout
 
 \begin_layout Standard
-increased size of database
+Another bug, not so important as the previous, that was also not found by
+ tests but noticed while working with the system was not closing all the
+ connections when closing the connection pool.
+ This was because the connection pool closing method was implemented as
+ shown in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "buggyClose"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Box Boxed
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+status open
+
+\begin_layout Plain Layout
+
+\shape italic
+for (int i = 0; i < connections.size(); ++i) { 
+\end_layout
+
+\begin_layout Plain Layout
+
+\shape italic
+InternalConnection connection; 
+\end_layout
+
+\begin_layout Plain Layout
+
+\shape italic
+try { connection = connections.take();
+\end_layout
+
+\begin_layout Plain Layout
+...
+\end_layout
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Buggy 
+\shape italic
+close()
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "buggyClose"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The problem with the implementation of Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "buggyClose"
+
+\end_inset
+
+ was that the 
+\shape italic
+connection.size()
+\shape default
+ was returning different size in every iteration of the loop.
 \end_layout
 
 \begin_layout Section
-Experimental Setup
+Experimental Setup and Experiments Analysis
 \begin_inset CommandInset label
 LatexCommand label
 name "sec:experimentalsetup"
@@ -2378,6 +4162,208 @@ name "sec:experimentalsetup"
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+The experimental setup was solely done using Python together with these
+ packages: boto
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+https://github.com/boto/boto
+\end_layout
+
+\end_inset
+
+ for interacting programmatically Amazon Elastic Compute Cloud (EC2), pexpect
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+https://github.com/pexpect/pexpect
+\end_layout
+
+\end_inset
+
+ for connecting to the EC2 instances used in the experiment and executing
+ the appropriate programs, psycopg2
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+http://initd.org/psycopg/
+\end_layout
+
+\end_inset
+
+ for connecting to the PostgreSQL database and getting it ready for our
+ experiments.
+\end_layout
+
+\begin_layout Standard
+INFORM: only once a middleware is used per instance
+\end_layout
+
+\begin_layout Subsection*
+Setup
+\end_layout
+
+\begin_layout Standard
+Before we presenting the exact details on our experimental setup we present
+ in Figure the general overview of how an experiment is conducted.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename images/experimentArchitecture.png
+	lyxscale 10
+	scale 23
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Flow of an Experiment
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+All the experiments were executed in the Amazon Elastic Compute Cloud (EC2).
+ 
+\end_layout
+
+\begin_layout Standard
+These are the most important classes for the experiment setup residing in
+ the 
+\family typewriter
+experiments/code
+\family default
+ directory.
+\end_layout
+
+\begin_layout Itemize
+
+\shape italic
+EC2Instantiator
+\shape default
+: contains methods to launch new instances, as well as terminate instances.
+ Specifically it can create instances that can be used by clients or by
+ a middleware as well as instances that are going to be used for databases.
+\end_layout
+
+\begin_layout Itemize
+
+\shape italic
+Client
+\shape default
+: contains methods to start clients in a client instance as well as a method
+ to inform us on whether the clients have finished.
+\end_layout
+
+\begin_layout Itemize
+
+\shape italic
+Middleware
+\shape default
+: has methods to start the middleware in an instance as well as a method
+ to gracefully stop the middleware.
+\end_layout
+
+\begin_layout Itemize
+
+\shape italic
+Database
+\shape default
+: contains methods that are need to set up the database in a correct state
+ before the beginning of an experiment.
+\end_layout
+
+\begin_layout Standard
+The experimental code can be found in 
+\family typewriter
+ExperimentRunner.py
+\family default
+, there the code exists.
+\end_layout
+
+\begin_layout Standard
+In order for the experiment to run notice that the following have to been
+ done in the machine doing the experiments:
+\end_layout
+
+\begin_layout Itemize
+The private key used to connect to the EC2 instances needs to be added in
+ the 
+\family typewriter
+.ssh
+\family default
+ directory.
+ This can be done issuing this command 
+\shape italic
+ssh-add privateKeyFile.pem
+\shape default
+.
+ It is much easier to ssh a machine when the SSH key has been added since
+ doing 
+\shape italic
+ssh ubuntu@host
+\shape default
+ is enough to connect to the instance.
+\end_layout
+
+\begin_layout Itemize
+Strict host key checking needs to be disabled
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+http://askubuntu.com/questions/87449/how-to-disable-strict-host-key-checking-in-s
+sh
+\end_layout
+
+\end_inset
+
+.
+ By doing so a user does not have to manually press 
+\begin_inset Quotes eld
+\end_inset
+
+Yes
+\begin_inset Quotes erd
+\end_inset
+
+ when a host is unknown.
+\end_layout
+
+\begin_layout Itemize
+The experiment runner reads the database's password
 \end_layout
 
 \begin_layout Subsubsection*
@@ -2398,137 +4384,11 @@ experimentRunner (careful to have enough space for this instance 200GB just
 \end_layout
 
 \begin_layout Standard
--> put key ssh-add pemas.pem for all the other instances 
-\end_layout
-
-\begin_layout Standard
 -> create .pgpass file, install postgresql ?? is needed
 \end_layout
 
 \begin_layout Standard
--> git clone (install git)
-\end_layout
-
-\begin_layout Standard
-install python pip
-\end_layout
-
-\begin_layout Standard
-Install udo apt-get install libpq-dev and apt-get install python-dev because
- it's needed to udo pip install psycopg2
-\end_layout
-
-\begin_layout Standard
-do sudo pip install pexpect
-\end_layout
-
-\begin_layout Standard
-also 
-\end_layout
-
-\begin_layout Standard
-also yoy have to disable ssh checking ..
- http://askubuntu.com/questions/87449/how-to-disable-strict-host-key-checking-in-
-ssh
-\end_layout
-
-\begin_layout Standard
-also do : You'll need to use eval `ssh-agent -s` to start the agent, ssh-add
- to enter your passphrase for your private key, and then ssh-agent -k to
- kill the agent when you're done.
- It even comes with a timeout, ssh-add -t <timeout>, where <timeout> can
- be something like Xh for X hours, Xm for X minutes, and so on.[NEVER stop
- the ssh-agent]
-\end_layout
-
-\begin_layout Standard
-so the xperiments can run without the password being asked every time (http://st
-ackoverflow.com/questions/17864306/how-to-make-git-not-ask-me-for-password-when-a
-ccessing-remote-repositories)
-\end_layout
-
-\begin_layout Standard
-Run experiments from there and go to sleep
-\end_layout
-
-\begin_layout Standard
-Never more than one middleware per instance
-\end_layout
-
-\begin_layout Standard
-The code related to experiments can be found in the 
-\family typewriter
-experiments/code
-\family default
- directory.
- All the code related to the experiments was written in Python but there
- is a huge use of the underlying system commands through Python to achieve
- better performance.
- For example for calculating the number of lines of a file a 
-\begin_inset Quotes eld
-\end_inset
-
-wc
-\begin_inset Quotes erd
-\end_inset
-
- command is called from within a Python program instead of opening and reading
- every single line of the file to count them up.
-\end_layout
-
-\begin_layout Standard
 All the experiments were conducted in Amazon EC2.
- The following instances were used: ...
-\end_layout
-
-\begin_layout Standard
-Initially we created an instance based on 
-\begin_inset Quotes eld
-\end_inset
-
-Ubuntu Server 14.04 LTS (HVM), SSD Volume Type
-\begin_inset Quotes erd
-\end_inset
-
- Amazon Machine Image (AMI) and we installed the following:
-\end_layout
-
-\begin_layout Standard
-openjdk-7 jdk
-\end_layout
-
-\begin_layout Standard
-dstat
-\end_layout
-
-\begin_layout Standard
-iperf
-\end_layout
-
-\begin_layout Standard
-htop
-\end_layout
-
-\begin_layout Standard
-We created an image of our created instance to be used for the generation
- of future instances.
- The created image can be used to create instances for clients and middlewares.
-\end_layout
-
-\begin_layout Standard
-We created a general security group to be used by all instances that allowed
- everybody to pass by.
-\end_layout
-
-\begin_layout Standard
-Similarly we installed in another instance PostgreSQL, dstat ...
- to be used for databases and we created an image of it.
- For the database the following things need to also be changed (Configuration
- file allowing outside hosts ...) 
-\end_layout
-
-\begin_layout Standard
-After doing so we had the instances ready for the experiments.
  
 \end_layout
 
@@ -2588,45 +4448,63 @@ Database
  Let us see each one of them.
 \end_layout
 
-\begin_layout Itemize
-Client: contains
-\end_layout
-
-\begin_layout Standard
-about properties files (maybe) : 
-\end_layout
-
-\begin_layout Standard
-Sunday(19/10/2014) ------------------ By changing the executable to read
- configuration files instead of the command line arguments I solved the
- `$` problem in the password and also I can chaange the configuration files
- without having to really change the deployment scripts!!
-\end_layout
-
-\begin_layout Standard
-bash was used too much for exmaple to remove warm up and cool down phase,
- awk, sed, grep were used
-\end_layout
-
-\begin_layout Standard
-command = "awk -F'
-\backslash
-t' '$1 >= " + str(warmUpInSeconds * 1000) + " && $1 <= " + 
-\backslash
- str(lastTimeInMilliseconds - coolDownInSeconds * 1000) + " { print; }'
- " + specificFile
-\end_layout
-
-\begin_layout Standard
-Python seemed more appropiate for combining bash commands bla blah
-\end_layout
-
 \begin_layout Standard
 Talk about pexpect and how awesome it is!
 \end_layout
 
 \begin_layout Subsection*
 EC2 Instances
+\end_layout
+
+\begin_layout Standard
+Initially we created an instance based on 
+\begin_inset Quotes eld
+\end_inset
+
+Ubuntu Server 14.04 LTS (HVM), SSD Volume Type
+\begin_inset Quotes erd
+\end_inset
+
+ Amazon Machine Image (AMI) and we installed the following:
+\end_layout
+
+\begin_layout Standard
+openjdk-7 jdk
+\end_layout
+
+\begin_layout Standard
+dstat
+\end_layout
+
+\begin_layout Standard
+iperf
+\end_layout
+
+\begin_layout Standard
+htop
+\end_layout
+
+\begin_layout Standard
+We created an image of our created instance to be used for the generation
+ of future instances.
+ The created image can be used to create instances for clients and middlewares.
+\end_layout
+
+\begin_layout Standard
+We created a general security group to be used by all instances that allowed
+ everybody to pass by.
+\end_layout
+
+\begin_layout Standard
+Similarly we installed in another instance PostgreSQL, dstat ...
+ to be used for databases and we created an image of it.
+ For the database the following things need to also be changed (Configuration
+ file allowing outside hosts ...) 
+\end_layout
+
+\begin_layout Standard
+After doing so we had the instances ready for the experiments.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -2637,15 +4515,85 @@ an-ec2-instance ssh-add privatekye file to login to the ec2 instances without
 \end_layout
 
 \begin_layout Subsection*
-Deploying the System for Experiments
+Analysis
 \end_layout
 
 \begin_layout Standard
-Explaing about Python boto ..
- gnuplot and all the other packages ...
- most of the time used UNIX native commands to have much faster times of
- whaterver ...
- for example for reading CSV files, cutting parts of files and so on
+The code that analyses the generated logs from the experiments can be found
+ in the 
+\family typewriter
+ResultReader.py
+\family default
+ file in the 
+\family typewriter
+experiments/code
+\family default
+ directory.
+ It contains the following methods:
+\end_layout
+
+\begin_layout Itemize
+
+\shape italic
+getTrace()
+\shape default
+: since trace somehow is a unique experiment this method was created to
+ ..
+\end_layout
+
+\begin_layout Itemize
+
+\shape italic
+getThroughput()
+\shape default
+: returns througput.
+\end_layout
+
+\begin_layout Itemize
+
+\shape italic
+getResponseTime()
+\shape default
+: find the response time.
+\end_layout
+
+\begin_layout Itemize
+
+\shape italic
+getTimeSpentOnEachComponent()
+\shape default
+: finds the average time spent on each component of the middleware.
+ For example, the amount of time that was spent waiting to get picked by
+ a worker thread, the amount of time waiting to get a connection, etc.
+\end_layout
+
+\begin_layout Standard
+All the afforementioned functions use extensively UNIX commands like awk,
+ sed, grep, cat, wc and others.
+ This was done to achieve better performance.
+ For example for calculating the number of lines of a file a 
+\begin_inset Quotes eld
+\end_inset
+
+wc
+\begin_inset Quotes erd
+\end_inset
+
+ command is called from within Python instead of opening and reading every
+ single line of the file to count them up.
+ Another example would be removing the warm-up and cool-down of an experiment
+ which by using awk can be simply done as follows: 
+\end_layout
+
+\begin_layout Standard
+
+\shape italic
+awk -F'
+\backslash
+t' '$1 >= warmUpInSeconds && $1 <= (lastTimeInSeconds - coolDownInSeconds)
+ { print; }' file
+\shape default
+.
 \end_layout
 
 \begin_layout Section
@@ -2660,12 +4608,22 @@ name "sec:experiments"
 \end_layout
 
 \begin_layout Standard
+BALE HYPOTHESIS ..
+ .kai blah 
+\end_layout
+
+\begin_layout Standard
 All successfull receiveals bla blah
 \end_layout
 
 \begin_layout Standard
 --------------- In the report mention that in the throughput all the requests
  were successful, I had no failed responses.
+\end_layout
+
+\begin_layout Standard
+ALl the response times and througputs correspond to the client side unless
+ stated otherwise.
 \end_layout
 
 \begin_layout Subsection*
@@ -2732,6 +4690,13 @@ Response time and throughput of an one hour trace with 2 client instances
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+BECAUSE THROUGHPUT goes like this I decided to just plot the througput for
+ all the three types of requests siince most througputs for the requests
+ are the same.
+ For every send you have a list and for every send a receive.
 \end_layout
 
 \begin_layout Standard
@@ -2946,311 +4911,80 @@ TIME WISE (for all request ...
 < 22 0.9357
 \end_layout
 
+\begin_layout Standard
+VERIFY with 
+\series bold
+closed system
+\series default
+ STUFF
+\end_layout
+
 \begin_layout Subsubsection*
 Warm Up and Cool Down
 \end_layout
 
 \begin_layout Standard
-REmoved 2 minutes from the beginning and one minute from the end in all
- of the following experimental results.
- As we saw from the trace ...
+All the experiments data points were executed for 10 minutes, for the following
+ results the warm up that was removed was 2 minutes while the cool down
+ was 1 minute.As we saw from the trace ...
  This was done by using sed.
 \end_layout
 
 \begin_layout Subsection*
-2^2 (arxise me auto TODO allios den me vlepo kala)
+Increasing the Message Size
 \end_layout
 
 \begin_layout Standard
-2k was done with something like the following
+througput was averaged per 20seconds 
 \end_layout
 
 \begin_layout Standard
-{"nameOfTheExperiment": " ",
-\end_layout
-
-\begin_layout Standard
-"numberOfClientInstances": 1, "numberOfMiddlewareInstances": 1,
-\end_layout
-
-\begin_layout Standard
-"databaseUsername": "ubuntu", "databasePassword": "mepas$1$2$3$", "databaseName"
-: "mepas", "databasePortNumber": 5432,
-\end_layout
-
-\begin_layout Standard
-"middlewarePortNumber": 6789,
-\end_layout
-
-\begin_layout Standard
-"runningTimeInSeconds": 600,
-\end_layout
-
-\begin_layout Standard
-"threadPoolSize": 20, "connectionPoolSize": 20,
-\end_layout
-
-\begin_layout Standard
-"totalClients": 50, "totalQueues": 50,
-\end_layout
-
-\begin_layout Standard
-# mapping between client instances and middleware instances # e.g.
- if (a, b) is in mapping it means that client[a] returned by # getClientsIPs()
- is going to connect to middleware[b] where b is # returned by middlewareIPs
- "mappings": [(0, 0)], #, (1, 0)], # (2, 1), (3, 1)], "clientsData": [(50,
- 1)], #, (50, 51)], # (25, 51), (25, 76)],
-\end_layout
-
-\begin_layout Standard
-"username": "ubuntu" } 
-\end_layout
-
-\begin_layout Standard
-\begin_inset Tabular
-<lyxtabular version="3" rows="5" columns="5">
-<features rotate="0" tabularvalignment="middle">
-<column alignment="center" valignment="top">
-<column alignment="center" valignment="top">
-<column alignment="center" valignment="top">
-<column alignment="center" valignment="top">
-<column alignment="center" valignment="top">
-<row>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
-\begin_inset Text
+\begin_inset Float figure
+wide false
+sideways false
+status open
 
 \begin_layout Plain Layout
-# threads 
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename increasingMessageSize/throughput/throughput.eps
+	scale 120
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename increasingMessageSize/responseTime/responseTime.eps
+	scale 120
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Increasing the Message Size
 \end_layout
 
 \end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
-\begin_inset Text
 
-\begin_layout Plain Layout
-#connections
+
 \end_layout
 
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
-\begin_inset Text
-
 \begin_layout Plain Layout
-mw instance
+
 \end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-db instances
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-throughput 
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-10
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-10
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-t2.small
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-t2.medium
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-4191
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-10
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-20
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-t2.small
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-t2.medium
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-4135
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-20
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-10
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-t2.small
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-t2.medium
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-4122
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-20
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-20
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-t2.small
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-t2.medium
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-5450
-\end_layout
-
-\end_inset
-</cell>
-</row>
-</lyxtabular>
 
 \end_inset
 
@@ -3258,36 +4992,41 @@ t2.medium
 \end_layout
 
 \begin_layout Standard
-Now we define two variablex X_a and _X_b as follows
+When running experiment increase number of message I got the following error
+ from the client logs:
 \end_layout
 
 \begin_layout Standard
-X_A = {-1 if 10 threads, 1 if 20 threads}
+ch.ethz.inf.asl.exceptions.MessagingProtocolException: failed to send messageERROR:
+ could not extend file "base/16389/16427.6": No space left on device Hint:
+ Check free disk space.
+ Where: SQL statement "INSERT INTO message (sender_id, receiver_id, queue_id,
+ arrival_time, message) VALUES (p_sender_id, p_receiver_id, p_queue_id,
+ p_arrival_time, p_message)" PL/pgSQL function send_message(integer,integer,inte
+ger,timestamp without time zone,text) line 3 at SQL statement at ch.ethz.inf.asl.cli
+ent.ClientMessagingProtocolImpl.receiveResponse(Unknown Source) at ch.ethz.inf.asl.cli
+ent.ClientMessagingProtocolImpl.sendMessage(Unknown Source) at ch.ethz.inf.asl.client.C
+lientRunnable.sendMessage(Unknown Source) at ch.ethz.inf.asl.client.ClientRunnable.run(
+Unknown Source) at java.lang.Thread.run(Thread.java:745) ubuntu@ip-172-31-14-163:~/l
+ogs$
 \end_layout
 
 \begin_layout Standard
-X_B = {-1 if 10 connections, 1 if 10 connections}
+increased size of database
 \end_layout
 
 \begin_layout Standard
-y = q_0 + q_Ax_A + q_Bx_B + qABX_AX_B
+2014-11-05 21:29:30 UTC HINT: Consider increasing the configuration parameter
+ "checkpoint_segments".
+ 2014-11-05 21:29:32 UTC LOG: checkpoints are occurring too frequently (2
+ seconds apart) 2014-11-05 21:29:32 UTC HINT: Consider increasing the configurat
+ion parameter "checkpoint_segments".
+ (in the 40000 characters per message)
 \end_layout
 
 \begin_layout Standard
-you create the equations: qo = 4474 requests (mean performance)
-\end_layout
-
-\begin_layout Standard
-the effect of threads is 318.
- The effect of connection is 311
-\end_layout
-
-\begin_layout Standard
-while the interaction between thread and connections is 345 requests /sec
-\end_layout
-
-\begin_layout Standard
-The 
+DISABLE CONSTRAINT ...
+ 
 \end_layout
 
 \begin_layout Subsection*
@@ -3335,6 +5074,10 @@ dfs
 16 experiments in total for 10 minutes each
 \end_layout
 
+\begin_layout Subsection*
+Increasing the Number of Connections
+\end_layout
+
 \begin_layout Standard
 \begin_inset Float figure
 wide false
@@ -3343,814 +5086,20 @@ status open
 
 \begin_layout Plain Layout
 \align center
-\begin_inset Tabular
-<lyxtabular version="3" rows="17" columns="5">
-<features rotate="0" tabularvalignment="middle">
-<column alignment="center" valignment="top">
-<column alignment="center" valignment="top">
-<column alignment="center" valignment="top">
-<column alignment="center" valignment="top">
-<column alignment="center" valignment="top">
-<row>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
-\begin_inset Text
+\begin_inset Graphics
+	filename increasingConnections/throughput/throughput.eps
+	scale 120
 
-\begin_layout Plain Layout
-#threads
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-#connections
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-MW instance type
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-DB instance type
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-throughput (requests/sec)
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-10
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-10
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-t2.small
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-m3.xlarge
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-3549
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-10
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-20
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-t2.small
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-m3.xlarge
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-3508
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-20
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-10
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-t2.small
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-m3.xlarge
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-3379
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-20
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-20
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-t2.small
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-m3.xlarge
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-5615
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-10 
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-10
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-t2.medium
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-m3.xlarge
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-4585
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-10 
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-20
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-t2.medium
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-m3.xlarge
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-4464
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-20 
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-10
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-t2.medium
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-m3.xlarge
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-4567
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-20
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-20
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-t2.medium
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-m3.xlarge
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-6133
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-10
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-10
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-t2.small
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-t2.medium
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-4191
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-10
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-20
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-t2.small
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-t2.medium
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-4135
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-20
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-10
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-t2.small
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-t2.medium
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-4122
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-20
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-20
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-t2.small
-\end_layout
-
 \end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
 
-\begin_layout Plain Layout
-t2.medium
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-5450
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-10
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-10
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-t2.medium
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-t2.medium
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-4167
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-10
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-20
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-t2.medium
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-t2.medium
-\end_layout
 
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-4099
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-20
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-10
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-t2.medium
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-t2.medium
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-4212
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-20
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-20
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-t2.medium
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-t2.medium
 \end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
 
 \begin_layout Plain Layout
-5448
-\end_layout
-
-\end_inset
-</cell>
-</row>
-</lyxtabular>
+\align center
+\begin_inset Graphics
+	filename increasingConnections/responseTime/responseTime.eps
+	scale 120
 
 \end_inset
 
@@ -4161,8 +5110,7 @@ t2.medium
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Different througput values based on the number of threads, number of connections
-, middleware and database instance type
+Increasing the Number of Connections
 \end_layout
 
 \end_inset
@@ -4176,25 +5124,137 @@ Different througput values based on the number of threads, number of connections
 \end_layout
 
 \begin_layout Subsection*
-Increasing the Message Size
+Increasing the Number of Threads
 \end_layout
 
 \begin_layout Standard
-2014-11-05 21:29:30 UTC HINT: Consider increasing the configuration parameter
- "checkpoint_segments".
- 2014-11-05 21:29:32 UTC LOG: checkpoints are occurring too frequently (2
- seconds apart) 2014-11-05 21:29:32 UTC HINT: Consider increasing the configurat
-ion parameter "checkpoint_segments".
- (in the 40000 characters per message)
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename increasingThreads/throughput/throughput.eps
+	scale 120
+
+\end_inset
+
+
 \end_layout
 
-\begin_layout Standard
-DISABLE CONSTRAINT ...
- 
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename increasingThreads/responseTime/responseTime.eps
+	scale 120
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Increasing the Number of Threads
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Subsection*
 Increasing the Number of Clients
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename increasingClientsOneInstance/throughput/throughput.eps
+	scale 120
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename increasingClientsOneInstance/responseTime/responseTime.eps
+	scale 120
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Increasing the Number of Clients
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection*
+Increasing Both Threads and Connections
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename increasingBothClientsAndConnections/throughput/throughput.eps
+	scale 120
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Increasing Both Threads and Connections
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Subsection*
@@ -4311,8 +5371,19 @@ name "sec:conclusion"
 \end_layout
 
 \begin_layout Standard
+This report correspon .
+ We believe a great deal of work was done ? (nah) in a nice and consistent
+ implementation as well as deploying stuff ...
+ 
+\end_layout
+
+\begin_layout Standard
 This is a lovely conclusion for a lovely world that used to exist but is
  no more.
+\end_layout
+
+\begin_layout Standard
++ What would I ahve done different if I started anew?
 \end_layout
 
 \end_body

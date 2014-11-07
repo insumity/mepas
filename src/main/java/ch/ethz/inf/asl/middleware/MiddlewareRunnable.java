@@ -162,7 +162,7 @@ public class MiddlewareRunnable implements Runnable {
                         logger.log((System.currentTimeMillis() - timeBeforeGettingConnection) + "\tGOT CONNECTION");
 
                         MessagingProtocol protocol =
-                                new MiddlewareMessagingProtocolImpl(logger, request.getRequestorId(), connection);
+                                new MiddlewareMessagingProtocolImpl(request.getRequestorId(), connection);
 
                         long timeBeforeExecutingRequest = System.currentTimeMillis();
                         response = request.execute(protocol);

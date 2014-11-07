@@ -83,7 +83,7 @@ public class EndToEnd {
         final int totalClients = 4;
         final int totalQueues = 4;
         InitializeDatabase.initializeDatabaseWithClientsAndQueues(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD,
-                Connection.TRANSACTION_READ_COMMITTED, new String[]{}, totalClients, totalQueues);
+                new String[]{}, totalClients, totalQueues);
 
         final ConfigurationReader[] middlewareConfigurations = {
                 ConfigurationMocker.mockMiddlewareConfiguration(HOST, String.valueOf(PORT_NUMBER), DATABASE_NAME, USERNAME, PASSWORD,

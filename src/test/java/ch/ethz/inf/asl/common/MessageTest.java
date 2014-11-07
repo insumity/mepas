@@ -26,31 +26,6 @@ public class MessageTest {
     }
 
     @Test(groups = SMALL)
-    public void testCanCreateMessageWithMaximumLength() {
-        // create message content with length greater than maximum possible length
-        StringBuffer content = new StringBuffer();
-        for (int i = 0; i < MAXIMUM_MESSAGE_LENGTH; ++i) {
-            content = content.append("a");
-        }
-
-        Message msg = new Message(11, 34, 2, Timestamp.valueOf("2012-03-03 11:22:12"), content.toString());
-        assertNotNull(msg);
-        assertEquals(msg.getContent(), content.toString());
-    }
-
-    @Test(groups = SMALL, expectedExceptions = IllegalArgumentException.class)
-    public void testCannotCreateMessageWithInvalidLength() {
-        // create message content with length greater than maximum possible length
-        StringBuffer content = new StringBuffer();
-        for (int i = 0; i < MAXIMUM_MESSAGE_LENGTH; ++i) {
-            content = content.append("a");
-        }
-        content.append("B");
-
-        new Message(11, 34, 2, Timestamp.valueOf("2012-03-03 11:22:12"), content.toString());
-    }
-
-    @Test(groups = SMALL)
     public void testGetSenderId() {
         Message msg =  new Message(11, 34, 2, Timestamp.valueOf("2012-03-03 11:22:12"), MESSAGE_CONTENT);
         assertEquals(msg.getSenderId(), 11);
