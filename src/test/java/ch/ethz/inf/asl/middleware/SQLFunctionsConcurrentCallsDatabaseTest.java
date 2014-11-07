@@ -2,7 +2,6 @@ package ch.ethz.inf.asl.middleware;
 
 
 import ch.ethz.inf.asl.testutils.InitializeDatabase;
-import org.postgresql.util.PSQLException;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -22,12 +21,13 @@ import static org.testng.Assert.*;
  * Tests for testing that when the stored procedures of the basic functionality of the system
  * are being called concurrently everything works as expected.
  */
+@Test(singleThreaded = true)
 public class SQLFunctionsConcurrentCallsDatabaseTest {
 
-    private void addMessagesWithNullReceiverToTheSystem(int numberOfMessages, int senderId, int queueId)
+    private void addMessagesWithNullReceiverToTheSystem(String databaseName, int numberOfMessages, int senderId, int queueId)
             throws SQLException, ClassNotFoundException {
 
-        try (Connection connection = getConnection(HOST, PORT_NUMBER, DATABASE_NAME, USERNAME, PASSWORD)) {
+        try (Connection connection = getConnection(HOST, PORT_NUMBER, databaseName, USERNAME, PASSWORD)) {
              for (int i = 0; i < numberOfMessages; ++i) {
                 try (CallableStatement stmt = connection.prepareCall(SEND_MESSAGE)) {
 
@@ -46,7 +46,7 @@ public class SQLFunctionsConcurrentCallsDatabaseTest {
         }
     }
 
-    @DataProvider(name = "fromSenderOrNot")
+    @DataProvider(name = "fromSenderOrNot", parallel = false)
     public static Object[][] twoIsolationLevels() {
         return new Object[][] {
                 {true},
@@ -55,15 +55,14 @@ public class SQLFunctionsConcurrentCallsDatabaseTest {
     }
 
 
-    @Test(groups = DATABASE, dataProvider = "fromSenderOrNot",
+    @Test(groups = DATABASE, dataProvider = "fromSenderOrNot", singleThreaded =  true, threadPoolSize = 0,
             description = "The idea of the test is to fill the system with " +
             "many messages, e.g. X messages, with receiver id being NULL and then create some concurrent readers " +
             "that try to read these messages. In total the concurrent readers should have only read X messages. ")
     public void testMessagesAreReceivedOnlyOnce(final boolean fromSender)
             throws SQLException, ClassNotFoundException, InterruptedException, IOException {
 
-        // serialization failures return an SQL_STATE value of '40001'
-        final String CONCURRENT_UPDATE_ERROR_SQL_STATE = "40001";
+        final String DATABASE_NAME = "concurrenttest";
 
         final int NUMBER_OF_MESSAGES = 5000;
 
@@ -87,7 +86,7 @@ public class SQLFunctionsConcurrentCallsDatabaseTest {
         final int senderId = NUMBER_OF_CONCURRENT_READERS + 1;
 
         int queueId = 1;
-        addMessagesWithNullReceiverToTheSystem(NUMBER_OF_MESSAGES, senderId, queueId);
+        addMessagesWithNullReceiverToTheSystem(DATABASE_NAME, NUMBER_OF_MESSAGES, senderId, queueId);
 
 
         class ConcurrentReader implements Runnable {

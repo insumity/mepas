@@ -15,6 +15,7 @@ import static ch.ethz.inf.asl.testutils.TestConstants.SMALL;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
+// TODO ... what to do with this ?
 public class MiddlewareMessagingProtocolImplTest {
 
     private Connection mockedConnection;

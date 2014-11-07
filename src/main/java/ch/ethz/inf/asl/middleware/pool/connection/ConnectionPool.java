@@ -2,6 +2,7 @@ package ch.ethz.inf.asl.middleware.pool.connection;
 
 import java.sql.*;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -16,6 +17,8 @@ public class ConnectionPool implements AutoCloseable {
         private Connection connection;
 
         public InternalConnection(Connection connection) {
+            notNull(connection, "Given connection cannot be null!");
+
             this.connection = connection;
         }
 

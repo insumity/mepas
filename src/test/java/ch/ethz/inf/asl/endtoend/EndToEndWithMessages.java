@@ -21,6 +21,8 @@ import static org.testng.AssertJUnit.assertTrue;
 
 public class EndToEndWithMessages {
 
+    private static final String DATABASE_NAME = "endtoendtest";
+
     @Test(groups = END_TO_END)
     public void testSpecificMessagesAreBeingSentAndReceived() throws ClassNotFoundException, SQLException, InterruptedException, IOException {
 

@@ -25,6 +25,7 @@ import static org.testng.Assert.*;
  */
 public class SQLFunctionsDatabaseTest {
 
+    private static final String DATABASE_NAME = "functionstest";
 
     // initial number of queues and messages contained in the corresponding tables after populating them
     private static int NUMBER_OF_CLIENTS = 6;

@@ -12,7 +12,4 @@ public class TestConstants {
     public static final String HOST = "localhost";
     public static final Integer PORT_NUMBER = 5432;
 
-    // this database doesn't have to exist for the tests to run, it's going to
-    // be created. If one exists already it's going to be replace by a new one
-    public static final String DATABASE_NAME = "databasetest";
 }

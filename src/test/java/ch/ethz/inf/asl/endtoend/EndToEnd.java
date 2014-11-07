@@ -25,6 +25,7 @@ import static org.testng.Assert.assertFalse;
  */
 public class EndToEnd {
 
+    private static final String DATABASE_NAME = "endtoendtest";
 
     // this security manager is used to verify that when we stop the middleware
     // actually system exit is called without exiting the test. It's based on the
