@@ -22,14 +22,14 @@ from Utilities import *
 # exit(1)
 
 conf = \
-    {"nameOfTheExperiment": "../NEW_NEW_increasing_both",
+    {"nameOfTheExperiment": "../NEW_many_middlewares",
      "placement": "us-west-2c",
      "databaseType": "m3.large",
      "clientInstances": (1, "m3.large"),
      "middlewareInstances": (1, "m3.large"), "databaseUsername": "ubuntu",
      "databasePassword": "mepas$1$2$3$", "databaseName": "mepas", "databasePortNumber": 5432,
      "middlewarePortNumber": 6789, "runningTimeInSeconds": 600, "threadPoolSize": 20, "connectionPoolSize": 20,
-     "totalClients": 50, "totalQueues": 50, "messageSize": 20, "mappings": [(0, 0)], "clientsData": [(50, 1)],
+     "totalClients": 100, "totalQueues": 50, "messageSize": 20, "mappings": [(0, 0)], "clientsData": [(50, 1)],
      "username": "ubuntu", "variable": "threadPoolSize", "values": []}
 
 
@@ -52,14 +52,14 @@ if isfile("../mepas.jar"):
 
 def threadCode(values):
 
-# FIXME FIXME FIXME
+    # FIXME FIXME FIXME
 
     conf = \
-        {"nameOfTheExperiment": "../NEW_NEW_increasing_both", "placement": "us-west-2c", "databaseType": "m3.large",
+        {"nameOfTheExperiment": "../NEW_many_middlewares", "placement": "us-west-2c", "databaseType": "m3.large",
          "clientInstances": (1, "m3.large"), "middlewareInstances": (1, "m3.large"), "databaseUsername": "ubuntu",
          "databasePassword": "mepas$1$2$3$", "databaseName": "mepas", "databasePortNumber": 5432,
          "middlewarePortNumber": 6789, "runningTimeInSeconds": 600, "threadPoolSize": 20, "connectionPoolSize": 20,
-         "totalClients": 50, "totalQueues": 50, "messageSize": 20, "mappings": [(0, 0)], "clientsData": [(50, 1)],
+         "totalClients": 100, "totalQueues": 50, "messageSize": 20, "mappings": [], "clientsData": [],
          "username": "ubuntu", "variable": "threadPoolSize", "values": values}
 
     for variable in conf["values"]:
@@ -69,8 +69,21 @@ def threadCode(values):
         secret_access = "sAuum+ci1MlLdlpI8iFHpCZXpjMOnuG/sq4YTEdU"
         instancesRetriever = EC2Instantiator(access_key, secret_access, conf["placement"])
 
-        conf[conf["variable"]] = variable
-        conf["connectionPoolSize"] = variable
+        # conf["variable"] =
+        # conf[conf["variable"]] = variable
+        # conf["connectionPoolSize"] = variable
+        conf["clientInstances"] = (variable, "m3.large")
+        conf["clientInstances"] = (variable, "m3.large")
+
+        conf["totalClients"] = variable * 100
+
+        startingId = 1
+        i = 0
+        while i < variable:
+            conf["mappings"].append((i, i))
+            conf["clientsData"].append((100, startingId))
+            startingId += 100
+            i += 1
 
         # you always need one database instance for every experiment
         database = instancesRetriever.createDatabase(conf["databaseType"])
@@ -251,7 +264,7 @@ def threadCode(values):
             instancesRetriever.terminateInstance(middleware)
 
 def start():
-    for i in [80, 90, 100]:
+    for i in [5, 10]:
         thread = threading.Thread(target=threadCode, args=([[i]]))
         thread.start()
 

@@ -2,7 +2,6 @@ package ch.ethz.inf.asl.middleware.pool.connection;
 
 import java.sql.*;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;

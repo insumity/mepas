@@ -5,15 +5,11 @@ import org.testng.annotations.BeforeMethod;
 import java.sql.*;
 
 import static ch.ethz.inf.asl.middleware.MiddlewareMessagingProtocolImpl.SEND_MESSAGE;
+import static ch.ethz.inf.asl.testutils.TestConstants.SMALL;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
-import static org.testng.Assert.assertEquals;
-
-import static ch.ethz.inf.asl.testutils.TestConstants.SMALL;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertTrue;
 
 // TODO ... what to do with this ?
 public class MiddlewareMessagingProtocolImplTest {

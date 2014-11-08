@@ -13,10 +13,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
-import static ch.ethz.inf.asl.utils.Verifier.hasText;
-import static ch.ethz.inf.asl.utils.Verifier.notNull;
-import static ch.ethz.inf.asl.utils.Verifier.verifyTrue;
+import static ch.ethz.inf.asl.utils.Verifier.*;
 
+/**
+ * This class is executed in a thread and corresponds to one client of the system.
+ */
 public class ClientRunnable implements Runnable {
 
     private String hostName;
@@ -45,8 +46,20 @@ public class ClientRunnable implements Runnable {
         return protocol.getReceivedResponses();
     }
 
+    /**
+     * Initialized an object given the parameters.
+     * @param logger to be used for logging the activities of the client
+     * @param userId the id of the specific client
+     * @param runningTimeInSeconds how much time the client is going to be running
+     * @param hostName middleware's host address
+     * @param portNumber port of where the middleware
+     * @param totalClients total clients in the system
+     * @param totalQueues total number of queues in the system
+     * @param messageSize size of the messages to be sent counted in characters
+     * @param isEndToEndTest true if this is an end-to-end test, false otherwise
+     */
     public ClientRunnable(Logger logger, int userId, int runningTimeInSeconds, String hostName, int portNumber, int totalClients,
-                          int totalQueues, int messageSize, boolean isEndToEndTest) throws IOException {
+                          int totalQueues, int messageSize, boolean isEndToEndTest) {
         notNull(logger, "Given logger cannot be null!");
         verifyTrue(runningTimeInSeconds > 0, "Given runningTimeInSeconds cannot be negative or 0!");
         hasText(hostName , "Given hostName cannot be empty or null!");
@@ -158,7 +171,6 @@ public class ClientRunnable implements Runnable {
         long startingTime = System.currentTimeMillis();
         logger.log("Starting time: " + new Date().toString());
 
-
         // sending and list-receiving is done alternately
         boolean toSend = true;
 
@@ -173,7 +185,6 @@ public class ClientRunnable implements Runnable {
                 }
                 break;
             }
-
 
             try {
                 if (toSend) {

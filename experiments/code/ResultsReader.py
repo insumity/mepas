@@ -290,30 +290,32 @@ def getThroughput(experimentDir, clientInstances, timeInSeconds, warmUpInSeconds
 
 
 # def findThroughput(i):
-(avg, std) = getThroughput("../NEW_increasing_both/" + "25", 1, 600, 120, 60, "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
-print str(25) + " " + avg + " " + std
+for i in [2]:
+    (avg, std) = getThroughput("../NEW_NEW_NEW_speedup/" + str(i), 10, 600, 120, 60, "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
+    print str(i) + " " + avg + " " + std
 exit(1)
-for i in [120, 140, 160, 180]:
-    (avgAll, stdAll) = getThroughput("../NEW_increasing_number_of_clients/" + str(i), 1, 600, 120, 60,
-                                           "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
-  #  (avgList, stdList) = getResponseTimeCOOL("../NEW_increasing_number_of_clients/" + str(i), 1, 600, 120, 60,
-   #                                          "LIST_QUEUES")
-    #(avgSend, stdSend) = getResponseTimeCOOL("../NEW_increasing_number_of_clients/" + str(i), 1, 600, 120, 60,
-     #                                        "SEND_MESSAGE")
-    #(avgReceive, stdReceive) = getResponseTimeCOOL("../NEW_increasing_number_of_clients/" + str(i), 1, 600, 120, 60,
-       #                                            "RECEIVE_MESSAGE")
-    print str(
-        i) + " " + avgAll + " " + stdAll# + " " + avgList + " " + stdList + " " + avgSend + " " + stdSend + " " + avgReceive + " " + stdReceive
-exit(1)
+# exit(1)
+# for i in [50 , 70]:
+#     (avgAll, stdAll) = getThroughput("../NEW_NEW_NEW_increasing_threads/" + str(i), 1, 600, 120, 60,
+#                                            "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
+#   #  (avgList, stdList) = getResponseTimeCOOL("../NEW_increasing_number_of_clients/" + str(i), 1, 600, 120, 60,
+#    #                                          "LIST_QUEUES")
+#     #(avgSend, stdSend) = getResponseTimeCOOL("../NEW_increasing_number_of_clients/" + str(i), 1, 600, 120, 60,
+#      #                                        "SEND_MESSAGE")
+#     #(avgReceive, stdReceive) = getResponseTimeCOOL("../NEW_increasing_number_of_clients/" + str(i), 1, 600, 120, 60,
+#        #                                            "RECEIVE_MESSAGE")
+#     print str(
+#         i) + " " + avgAll + " " + stdAll# + " " + avgList + " " + stdList + " " + avgSend + " " + stdSend + " " + avgReceive + " " + stdReceive
+# exit(1)
 
-for i in [1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 70]:
-    (avgAll, stdAll) = getResponseTimeCOOL("../NEW_increasing_both/" + str(i), 1, 600, 120, 60,
+for i in [1, 2, 4, 5, 10]:
+    (avgAll, stdAll) = getResponseTimeCOOL("../NEW_dividing_clients/" + str(i), 1, 600, 120, 60,
                                            "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
-    (avgList, stdList) = getResponseTimeCOOL("../NEW_increasing_both/" + str(i), 1, 600, 120, 60,
+    (avgList, stdList) = getResponseTimeCOOL("../NEW_dividing_clients/" + str(i), 1, 600, 120, 60,
                                        "LIST_QUEUES")
-    (avgSend, stdSend) = getResponseTimeCOOL("../NEW_increasing_both/" + str(i), 1, 600, 120, 60,
+    (avgSend, stdSend) = getResponseTimeCOOL("../NEW_dividing_clients/" + str(i), 1, 600, 120, 60,
                                              "SEND_MESSAGE")
-    (avgReceive, stdReceive) = getResponseTimeCOOL("../NEW_increasing_both/" + str(i), 1, 600, 120, 60,
+    (avgReceive, stdReceive) = getResponseTimeCOOL("../NEW_dividing_clients/" + str(i), 1, 600, 120, 60,
                                                    "RECEIVE_MESSAGE")
     print str(
         i) + " " + avgAll + " " + stdAll + " " + avgList + " " + stdList + " " + avgSend + " " + stdSend + " " + avgReceive + " " + stdReceive

@@ -12,7 +12,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
-import static ch.ethz.inf.asl.common.MessageConstants.MAXIMUM_MESSAGE_LENGTH;
 import static ch.ethz.inf.asl.middleware.MiddlewareMessagingProtocolImpl.*;
 import static ch.ethz.inf.asl.testutils.InitializeDatabase.getConnection;
 import static ch.ethz.inf.asl.testutils.TestConstants.*;

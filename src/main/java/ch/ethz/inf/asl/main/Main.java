@@ -1,8 +1,8 @@
 package ch.ethz.inf.asl.main;
 
 import ch.ethz.inf.asl.client.Client;
-import ch.ethz.inf.asl.utils.ConfigurationReader;
 import ch.ethz.inf.asl.middleware.Middleware;
+import ch.ethz.inf.asl.utils.ConfigurationReader;
 
 public class Main {
 

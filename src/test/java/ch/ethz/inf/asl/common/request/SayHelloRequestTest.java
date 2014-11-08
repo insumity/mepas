@@ -2,7 +2,6 @@ package ch.ethz.inf.asl.common.request;
 
 import ch.ethz.inf.asl.common.MessagingProtocol;
 import ch.ethz.inf.asl.common.response.Response;
-import ch.ethz.inf.asl.common.response.SayGoodbyeResponse;
 import ch.ethz.inf.asl.common.response.SayHelloResponse;
 import ch.ethz.inf.asl.exceptions.MessagingProtocolException;
 import org.testng.annotations.Test;

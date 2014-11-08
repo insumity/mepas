@@ -2,7 +2,6 @@ package ch.ethz.inf.asl.common.response;
 
 import ch.ethz.inf.asl.common.Message;
 
-import java.util.Arrays;
 import java.util.Objects;
 
 public class ReceiveMessageResponse extends GetMessageResponse {

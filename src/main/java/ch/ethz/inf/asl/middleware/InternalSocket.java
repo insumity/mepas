@@ -1,12 +1,12 @@
 package ch.ethz.inf.asl.middleware;
 
+import ch.ethz.inf.asl.utils.Pair;
+
 import java.io.*;
 import java.net.Socket;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
-
-import ch.ethz.inf.asl.utils.Pair;
 
 /**
  * This class implements an internal socket. This socket is to be used

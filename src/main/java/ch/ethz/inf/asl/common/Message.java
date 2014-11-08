@@ -2,7 +2,6 @@ package ch.ethz.inf.asl.common;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
-import java.util.Arrays;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 

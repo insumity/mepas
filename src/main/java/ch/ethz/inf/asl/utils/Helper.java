@@ -8,6 +8,9 @@ import java.util.List;
 import static ch.ethz.inf.asl.utils.Verifier.notNull;
 import static ch.ethz.inf.asl.utils.Verifier.verifyTrue;
 
+/**
+ * This class contains general utilities methods for serializing and deserializing objects.
+ */
 public class Helper {
 
     // taken from http://stackoverflow.com/questions/80476/how-to-concatenate-two-arrays-in-java

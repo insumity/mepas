@@ -3375,6 +3375,16 @@ runningTimeInSeconds
  the clients stop working and leave the system.
 \end_layout
 
+\begin_layout Standard
+Also note that when starting the clients all the clients are connected to
+ one specific middleware.
+ It is not possible to have clients from a 
+\shape italic
+Client
+\shape default
+ execution that are connencted to different middlewares.
+\end_layout
+
 \begin_layout Subsection*
 General Remarks 
 \end_layout
@@ -3757,10 +3767,6 @@ SQLFunctionsConcurrentCallsDatabaseTest
  This test actually creates many concurrent readers that issue receive message
  requests and at the end it is verified that no message was read more than
  once and that all messages were read.
-\end_layout
-
-\begin_layout Standard
-TODO mention other isolation level
 \end_layout
 
 \begin_layout Subsection*
@@ -4165,53 +4171,27 @@ name "sec:experimentalsetup"
 \end_layout
 
 \begin_layout Standard
-The experimental setup was solely done using Python together with these
- packages: boto
-\begin_inset Foot
-status open
-
-\begin_layout Plain Layout
-https://github.com/boto/boto
-\end_layout
-
-\end_inset
-
- for interacting programmatically Amazon Elastic Compute Cloud (EC2), pexpect
-\begin_inset Foot
-status open
-
-\begin_layout Plain Layout
-https://github.com/pexpect/pexpect
-\end_layout
-
-\end_inset
-
- for connecting to the EC2 instances used in the experiment and executing
- the appropriate programs, psycopg2
-\begin_inset Foot
-status open
-
-\begin_layout Plain Layout
-http://initd.org/psycopg/
-\end_layout
-
-\end_inset
-
- for connecting to the PostgreSQL database and getting it ready for our
- experiments.
-\end_layout
-
-\begin_layout Standard
-INFORM: only once a middleware is used per instance
+In this section we present the general flow of how our experiment were conducted.
+ Then, we present how we set up our instances and the implementation details
+ on how we automatized the experiments.
+ At the end of the section we describe how we analyzed the logs generated
+ by our experiments.
 \end_layout
 
 \begin_layout Subsection*
-Setup
+Flow
 \end_layout
 
 \begin_layout Standard
-Before we presenting the exact details on our experimental setup we present
- in Figure the general overview of how an experiment is conducted.
+Before presenting the exact details on our experimental setup we present
+ in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "flowExperiment"
+
+\end_inset
+
+the general overview of how an experiment is conducted.
 \end_layout
 
 \begin_layout Standard
@@ -4243,6 +4223,13 @@ Flow of an Experiment
 \end_inset
 
 
+\begin_inset CommandInset label
+LatexCommand label
+name "flowExperiment"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Plain Layout
@@ -4254,9 +4241,194 @@ Flow of an Experiment
 
 \end_layout
 
+\begin_layout Subsection*
+EC2 Instances
+\end_layout
+
 \begin_layout Standard
-All the experiments were executed in the Amazon Elastic Compute Cloud (EC2).
- 
+All our experiments were conducted using Amazon Elastic Compute Cloud (EC2)
+ instances.
+ We never executed more than one middleware in one instance and never executed
+ more than two executions of the 
+\shape italic
+Client
+\shape default
+ class in one instance as well.
+ Also all instances of an experiment were located in the same availability
+ zone
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.
+html
+\end_layout
+
+\end_inset
+
+.
+ We also never mixed clients, middlewares or the database in the same instance.
+ In order to setup the instances to be used we launched an instance based
+ on 
+\begin_inset Quotes eld
+\end_inset
+
+Ubuntu Server 14.04 LTS (HVM), SSD Volume Type
+\begin_inset Quotes erd
+\end_inset
+
+ Amazon Machine Image (AMI) and we installed the following.
+\end_layout
+
+\begin_layout Standard
+For Client & Middleware Instances we installed the following pasckages:
+\end_layout
+
+\begin_layout Itemize
+openjdk-7 jdk: to be able to execute the JAR
+\end_layout
+
+\begin_layout Itemize
+dstat: dstat is used for logging cpu usage
+\end_layout
+
+\begin_layout Standard
+For the database instance we installed the following packages:
+\end_layout
+
+\begin_layout Itemize
+dstat: dstat is used for logging cpu usage
+\end_layout
+
+\begin_layout Itemize
+postgresql
+\end_layout
+
+\begin_layout Standard
+In order for PostgreSQL to accept TCP connections from outside the local
+ machine we changed its configuration file 
+\family typewriter
+/etc/postgresql/9.3/main/postgresql.conf
+\family default
+ and changed the line 
+\shape italic
+listen_addresses='localhost'
+\shape default
+ to 
+\shape italic
+listen_addresses='*'
+\shape default
+.
+ We also added this line 
+\shape italic
+host all all 0.0.0.0/0 md5
+\shape default
+ to 
+\family typewriter
+/etc/postgresql/9.3/main/pg_hba.conf
+\family default
+ to allow anybody from outside to access our database.
+\end_layout
+
+\begin_layout Standard
+After those instances were created we generated their corresponding AMI's
+ so we could easily launch client, middleware or database instances without
+ having to re-do the installations described above.
+\end_layout
+
+\begin_layout Standard
+All the instances used the same general security group that allowed acces
+ from any IP for all inbound and outbound connections.
+ This security group was used when launching our instances.
+\end_layout
+
+\begin_layout Standard
+Note that in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "flowExperiment"
+
+\end_inset
+
+ we show that instances are launched and terminated for every run of an
+ experiment.
+ This might be costly since when using EC2 instances you pay per hour even
+ if you used an instance for just a minute.
+ Nevertheless, this approach for doing the experiments simplified a lot
+ our flow.
+\end_layout
+
+\begin_layout Subsubsection*
+Implementation
+\end_layout
+
+\begin_layout Standard
+The experimental setup implementation was solely done using Python together
+ with these packages: 
+\end_layout
+
+\begin_layout Description
+boto
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+https://github.com/boto/boto
+\end_layout
+
+\end_inset
+
+ for interacting programmatically with EC2 instances.
+ Its main use was to launch and terminate instances on demand.
+\end_layout
+
+\begin_layout Description
+pexpect
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+https://github.com/pexpect/pexpect
+\end_layout
+
+\end_inset
+
+ for connecting to the EC2 instances used in the experiments and executing
+ appropriate commands.
+ Using pexpect we connected to an EC2 instance using SSH and issused interactive
+ly commands.
+ For example we could start the middleware issuing a 
+\begin_inset Quotes eld
+\end_inset
+
+java -jar ...
+\begin_inset Quotes erd
+\end_inset
+
+ command and at some later point in thime send the string 
+\begin_inset Quotes eld
+\end_inset
+
+STOP
+\begin_inset Quotes erd
+\end_inset
+
+ to gracefully stop the middleware.
+\end_layout
+
+\begin_layout Description
+psycopg2
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+http://initd.org/psycopg/
+\end_layout
+
+\end_inset
+
+ for connecting to the PostgreSQL database and getting it ready for our
+ experiments.
 \end_layout
 
 \begin_layout Standard
@@ -4306,14 +4478,6 @@ Database
 \end_layout
 
 \begin_layout Standard
-The experimental code can be found in 
-\family typewriter
-ExperimentRunner.py
-\family default
-, there the code exists.
-\end_layout
-
-\begin_layout Standard
 In order for the experiment to run notice that the following have to been
  done in the machine doing the experiments:
 \end_layout
@@ -4330,8 +4494,15 @@ The private key used to connect to the EC2 instances needs to be added in
 ssh-add privateKeyFile.pem
 \shape default
 .
- It is much easier to ssh a machine when the SSH key has been added since
- doing 
+ It is much easier to 
+\begin_inset Quotes eld
+\end_inset
+
+ssh
+\begin_inset Quotes erd
+\end_inset
+
+ a machine when the SSH key has been added since doing 
 \shape italic
 ssh ubuntu@host
 \shape default
@@ -4363,155 +4534,305 @@ Yes
 \end_layout
 
 \begin_layout Itemize
-The experiment runner reads the database's password
-\end_layout
+The experiment runner assumes database's password exists in a 
+\family typewriter
+.pgpass
+\family default
+ file in the local directory that contains a line like the following: 
+\shape italic
+*:*:*:*:mepas$1$2$3$
+\shape default
+.
+ By doing so you can issue a 
+\begin_inset Quotes eld
+\end_inset
 
-\begin_layout Subsubsection*
-Setting up the Database
-\end_layout
+psql
+\begin_inset Quotes erd
+\end_inset
 
-\begin_layout Standard
-This is coolness!! SHOULD BE hre
-\end_layout
-
-\begin_layout Standard
-Wha
-\end_layout
-
-\begin_layout Standard
-experimentRunner (careful to have enough space for this instance 200GB just
- to be sure)
-\end_layout
-
-\begin_layout Standard
--> create .pgpass file, install postgresql ?? is needed
+ command without having to provide a password.
 \end_layout
 
 \begin_layout Standard
-All the experiments were conducted in Amazon EC2.
+The experimental code can be found in 
+\family typewriter
+ExperimentRunner.py.
+
+\family default
+ In order to configure an experiment a Python dictionary is used in the
  
+\shape italic
+ExperimentRunner
+\shape default
+ file.
+ The configuration looks similary to the one shown in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "experimentConf"
+
+\end_inset
+
+ with added comments explaining most of the keys.
 \end_layout
 
 \begin_layout Standard
-In order to retrieve the IPs of the instances we used boto
-\begin_inset Foot
+\begin_inset Float figure
+wide false
+sideways false
 status open
 
 \begin_layout Plain Layout
-https://github.com/boto/boto
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Box Boxed
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+status open
+
+\begin_layout Plain Layout
+conf = {
+\end_layout
+
+\begin_layout Plain Layout
+"nameOfTheExperiment": "name", # corresponds to the directory where all
+ logs are saved
+\end_layout
+
+\begin_layout Plain Layout
+"username": "ubuntu", # username for the EC2 instances
+\end_layout
+
+\begin_layout Plain Layout
+"placement": "us-west-2c", # availability zone to be used by all instances
+\end_layout
+
+\begin_layout Plain Layout
+"databaseType": "m3.large", 
+\end_layout
+
+\begin_layout Plain Layout
+"clientInstances": (2, "m3.large"), # number of client instances and their
+ type 
+\end_layout
+
+\begin_layout Plain Layout
+"middlewareInstances": (2, "m3.large"), # number of middleware instances
+ and their type
+\end_layout
+
+\begin_layout Plain Layout
+"databaseUsername": "ubuntu", 
+\end_layout
+
+\begin_layout Plain Layout
+"databasePassword": "mepas$1$2$3$", 
+\end_layout
+
+\begin_layout Plain Layout
+"databaseName": "mepas", 
+\end_layout
+
+\begin_layout Plain Layout
+"databasePortNumber": 5432, 
+\end_layout
+
+\begin_layout Plain Layout
+"middlewarePortNumber": 6789, 
+\end_layout
+
+\begin_layout Plain Layout
+"runningTimeInSeconds": 600, 
+\end_layout
+
+\begin_layout Plain Layout
+"threadPoolSize": 20, 
+\end_layout
+
+\begin_layout Plain Layout
+"connectionPoolSize": 20, 
+\end_layout
+
+\begin_layout Plain Layout
+"totalClients": 100, 
+\end_layout
+
+\begin_layout Plain Layout
+"totalQueues": 50, 
+\end_layout
+
+\begin_layout Plain Layout
+"messageSize": 20, 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+
+\backslash
+
 \end_layout
 
 \end_inset
 
-.
- By naming the instances with 
-\begin_inset Quotes eld
+
+\end_layout
+
+\begin_layout Plain Layout
+# mappings maps client instance to middleware instances in the form (a,
+ b)
+\end_layout
+
+\begin_layout Plain Layout
+# where a corresponds to the index of a client instance and b to the index
+ of
+\end_layout
+
+\begin_layout Plain Layout
+# a middleware instance.
+ Indexes start from 0.
+\end_layout
+
+\begin_layout Plain Layout
+"mappings": [(0, 0), (1, 1)], 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+
+\backslash
+
+\end_layout
+
 \end_inset
 
-client
-\begin_inset Quotes erd
-\end_inset
 
-, 
-\begin_inset Quotes eld
-\end_inset
+\end_layout
 
-middleware
-\begin_inset Quotes erd
-\end_inset
+\begin_layout Plain Layout
+# corresponds to the numberOfClients per instance and the startingId of
+ every client.
+\end_layout
 
- or 
-\begin_inset Quotes eld
-\end_inset
-
-database
-\begin_inset Quotes erd
-\end_inset
-
+\begin_layout Plain Layout
+# First tuple corresponds to the first client instance, second to the second,
+ etc.
  
 \end_layout
 
-\begin_layout Standard
-The three most important classes needed for the experiments are the 
-\shape italic
-Client
-\shape default
-, the 
-\shape italic
-Middleware
-\shape default
- and the 
-\shape italic
-Database
-\shape default
- class.
- Let us see each one of them.
+\begin_layout Plain Layout
+"clientsData": [(50, 1), (50, 51)], 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+
+\backslash
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+"variable": "threadPoolSize", # value that is going to be changed for the
+ experiments
+\end_layout
+
+\begin_layout Plain Layout
+"values": [5, 10, 15] # possible values to try, in this case these are the
+ possible thread pool sizes
+\end_layout
+
+\begin_layout Plain Layout
+}
+\end_layout
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Experiment Configuration
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "experimentConf"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
-Talk about pexpect and how awesome it is!
-\end_layout
+The configuration shown in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "experimentConf"
 
-\begin_layout Subsection*
-EC2 Instances
-\end_layout
+\end_inset
 
-\begin_layout Standard
-Initially we created an instance based on 
+ cannot be used for all kind of experiments.
+ For example in an experiment trying to increase two values at the same
+ time it cannot be immediately used.
+ In such cases a small addition was done inside the 
+\shape italic
+for
+\shape default
+ loop of our experiments.
+ For instance if we needed to run an experiment increasing both the number
+ of threads and the number of connections we could just use the given configurat
+ion and also do 
+\shape italic
+conf[
 \begin_inset Quotes eld
 \end_inset
 
-Ubuntu Server 14.04 LTS (HVM), SSD Volume Type
+connectionPoolSize
 \begin_inset Quotes erd
 \end_inset
 
- Amazon Machine Image (AMI) and we installed the following:
-\end_layout
-
-\begin_layout Standard
-openjdk-7 jdk
-\end_layout
-
-\begin_layout Standard
-dstat
-\end_layout
-
-\begin_layout Standard
-iperf
-\end_layout
-
-\begin_layout Standard
-htop
-\end_layout
-
-\begin_layout Standard
-We created an image of our created instance to be used for the generation
- of future instances.
- The created image can be used to create instances for clients and middlewares.
-\end_layout
-
-\begin_layout Standard
-We created a general security group to be used by all instances that allowed
- everybody to pass by.
-\end_layout
-
-\begin_layout Standard
-Similarly we installed in another instance PostgreSQL, dstat ...
- to be used for databases and we created an image of it.
- For the database the following things need to also be changed (Configuration
- file allowing outside hosts ...) 
-\end_layout
-
-\begin_layout Standard
-After doing so we had the instances ready for the experiments.
- 
-\end_layout
-
-\begin_layout Standard
-Do the following http://superuser.com/questions/331167/why-cant-i-ssh-copy-id-to-
-an-ec2-instance ssh-add privatekye file to login to the ec2 instances without
- having to do `ssh -i ~/...
- ` every time!! AWESOME!! 
+]
+\shape default
+ in our 
+\shape italic
+for
+\shape default
+ loop.
 \end_layout
 
 \begin_layout Subsection*
@@ -4537,8 +4858,10 @@ experiments/code
 \shape italic
 getTrace()
 \shape default
-: since trace somehow is a unique experiment this method was created to
- ..
+: since the trace is a different kind of an experiment with respect to the
+ others it also has its own function for analyzing it.
+ This function was used to break the trace in intervals of one minute and
+ calculating throughput and response time.
 \end_layout
 
 \begin_layout Itemize
@@ -4546,7 +4869,7 @@ getTrace()
 \shape italic
 getThroughput()
 \shape default
-: returns througput.
+: this function is used to calculate the throughput of an experiment.
 \end_layout
 
 \begin_layout Itemize
@@ -4554,7 +4877,7 @@ getThroughput()
 \shape italic
 getResponseTime()
 \shape default
-: find the response time.
+: this function is used to calculate the response time of an experiment.
 \end_layout
 
 \begin_layout Itemize
@@ -4562,15 +4885,15 @@ getResponseTime()
 \shape italic
 getTimeSpentOnEachComponent()
 \shape default
-: finds the average time spent on each component of the middleware.
- For example, the amount of time that was spent waiting to get picked by
- a worker thread, the amount of time waiting to get a connection, etc.
+: this function uses the middleware logs to find the average time spent
+ on each component of the middleware, e.g.
+ on the worker threads, on the connections queue etc.
 \end_layout
 
 \begin_layout Standard
 All the afforementioned functions use extensively UNIX commands like awk,
  sed, grep, cat, wc and others.
- This was done to achieve better performance.
+ This was done to achieve better faster analysis of the logs.
  For example for calculating the number of lines of a file a 
 \begin_inset Quotes eld
 \end_inset
@@ -4608,22 +4931,10 @@ name "sec:experiments"
 \end_layout
 
 \begin_layout Standard
-BALE HYPOTHESIS ..
- .kai blah 
-\end_layout
-
-\begin_layout Standard
-All successfull receiveals bla blah
-\end_layout
-
-\begin_layout Standard
---------------- In the report mention that in the throughput all the requests
- were successful, I had no failed responses.
-\end_layout
-
-\begin_layout Standard
-ALl the response times and througputs correspond to the client side unless
- stated otherwise.
+In this section we present the experiments conducted including their evaluation.
+ In all the experiments below throughput and response time corresponds to
+ the client's unless said otherwise.
+ Also all the receivals of messages in our experiments were successful.
 \end_layout
 
 \begin_layout Subsection*
@@ -4631,18 +4942,34 @@ Stability
 \end_layout
 
 \begin_layout Standard
-Clients and MW was t2.small and db t2.medium.
+In order to check our system's stability we ran an one hour trace with the
+ following configuration:
+\end_layout
+
+\begin_layout Itemize
+2 t2.small client instances with 50 clients each
+\end_layout
+
+\begin_layout Itemize
+1 t2.small middleware instance with 20 middleware threads and 20 connections
+\end_layout
+
+\begin_layout Itemize
+1 t2.medium database
 \end_layout
 
 \begin_layout Standard
-As can be seen in Figure ...
- Used getTrace method from ResultsReader.py to extract the data.
- Response time was averaged over the interval of one minute.
- While throughput was calculated per second and averaged over the interval
+In Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "trace"
+
+\end_inset
+
+ the throughput and response time values of our traces can been seen.
+ In this figure response time was averaged over the interval of one minute
+ while throughput was calculated per second and averaged over the interval
  of one minute.
- I.e.
- In minute i corresponds to the averaged time from (i - 1, i].
- The data were generated using the getTrace from ResultReader
 \end_layout
 
 \begin_layout Standard
@@ -4685,6 +5012,13 @@ Response time and throughput of an one hour trace with 2 client instances
 \end_inset
 
 
+\begin_inset CommandInset label
+LatexCommand label
+name "trace"
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -4693,28 +5027,31 @@ Response time and throughput of an one hour trace with 2 client instances
 \end_layout
 
 \begin_layout Standard
-BECAUSE THROUGHPUT goes like this I decided to just plot the througput for
- all the three types of requests siince most througputs for the requests
- are the same.
- For every send you have a list and for every send a receive.
-\end_layout
-
-\begin_layout Standard
-Let's see where time was spent 
+The times spent on a specific request:
 \end_layout
 
 \begin_layout Standard
 \begin_inset Tabular
-<lyxtabular version="3" rows="5" columns="2">
+<lyxtabular version="3" rows="4" columns="3">
 <features rotate="0" tabularvalignment="middle">
 <column alignment="center" valignment="top">
 <column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
 <row>
 <cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
-adfs
+Type of Request
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Average Response Time (ms)
 \end_layout
 
 \end_inset
@@ -4723,7 +5060,7 @@ adfs
 \begin_inset Text
 
 \begin_layout Plain Layout
-dsafasdf
+Standard Deviation
 \end_layout
 
 \end_inset
@@ -4734,7 +5071,16 @@ dsafasdf
 \begin_inset Text
 
 \begin_layout Plain Layout
-CONNECTION: 0.000689706, 0.216034
+RECEIVE_MESSAGE
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+17.10725
 \end_layout
 
 \end_inset
@@ -4743,7 +5089,7 @@ CONNECTION: 0.000689706, 0.216034
 \begin_inset Text
 
 \begin_layout Plain Layout
-
+5.51819 
 \end_layout
 
 \end_inset
@@ -4754,27 +5100,16 @@ CONNECTION: 0.000689706, 0.216034
 \begin_inset Text
 
 \begin_layout Plain Layout
-REQUEST: 3.23399, 2.38918
+SEND_MESSAGE
 \end_layout
 
 \end_inset
 </cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
-IN WORKER THREAD QUEUE: 13.3207, 4.17608
+17.1355
 \end_layout
 
 \end_inset
@@ -4783,7 +5118,7 @@ IN WORKER THREAD QUEUE: 13.3207, 4.17608
 \begin_inset Text
 
 \begin_layout Plain Layout
-
+5.543025
 \end_layout
 
 \end_inset
@@ -4794,7 +5129,16 @@ IN WORKER THREAD QUEUE: 13.3207, 4.17608
 \begin_inset Text
 
 \begin_layout Plain Layout
-TIMES A SOCKET IS WORKED for a REQUEST TO BE READ: 1, 0
+LIST_QUEUES
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+15.7621
 \end_layout
 
 \end_inset
@@ -4803,7 +5147,7 @@ TIMES A SOCKET IS WORKED for a REQUEST TO BE READ: 1, 0
 \begin_inset Text
 
 \begin_layout Plain Layout
-
+4.689385
 \end_layout
 
 \end_inset
@@ -4817,117 +5161,392 @@ TIMES A SOCKET IS WORKED for a REQUEST TO BE READ: 1, 0
 \end_layout
 
 \begin_layout Standard
+The average response time of all types of requests is 16.668.
+\end_layout
+
+\begin_layout Standard
+The time spent on each component during the trace was also calculated and
+ can be seen in the table below.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="5" columns="3">
+<features rotate="0" tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Time spent on ...
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Average Response Time (ms)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Standard Deviation
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+waiting to be picked up by a MW thread
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+13.3207
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4.17608
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+waiting to get a DB connection
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.000689706
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.216034
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+executing a DB request
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3.23399
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2.38918
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+working inside the MW thread
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3.33539
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2.51786
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Based on the values of the above table we would expect that network time
+ between the client and the middleware and from the middleware back to the
+ client on average is 16.668 - (13.32 + 3.3539) = WTF??
+\end_layout
+
+\begin_layout Standard
 TIMES TO ENTER: 1.00164, 0.163046 TIMES (NOTHING) INSIDE: 0.0201363, 0.570286
  TIMES (DOING) INSIDE: 3.33539, 2.51786
 \end_layout
 
 \begin_layout Standard
-Averages and SD
+TIMES A SOCKET IS WORKED for a REQUEST TO BE READ: 1, 0
 \end_layout
 
 \begin_layout Standard
-25 17.10725 5.51819 RECEIVE MESSAGE
-\end_layout
-
-\begin_layout Standard
-25 17.1355 5.543025 SEND MESSAGE
-\end_layout
-
-\begin_layout Standard
-25 15.7621 4.689385 LIST QUEUES
-\end_layout
-
-\begin_layout Standard
-16.668 average response time in total Gia ola ta requests
-\end_layout
-
-\begin_layout Standard
-Talk about list queues(Since this was the trace and we just wanted to verify
- that our system is stable when it is being executed for a fair amount of
- time we did not really do any assumptions about the results.
- There are some things that actually can be asily explained, the time to
- receive a connection is technically 0, this is because we have the same
- amount of worker threads to connections.
+The time to receive a connection is almost non-existant, this is because
+ we have the same amount of worker threads to connections, so when a worker
+ thread asks for a connection one can be immediately given back to the trhead.
  The time waiting for a worker thread is quite high and was to be expected
  since we have 100 clients and only 20 workwer threads.
  So at any point in time 80 clients connections could possilby be waiting.
  Network time is also really low and this makes sense since the throughput
  between two instances is (iperf).
- List queues check db time and why they are faster, not doing so much with
- the database ...
- verify this by checking request time for all types of requests.
 \end_layout
 
 \begin_layout Standard
-DB REQUEST per type of request
+As we can see our system is stable under load.
+ In the Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "trace"
+
+\end_inset
+
+ we see that the througput for the RECEIVE_MESSAGE, SEND_MESSAGE and LIST_QUEUES
+ reqeuests is pretty much the same.
+ This is because every client issues the exact amount of SEND_MESSAGE and
+ LIST_QUEUES requests and because a RECEIVE_MESSAGE is only called if a
+ message is going to be received.
+ The average response time of the LIST_QUEUES is a bit lower than the response
+ time of the two other types of requets.
+ Our assumption was that this is because LIST_QUEUES does not modify the
+ database, neither with an INSERT or a DELETE.
+ To verify this claim we checked the db request average response time for
+ every type of request shown below:
 \end_layout
 
 \begin_layout Standard
-grep "DB REQUEST
-\backslash
-tLIST_QUEUES" middlewareInstance1/m*.csv | awk -F'
-\backslash
-t' '{ sum += $2; n++; } END { if (n > 0) printf sum /n }' 2.38218
+\begin_inset Tabular
+<lyxtabular version="3" rows="4" columns="2">
+<features rotate="0" tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Type of Request
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Average Database Response Time (ms)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+RECEIVE_MESSAGE
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3.60231
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+SEND_MESSAGE
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3.71801
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+LIST_QUEUES
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2.38218
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
-grep "DB REQUEST
-\backslash
-tSEND_MESSAGE" middlewareInstance1/m*.csv | awk -F'
-\backslash
-t' '{ sum += $2; n++; } END { if (n > 0) printf sum /n }' 3.71801
+Finally we not that in our trace 99.7% of the requests were served in less
+ than 50ms, 97% in under 25ms and 86% under 20ms.
 \end_layout
 
 \begin_layout Standard
-grep "DB REQUEST
-\backslash
-tRECEIVE_MESSAGE" middlewareInstance1/m*.csv | awk -F'
-\backslash
-t' '{ sum += $2; n++; } END { if (n > 0) printf sum /n }' 3.60231
-\end_layout
-
-\begin_layout Standard
-TIME WISE (for all request ...
- < 50ms are 99.7% of the requests 
-\end_layout
-
-\begin_layout Standard
-< 50 0.997697
-\end_layout
-
-\begin_layout Standard
-< 25 0.97127
-\end_layout
-
-\begin_layout Standard
-< 20 0.869102
-\end_layout
-
-\begin_layout Standard
-< 23 0.952159
-\end_layout
-
-\begin_layout Standard
-< 22 0.9357
-\end_layout
-
-\begin_layout Standard
-VERIFY with 
+As was mentioned earlier in thsi report, we have a 
 \series bold
 closed system
 \series default
- STUFF
+.
+ This means that interactive response time law should apply to our results.
+ The interactive law states that 
+\begin_inset Formula $R=\frac{N}{X}-Z$
+\end_inset
+
+ where 
+\begin_inset Formula $R$
+\end_inset
+
+ is the resonse time, 
+\begin_inset Formula $N$
+\end_inset
+
+ is the number of clients issuing requests, 
+\begin_inset Formula $Z$
+\end_inset
+
+ is the think time and 
+\begin_inset Formula $X$
+\end_inset
+
+ is the throughput.
+ Our response time is about 16.668ms, we have 100 clients and our think time
+ is 0, in reality its a positive value since we have to serialize and deserializ
+e objects but this time is negligible.
+ This means that throughput should be 
+\begin_inset Formula $X=\frac{N}{R+Z}=\frac{100}{16.668+0}=5.999$
+\end_inset
+
+.
+ This value 
+\begin_inset Formula $5.999$
+\end_inset
+
+ corresponds to the number of requests per ms.
+ Per second it is 
+\begin_inset Formula $5999$
+\end_inset
+
+ which is close to the average throughput (of all the trace) that is 
+\begin_inset Formula $5897$
+\end_inset
+
+ requests per second.
+ In all the upcoming results we have verified our results using the interactive
+ law.
 \end_layout
 
-\begin_layout Subsubsection*
+\begin_layout Section*
 Warm Up and Cool Down
 \end_layout
 
 \begin_layout Standard
-All the experiments data points were executed for 10 minutes, for the following
- results the warm up that was removed was 2 minutes while the cool down
- was 1 minute.As we saw from the trace ...
- This was done by using sed.
+For all the following experiments, every data point in the plots corresponds
+ to 10 minute execution of which.
+ From those 10 minutes the first 2 minutes have been removed as the warm
+ up phase and the last 1 minute as the cool down phase.
+ Those number were derived by checking the trace and seeing that after 2
+ minutes our system stabilizes.
+\end_layout
+
+\begin_layout Subsection*
+Throughput Plots
+\end_layout
+
+\begin_layout Standard
+In all the following plots the througput was averaged per 20seconds 
 \end_layout
 
 \begin_layout Subsection*
@@ -4935,7 +5554,91 @@ Increasing the Message Size
 \end_layout
 
 \begin_layout Standard
-througput was averaged per 20seconds 
+In this experiment we increased the size of the messages that are sent between
+ the clients.
+ While running those experiments we came to this failed responses:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Box Boxed
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+status open
+
+\begin_layout Plain Layout
+ch.ethz.inf.asl.exceptions.MessagingProtocolException: 
+\end_layout
+
+\begin_layout Plain Layout
+failed to send message ERROR: could not extend file "base/16389/16427.6":
+ No space left on device Hint: Check free disk space.
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+After looking around for this problem we realized the problem was the amount
+ of available memory in our instance's disk.
+ We solved this problem by increasing the volume of our disks and rerun
+ the experiments.
+ Afterwards no such failed response existed.
+ The disk space was increasing because we are not VACUUMing
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+http://www.postgresql.org/docs/9.3/static/sql-vacuum.html
+\end_layout
+
+\end_inset
+
+ our database and it is known that tuples that are deleted are not physically
+ removed from their table until a VACUUM is done.
+\end_layout
+
+\begin_layout Standard
+Configuration: The experiment was concuded with:
+\end_layout
+
+\begin_layout Itemize
+1 m3.large client instance with 50 clients 
+\end_layout
+
+\begin_layout Itemize
+1 m3.large middleware with 20 middleware threads and 20 connections
+\end_layout
+
+\begin_layout Itemize
+1 m3.large database
+\end_layout
+
+\begin_layout Itemize
+message sizes values taken were [1, ...
+ 10^6] in characters
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+Hypothesis
+\series default
+: We expect to have increased response times as well as decreased throughput.
+ This is because by increasing the message size network time needed to send
+ and receive a message will increase but mostly because the database is
+ going to become slower when handling more data.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -4980,6 +5683,13 @@ Increasing the Message Size
 \end_inset
 
 
+\begin_inset CommandInset label
+LatexCommand label
+name "increasingMessageSize"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Plain Layout
@@ -4992,86 +5702,73 @@ Increasing the Message Size
 \end_layout
 
 \begin_layout Standard
-When running experiment increase number of message I got the following error
- from the client logs:
-\end_layout
+As we can see in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "increasingMessageSize"
 
-\begin_layout Standard
-ch.ethz.inf.asl.exceptions.MessagingProtocolException: failed to send messageERROR:
- could not extend file "base/16389/16427.6": No space left on device Hint:
- Check free disk space.
- Where: SQL statement "INSERT INTO message (sender_id, receiver_id, queue_id,
- arrival_time, message) VALUES (p_sender_id, p_receiver_id, p_queue_id,
- p_arrival_time, p_message)" PL/pgSQL function send_message(integer,integer,inte
-ger,timestamp without time zone,text) line 3 at SQL statement at ch.ethz.inf.asl.cli
-ent.ClientMessagingProtocolImpl.receiveResponse(Unknown Source) at ch.ethz.inf.asl.cli
-ent.ClientMessagingProtocolImpl.sendMessage(Unknown Source) at ch.ethz.inf.asl.client.C
-lientRunnable.sendMessage(Unknown Source) at ch.ethz.inf.asl.client.ClientRunnable.run(
-Unknown Source) at java.lang.Thread.run(Thread.java:745) ubuntu@ip-172-31-14-163:~/l
-ogs$
-\end_layout
+\end_inset
 
-\begin_layout Standard
-increased size of database
-\end_layout
+ there is a huge increase in the response time as well as a huge decrease
+ in the througput as expected.
+ We also see that LIST_QUEUES request have in general quite high response
+ time but less than both 
+\begin_inset Quotes eld
+\end_inset
 
-\begin_layout Standard
-2014-11-05 21:29:30 UTC HINT: Consider increasing the configuration parameter
- "checkpoint_segments".
- 2014-11-05 21:29:32 UTC LOG: checkpoints are occurring too frequently (2
- seconds apart) 2014-11-05 21:29:32 UTC HINT: Consider increasing the configurat
-ion parameter "checkpoint_segments".
- (in the 40000 characters per message)
-\end_layout
+SEND_MESSAGE
+\begin_inset Quotes erd
+\end_inset
 
-\begin_layout Standard
-DISABLE CONSTRAINT ...
+ and 
+\begin_inset Quotes eld
+\end_inset
+
+RECEIVE_MESSAGE
+\begin_inset Quotes erd
+\end_inset
+
+.
+ This was expected but we weren't expecting such a huge response time for
+ LIST_QUEUES requests since they do not move any message around.
  
 \end_layout
 
-\begin_layout Subsection*
-2
-\begin_inset script superscript
+\begin_layout Standard
+To further investigate why this was the case we checked PostgreSQL logs
+ were we found this message: 
+\begin_inset Quotes eld
+\end_inset
+
+HINT: Consider increasing the configuration parameter "checkpoint_segments".
+ 2014-11-05 21:29:32 UTC LOG: checkpoints are occurring too frequently (2
+ seconds apart)
+\begin_inset Quotes erd
+\end_inset
+
+.
+ A checkpoint is: 
+\begin_inset Quotes eld
+\end_inset
+
+a point in the transaction log sequence at which all data files have been
+ updated to reflect the information in the log.
+ All data files will be flushed to disk.
+\begin_inset Quotes erd
+\end_inset
+
+
+\begin_inset Foot
+status open
 
 \begin_layout Plain Layout
-k(=?TODO)
+http://www.postgresql.org/docs/9.3/static/sql-checkpoint.html
 \end_layout
 
 \end_inset
 
- Experiment
-\end_layout
-
-\begin_layout Standard
-Before starting I would like to talk about love the one and only one.
-\end_layout
-
-\begin_layout Standard
-Factors
-\end_layout
-
-\begin_layout Standard
-number of middleware threads
-\end_layout
-
-\begin_layout Standard
-number of connections
-\end_layout
-
-\begin_layout Standard
-instance type of middleware
-\end_layout
-
-\begin_layout Standard
-instance type of database
-\end_layout
-
-\begin_layout Standard
-dfs
-\end_layout
-
-\begin_layout Standard
-16 experiments in total for 10 minutes each
+.
+ So this could explain why LIST_QUEUES had such a huge response time
 \end_layout
 
 \begin_layout Subsection*
@@ -5173,6 +5870,56 @@ Increasing the Number of Threads
 \end_layout
 
 \begin_layout Subsection*
+Increasing Both Threads and Connections
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename increasingBothClientsAndConnections/throughput/throughput.eps
+	scale 120
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename increasingBothClientsAndConnections/responseTime/responseTime.eps
+	scale 120
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Increasing Both the Number of Threads and Connections
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection*
 Increasing the Number of Clients
 \end_layout
 
@@ -5223,53 +5970,11 @@ Increasing the Number of Clients
 \end_layout
 
 \begin_layout Subsection*
-Increasing Both Threads and Connections
+Speedup
 \end_layout
 
 \begin_layout Standard
-\begin_inset Float figure
-wide false
-sideways false
-status open
-
-\begin_layout Plain Layout
-\align center
-\begin_inset Graphics
-	filename increasingBothClientsAndConnections/throughput/throughput.eps
-	scale 120
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
-\align center
-\begin_inset Graphics
-	filename increasingBothClientsAndConnections/responseTime/responseTime.eps
-	scale 120
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
-\align center
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-Increasing Both Threads and Connections
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-
+increased number of connections to 200
 \end_layout
 
 \begin_layout Subsection*
@@ -5347,31 +6052,6 @@ html
  and apparently the m3.xlarge instance was in another zone.
  We had to rerun 8 of the 16 experiments and as could be show now they make
  sense.
-\end_layout
-
-\begin_layout Standard
------
-\end_layout
-
-\begin_layout Standard
-During the initial testing phase of the system it happened to notice some
- really high response time, in the magnitude of hundreds milliseconds.
- By follow up search it came to our conclusion that some database requests
- were extremely slow.
- After realizing that we checked the PostgreSQL log files were we found:
-\end_layout
-
-\begin_layout Standard
-2014-11-03 20:47:49 UTC LOG: checkpoints are occurring too frequently (26
- seconds apart) 2014-11-03 20:47:49 UTC HINT: Consider increasing the configurat
-ion parameter "checkpoint_segments".
-\end_layout
-
-\begin_layout Standard
-After reading about checkpoints we realized ...
- so we increased the number of checkpoint_segments to 10 and this problem
- never occured again.
- We checked after every experiment ?? TODO
 \end_layout
 
 \begin_layout Section

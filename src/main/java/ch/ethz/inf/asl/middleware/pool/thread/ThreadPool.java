@@ -3,7 +3,6 @@ package ch.ethz.inf.asl.middleware.pool.thread;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 import static ch.ethz.inf.asl.utils.Verifier.verifyTrue;
 

@@ -1,16 +1,15 @@
 package ch.ethz.inf.asl.endtoend;
 
 import ch.ethz.inf.asl.client.Client;
-import ch.ethz.inf.asl.utils.ConfigurationReader;
 import ch.ethz.inf.asl.common.request.Request;
 import ch.ethz.inf.asl.common.response.Response;
 import ch.ethz.inf.asl.middleware.Middleware;
 import ch.ethz.inf.asl.testutils.InitializeDatabase;
+import ch.ethz.inf.asl.utils.ConfigurationReader;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
 import java.security.Permission;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -20,8 +19,7 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 
 /**
- * End to end testing for the messaging queueing system. TODO
- * single-threaded?
+ * End to end testing for the whole system.
  */
 public class EndToEnd {
 

@@ -6,7 +6,7 @@ set ylabel "Response time (ms)"
 set title "Increasing Number of Threads and Connections: 1 Client Instance (50 clients/instance), 1 MW" 
 
 #set key bottom right
-set xrange [0:71]
+set xrange [0:101]
 set yrange [0:55]
 
 

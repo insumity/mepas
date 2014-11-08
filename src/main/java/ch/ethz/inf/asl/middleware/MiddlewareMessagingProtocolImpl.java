@@ -2,9 +2,8 @@ package ch.ethz.inf.asl.middleware;
 
 import ch.ethz.inf.asl.common.Message;
 import ch.ethz.inf.asl.common.MessageConstants;
-import ch.ethz.inf.asl.exceptions.MessagingProtocolException;
 import ch.ethz.inf.asl.common.MessagingProtocol;
-import ch.ethz.inf.asl.logger.Logger;
+import ch.ethz.inf.asl.exceptions.MessagingProtocolException;
 import ch.ethz.inf.asl.utils.Helper;
 import ch.ethz.inf.asl.utils.Optional;
 
@@ -60,14 +59,14 @@ public class MiddlewareMessagingProtocolImpl implements MessagingProtocol {
 
     @Override
     public void sayGoodbye() {
-        // FIXME ... don't delete any client!
-//        try (CallableStatement stmt = connection.prepareCall(DELETE_CLIENT)) {
-//            stmt.setInt(1, requestingUserId);
-//            stmt.execute();
-//        } catch (SQLException e) {
-//            throw new MessagingProtocolException("failed to delete client" + e.getMessage(), e);
-//        }
-
+        // doesn't actually delete the client since it could be that still running clients
+        // might want to send a message to this client
+        //        try (CallableStatement stmt = connection.prepareCall(DELETE_CLIENT)) {
+        //            stmt.setInt(1, requestingUserId);
+        //            stmt.execute();
+        //        } catch (SQLException e) {
+        //            throw new MessagingProtocolException("failed to delete client" + e.getMessage(), e);
+        //        }
     }
 
     @Override
@@ -139,7 +138,9 @@ public class MiddlewareMessagingProtocolImpl implements MessagingProtocol {
     }
 
     private Message getMessageFromResultSet(ResultSet resultSet) throws SQLException {
-        resultSet.getInt(1); // corresponds to rowId, perhaps don't return it ... TODO FIXME
+
+        resultSet.getInt(1); // corresponds to id of the retrieved row, not needed!
+
         int readSenderId = resultSet.getInt(2);
         Integer readReceiverId;
 
@@ -164,7 +165,6 @@ public class MiddlewareMessagingProtocolImpl implements MessagingProtocol {
     }
 
 
-    // TODO FIXME duplicate code ... when reading ResultSet
     @Override
     public Optional<Message> receiveMessage(int queueId, boolean retrieveByArrivalTime) {
 
@@ -183,7 +183,6 @@ public class MiddlewareMessagingProtocolImpl implements MessagingProtocol {
                 Message readMessage = getMessageFromResultSet(rs);
 
                 if (rs.next()) {
-                    // FIXME
                     throw new MessagingProtocolException("more than 2 messages received");
                 }
 
@@ -210,7 +209,6 @@ public class MiddlewareMessagingProtocolImpl implements MessagingProtocol {
                 Message readMessage = getMessageFromResultSet(rs);
 
                 if (rs.next()) {
-                    // FIXME
                     throw new MessagingProtocolException("more than 2 messages received");
                 }
 
@@ -236,7 +234,6 @@ public class MiddlewareMessagingProtocolImpl implements MessagingProtocol {
             Message readMessage = getMessageFromResultSet(rs);
 
             if (rs.next()) {
-                // FIXME
                 throw new MessagingProtocolException("more than 2 messages read");
             }
 

@@ -5,7 +5,6 @@ import ch.ethz.inf.asl.common.MessagingProtocol;
 import ch.ethz.inf.asl.common.request.*;
 import ch.ethz.inf.asl.common.response.*;
 import ch.ethz.inf.asl.exceptions.MessagingProtocolException;
-import ch.ethz.inf.asl.logger.Logger;
 import ch.ethz.inf.asl.utils.Helper;
 import ch.ethz.inf.asl.utils.Optional;
 
@@ -58,7 +57,8 @@ public class ClientMessagingProtocolImpl implements MessagingProtocol {
         this.isEndToEndTest = isEndToEndTest;
     }
 
-    private void sendRequest(Request request) {
+    // send a request to the middleware through the underlying socket
+    protected void sendRequest(Request request) {
         try {
             byte[] data = Helper.serialize(request);
 
@@ -72,7 +72,8 @@ public class ClientMessagingProtocolImpl implements MessagingProtocol {
         }
     }
 
-    private <R extends Response> R receiveResponse() {
+    // receives a response from the middleware through the underlying socket
+    protected <R extends Response> R receiveResponse() {
         try {
 
             int length = dataInputStream.readInt();

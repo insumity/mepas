@@ -5,7 +5,6 @@ import org.testng.annotations.Test;
 import java.sql.Timestamp;
 import java.util.NoSuchElementException;
 
-import static ch.ethz.inf.asl.common.MessageConstants.MAXIMUM_MESSAGE_LENGTH;
 import static ch.ethz.inf.asl.testutils.TestConstants.SMALL;
 import static org.testng.Assert.*;
 
@@ -14,7 +13,6 @@ public class MessageTest {
     private static final String MESSAGE_CONTENT = "this is the content of a message! Let's include some more characters" +
             "just for the fun of it: Αυτοί είναι ελληνικοί χαρακτήρες!";
 
-    // should be NullPointerException ?? TODO FIXME or Ille
     @Test(groups = SMALL, expectedExceptions = NullPointerException.class)
     public void testCannotCreateMessageWithNullTimestamp() {
         new Message(11, 34, 2, null, "");

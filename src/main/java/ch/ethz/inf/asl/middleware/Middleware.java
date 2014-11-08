@@ -1,10 +1,10 @@
 package ch.ethz.inf.asl.middleware;
 
-import ch.ethz.inf.asl.utils.ConfigurationReader;
 import ch.ethz.inf.asl.common.request.Request;
 import ch.ethz.inf.asl.common.response.Response;
 import ch.ethz.inf.asl.middleware.pool.connection.ConnectionPool;
 import ch.ethz.inf.asl.middleware.pool.thread.ThreadPool;
+import ch.ethz.inf.asl.utils.ConfigurationReader;
 
 import java.io.IOException;
 import java.net.ServerSocket;

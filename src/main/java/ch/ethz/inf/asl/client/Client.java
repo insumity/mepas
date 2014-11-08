@@ -1,10 +1,10 @@
 package ch.ethz.inf.asl.client;
 
-import ch.ethz.inf.asl.utils.ConfigurationReader;
 import ch.ethz.inf.asl.common.request.Request;
 import ch.ethz.inf.asl.common.response.Response;
 import ch.ethz.inf.asl.logger.EmptyLogger;
 import ch.ethz.inf.asl.logger.Logger;
+import ch.ethz.inf.asl.utils.ConfigurationReader;
 
 import java.io.IOException;
 import java.util.LinkedList;

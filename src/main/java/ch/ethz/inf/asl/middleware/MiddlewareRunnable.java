@@ -100,7 +100,7 @@ public class MiddlewareRunnable implements Runnable {
             InternalSocket internalSocket = null;
             try {
                 internalSocket = sockets.take();
-                long startTime = System.currentTimeMillis(); // FIXME remove
+                long startTime = System.currentTimeMillis();
                 internalSocket.timesEntered += 1;
                 internalSocket.timesToReadARequest += 1;
 
@@ -175,7 +175,6 @@ public class MiddlewareRunnable implements Runnable {
                         oos.flush();
                     }
                     catch (IOException ioe) {
-                        // TODO LOG ERROR
                         sockets.remove(internalSocket);
                         continue;
                     }

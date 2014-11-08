@@ -5,10 +5,14 @@ import java.sql.*;
 import java.util.LinkedList;
 import java.util.List;
 
-// Where is this class needed? This shouldn't be here for so many reasons!!! FIXME
+/**
+ * This class contains auxiliary static methods to be used by tests operating on the databases.
+ */
 public class InitializeDatabase {
 
-    /* gets a connection for the given database */
+    /**
+     * Gets a connection for the given database.
+     */
     public static Connection getConnection(String host, int portNumber, String databaseName, String username, String password)
             throws SQLException, ClassNotFoundException {
 
@@ -17,8 +21,10 @@ public class InitializeDatabase {
         return DriverManager.getConnection(connectionURL, username, password);
     }
 
-    /* issues the command `psql -U username -d database -f filePath` and actually executes the SQL commands
-       that reside in the file for the given database. Password is assumed to exist in the .pgpass file in the home directory of the user */
+    /**
+     * Issues the command `psql -U username -d database -f filePath` and actually executes the SQL commands
+     * that reside in the file for the given database. Password is assumed to exist in the .pgpass file in the home directory of the user
+     */
     private static void loadSQLFile(String username, String database, String filePath) throws IOException, InterruptedException {
         final String [] cmd = { "psql",
                 "-U", username,
@@ -40,7 +46,9 @@ public class InitializeDatabase {
         }
     }
 
-    /* drops the current database and creates one with the same name to be used by the middleware */
+    /**
+     * Drops the current database and creates one with the same name to be used by the middleware.
+     */
     public static void initializeDatabase(String host, int portNumber, String databaseName, String username, String password,
                                           String[] filePathsToBeExecutedForThisDatabase)
             throws ClassNotFoundException, SQLException, IOException, InterruptedException {
@@ -90,7 +98,9 @@ public class InitializeDatabase {
     }
 
 
-    /* drops the current database and creates one with the same name to be used by the middleware */
+    /**
+     * Drops the current database and creates one with the same name to be used by the middleware.
+     */
     public static void initializeDatabaseWithClientsAndQueues(String host, int portNumber, String databaseName, String username,
                                                               String password, String[] filePathsToBeExecutedForThisDatabase,
                                                               int numberOfClients, int numberOfQueues)

@@ -1,13 +1,9 @@
 package ch.ethz.inf.asl.common.request;
 
-import ch.ethz.inf.asl.common.Message;
 import ch.ethz.inf.asl.common.MessagingProtocol;
-import ch.ethz.inf.asl.common.response.DeleteQueueResponse;
-import ch.ethz.inf.asl.common.response.ReadMessageResponse;
 import ch.ethz.inf.asl.common.response.Response;
 import ch.ethz.inf.asl.common.response.SendMessageResponse;
 import ch.ethz.inf.asl.exceptions.MessagingProtocolException;
-import ch.ethz.inf.asl.utils.Optional;
 import org.testng.annotations.Test;
 
 import static ch.ethz.inf.asl.testutils.TestConstants.SMALL;
