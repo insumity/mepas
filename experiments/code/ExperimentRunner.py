@@ -10,14 +10,6 @@ from Middleware import Middleware
 from EC2Instantiator import *
 from Utilities import *
 
-#
-# # read configuration file
-# conf = {}
-# execfile("configuration.py")
-# if not bool(conf):
-# print "The given configuration seems empty"
-# exit(1)
-
 conf = \
     {"nameOfTheExperiment": "../just_an_example",
      "placement": "us-west-2c",
@@ -76,7 +68,6 @@ call(["ant", "-buildfile", "../..", "jar"])
 if isfile("../mepas.jar"):
     print ">> executable JAR was created"
 
-# TODO : experiments names .. config file for running shit ...
 access_key = "AKIAIV45ZYABLMV25HBQ"
 secret_access = "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"
 instancesRetriever = EC2Instantiator(access_key, secret_access, conf["placement"])

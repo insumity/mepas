@@ -9,7 +9,7 @@ set title "Increasing Number of Threads and Connections: 1 Client Instance (50 c
 set key bottom right
 
 set xrange [0:101]
-set yrange [0:5000]
+set yrange [0:5100]
 
 
 # Line width of the axes

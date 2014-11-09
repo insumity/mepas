@@ -6,11 +6,8 @@ import math
 import shutil
 import tempfile
 
-
-# prints one line for every minute containing average, standard deviation, throughput per second
-# to be used to plot the trace
+# calulates results tha are used by the trace
 import sys
-import threading
 
 
 def getTrace(experimentName, clientInstances, totalTimeInSeconds, typeOfMessage):
@@ -38,7 +35,6 @@ def getTrace(experimentName, clientInstances, totalTimeInSeconds, typeOfMessage)
     intervalWindowInMilliseconds = 60 * 1000
     totalTimeInMilliseconds = totalTimeInSeconds * 1000
 
-    # TODO the seperator is a tab
     minutes = 1
     for i in range(0, totalTimeInMilliseconds, intervalWindowInMilliseconds + 1):
         fileName = experimentName + "/all_clients.csv"
@@ -51,122 +47,29 @@ def getTrace(experimentName, clientInstances, totalTimeInSeconds, typeOfMessage)
 
 
         # average throughput every second in order to get standard deviation
-        # times = 0
-        # sum = 0
-        # sdeviation = 0
-        # for j in range(i, i + 60 * 1000, 1000):
-        # command = "awk -F'\t' '$1 >=" + str(j) + " && $1 < " + str(
-        # (j + 1000)) + " { print; }' " + fileName
-        #
-        # output = commands.getstatusoutput(command + " | " + "wc")
-        #
-        # # extract result from wc command
-        # numberOfRequests = int(" ".join(output[1].split()).split(' ', 1)[0])
-        #     sum += numberOfRequests
-        #     sdeviation += (numberOfRequests * numberOfRequests)
-        #     times += 1
-        #
-        #
-        # sdeviation = math.sqrt(sdeviation / times - ((sum / times) * (sum / times)))
-        # sys.stdout.write(" " + str(sum / times) + " " + str(sdeviation) + "\n")
-        # sys.stdout.flush()
-        print
+        times = 0
+        sum = 0
+        sdeviation = 0
+        for j in range(i, i + 60 * 1000, 1000):
+            command = "awk -F'\t' '$1 >=" + str(j) + " && $1 < " + str(
+            (j + 1000)) + " { print; }' " + fileName
+
+            output = commands.getstatusoutput(command + " | " + "wc")
+
+            # extract result from wc command
+            numberOfRequests = int(" ".join(output[1].split()).split(' ', 1)[0])
+            sum += numberOfRequests
+            sdeviation += (numberOfRequests * numberOfRequests)
+            times += 1
+
+
+        sdeviation = math.sqrt(sdeviation / times - ((sum / times) * (sum / times)))
+        sys.stdout.write(" " + str(sum / times) + " " + str(sdeviation) + "\n")
+        sys.stdout.flush()
 
         minutes += 1
 
-
-# getTrace("../AGAIN2k10MWThreads10Connections1MWSmallDBxLarge/1", 1, 600, "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
-
-
-def getAverageAndSd(middlewareInstanceDir, what, column):
-    avg = os.popen("grep -h '" + what + "' " + middlewareInstanceDir + "/*" + " | " +
-                   "awk -F'\\t' '{ sum += $" + column + "; n++ } END { if (n > 0) print sum / n; }' ").read()
-    sd = os.popen("grep -h '" + what + "' " + middlewareInstanceDir + "/*" + " | " +
-                  "awk -F'\\t' '{sum+=$" + column + "; n++; sumsq+=$" + column + "*$" + column + "} END {print sqrt(sumsq/n- (sum/n)**2)}' ").read()
-
-    return avg.rstrip(), sd.rstrip()
-
-
-def getData(experimentName, possibleValues, numberOfClientInstances, percentageToRemove):
-    # resultFile = experimentName + "/plot_data.csv"
-    # f = open(resultFile, 'w')
-    # f.close()
-
-    for variableValue in possibleValues:
-        print variableValue
-        average = 0.0
-        deviation = 0.0
-        # for removing warm up and cool down
-        newExperimentName = experimentName + "/" + str(variableValue)
-
-        # TODO .. delete temp directory
-        directoryForTempResults = tempfile.mkdtemp()
-        print directoryForTempResults
-
-        onlyfiles = []
-        for i in range(1, numberOfClientInstances + 1):
-            newNewExperimentName = newExperimentName + "/" + "clientInstance" + str(i)
-            os.mkdir(directoryForTempResults + "/" + "clientInstance" + str(i))
-
-            print newNewExperimentName
-            files = [f for f in listdir(newNewExperimentName) if isfile(join(newNewExperimentName, f))]
-            print files
-            for f in files:
-                system("cp " + newExperimentName + "/" + "clientInstance" + str(i) + "/" + f + " " +
-                       directoryForTempResults + "/" + "clientInstance" + str(i))
-                onlyfiles.append(directoryForTempResults + "/" + "clientInstance" + str(i) + "/" + f)
-
-    for f in onlyfiles:
-        # delete 10% of top and 10% bottom of the file
-        num_lines = sum(1 for line in open(f))
-
-        percentageInLines = int(math.floor(num_lines * percentageToRemove))
-
-        # delete first 10% of the lines
-        system("sed -i '' -e '1," + str(percentageInLines) + "d' " + f)
-
-        num_lines = sum(1 for line in open(f))
-
-        # delete last 10% of the lines
-        system("sed -i '' -e '" + str(num_lines - percentageInLines) + "," + str(
-            num_lines) + "d' " + f)
-
-    average = 0
-    averageSend = 0
-    averageList = 0
-    sd = 0
-    sdSend = 0
-    sdList = 0
-    for value in range(1, numberOfClientInstances + 1):
-        (avgSend, stdSend) = getAverageAndSd(directoryForTempResults + "/clientInstance" + str(value), "SEND_MESSAGE",
-                                             "2")
-        (avg, std) = getAverageAndSd(directoryForTempResults + "/clientInstance" + str(value), "RECEIVE_MESSAGE", "2")
-        (avgList, stdList) = getAverageAndSd(directoryForTempResults + "/clientInstance" + str(value), "LIST_QUEUES",
-                                             "2")
-        average += float(avg)
-        sd += float(std)
-        averageSend += float(avgSend)
-        sdSend += float(stdSend)
-        averageList += float(avgList)
-        sdList += float(stdList)
-
-    average /= numberOfClientInstances
-    sd /= numberOfClientInstances
-    averageSend /= numberOfClientInstances
-    sdSend /= numberOfClientInstances
-    averageList /= numberOfClientInstances
-    sdList /= numberOfClientInstances
-
-    print "RECEIVE: " + str(variableValue) + "\t" + str(average) + "\t" + str(sd)
-    print "SEND: " + str(variableValue) + "\t" + str(averageSend) + "\t" + str(sdSend)
-    print "LIST: " + str(variableValue) + "\t" + str(averageList) + "\t" + str(sdList)
-    # f = open(resultFile, 'a')
-    # f.write(str(variableValue) + "\t" + str(average) + "\t" + str(deviation) + "\t" + str(total_lines) + "\n")
-    # f.close()
-
-    # TODO .. remove temporary files - directories
-
-
+# calculates and returns response time
 def getResponseTime(experimentDir, clientInstances, timeInSeconds, warmUpInSeconds, coolDownInSeconds,
                     typeOfMessage):
     # files could be quite big, use wc instead of reading them
@@ -206,7 +109,7 @@ def getResponseTime(experimentDir, clientInstances, timeInSeconds, warmUpInSecon
     shutil.rmtree(directoryForTempResults)
     return (result.split()[0], result.split()[1])
 
-
+# calculates and returns throughput
 def getThroughput(experimentDir, clientInstances, timeInSeconds, warmUpInSeconds, coolDownInSeconds, typeOfMessage):
     # files could be quite big, use wc instead of reading them
     # every line in a client file contains a successful request
@@ -273,12 +176,8 @@ def getThroughput(experimentDir, clientInstances, timeInSeconds, warmUpInSeconds
     # print average, sumq, sum
     std = str(math.sqrt((sumq / size) - (sum / size) ** 2))
 
-    # TODO FIXME
-    # responseAndStd = getResponseTime(directoryForTempResults, "LIST")
-
     shutil.rmtree(directoryForTempResults)
-    return (average, std)
-
+    return average, std
 
 # returns average cpu usage of the system and standard deviation
 # startTime and endTime are string of this format "08-11 21:02:23"
@@ -287,153 +186,18 @@ def getCPUUsage(filePathOfUsage, startTime, endTime):
         "awk -F'|' '{ if ($1 > \"" + startTime + "\" && $1 < \"" + endTime + "\") print $3 }' " + filePathOfUsage +
         " | awk -F' ' '{ sum += ($1 + $2); sumq += ($1 + $2) * ($1 + $2); n++; } END { print sum /n, sqrt(sumq/n- (sum/n)**2); }'").read();
 
-    return (result.split()[0], result.split()[1])
+    return result.split()[0], result.split()[1]
 
+# returns average and standard deviation
+def getAverageAndSd(middlewareInstanceDir, what, column):
+    avg = os.popen("grep -h '" + what + "' " + middlewareInstanceDir + "/*" + " | " +
+                   "awk -F'\\t' '{ sum += $" + column + "; n++ } END { if (n > 0) print sum / n; }' ").read()
+    sd = os.popen("grep -h '" + what + "' " + middlewareInstanceDir + "/*" + " | " +
+                  "awk -F'\\t' '{sum+=$" + column + "; n++; sumsq+=$" + column + "*$" + column + "} END {print sqrt(sumsq/n- (sum/n)**2)}' ").read()
 
-result = getCPUUsage("/Users/bandwitch/git/mepas/experiments/NEW_speedup/1/database/cpu_usage", "08-11 20:22:58",
-                     "08-11 20:30:16")
-print result
-result = getCPUUsage("/Users/bandwitch/git/mepas/experiments/NEW_speedup/2/database/cpu_usage", "08-11 21:00:19",
-                     "08-11 21:06:53")
-print result
-result = getCPUUsage("/Users/bandwitch/git/mepas/experiments/NEW_speedup/5/database/cpu_usage", "08-11 21:46:32",
-                     "08-11 21:52:52")
-print result
-#
-# print "middlewares"
-# for i in [1]:
-#     j = 1
-#     while j <= i:
-#         result = getCPUUsage(
-#             "/Users/bandwitch/git/mepas/experiments/NEW_speedup/" + str(i) + "/middlewareInstance" + str(
-#                 j) + "/cpu_usage", "08-11 20:22:58", "08-11 20:30:16")
-#         print str(j) + ": " + str(result[0]) + "  " + str(result[1])
-#         j += 1
-# print result
-#
-# print "middlewares"
-# for i in [2]:
-#     j = 1
-#     while j <= i:
-#         result = getCPUUsage(
-#             "/Users/bandwitch/git/mepas/experiments/NEW_speedup/" + str(i) + "/middlewareInstance" + str(
-#                 j) + "/cpu_usage", "08-11 20:01:19", "08-11 21:05:53")
-#         print str(j) + ": " + str(result[0]) + "  " + str(result[1])
-#         j += 1
-# print result
-#
-# print "middlewares"
-# for i in [5]:
-#     j = 1
-#     while j <= i:
-#         result = getCPUUsage(
-#             "/Users/bandwitch/git/mepas/experiments/NEW_speedup/" + str(i) + "/middlewareInstance" + str(
-#                 j) + "/cpu_usage", "08-11 21:46:32", "08-11 21:52:52")
-#         print str(j) + ": " + str(result[0]) + "  " + str(result[1])
-#         j += 1
-# print result
-# exit(1)
-# # def findThroughput(i):
-for i in [80, 90, 100]:
-    clientInstances = 1
-    (avg, std) = getThroughput("../NEW_NEW_increasing_both/" + str(i), clientInstances, 600, 120, 60, "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
-    print str(i) + " " + avg + " " + std
-exit(1)
+    return avg.rstrip(), sd.rstrip()
 
-for i in [1, 2, 3, 4, 5, 9]:
-    clientInstances = i
-    (avg, std) = getThroughput("../NEW_scale_out/" + str(i), clientInstances, 600, 120, 60, "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
-    print str(i) + " " + avg + " " + std
-exit(1)
-# exit(1)
-# for i in [1000000]:
-#     clientInstances = 1
-#     # TAKE CARE OF THE CLIENT Instances you use
-#     (avgAll, stdAll) = getThroughput("../NEW_NEW_increasing_message_size/" + str(i), clientInstances, 600, 120, 60,
-#                                            "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
-#   (avgList, stdList) = getResponseTimeCOOL("NEW_NEW_increasing_message_size/" + str(i), clientInstances, 600, 120, 60,
-#                                             "LIST_QUEUES")
-#     (avgSend, stdSend) = getResponseTimeCOOL("../NEW_increasing_number_of_clients/" + str(i), 1, 600, 120, 60,
-#                                             "SEND_MESSAGE")
-#     (avgReceive, stdReceive) = getResponseTimeCOOL("../NEW_increasing_number_of_clients/" + str(i), 1, 600, 120, 60,
-#                                                   "RECEIVE_MESSAGE")
-#     print str(
-#         i) + " " + avgAll + " " + stdAll# + " " + avgList + " " + stdList + " " + avgSend + " " + stdSend + " " + avgReceive + " " + stdReceive
-# exit(1)
-
-for i in [1, 2, 3, 4, 5, 9]:
-    clientInstances = i
-    (avgAll, stdAll) = getResponseTime("../NEW_scale_out/" + str(i), clientInstances, 600, 120, 60,
-                                       "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
-    (avgList, stdList) = getResponseTime("../NEW_scale_out/" + str(i), clientInstances, 600, 120, 60,
-                                         "LIST_QUEUES")
-    (avgSend, stdSend) = getResponseTime("../NEW_scale_out/" + str(i), clientInstances, 600, 120, 60,
-                                         "SEND_MESSAGE")
-    (avgReceive, stdReceive) = getResponseTime("../NEW_scale_out/" + str(i), clientInstances, 600,
-                                               120, 60,
-                                               "RECEIVE_MESSAGE")
-    print str(
-        i) + " " + avgAll + " " + stdAll + " " + avgList + " " + stdList + " " + avgSend + " " + stdSend + " " + avgReceive + " " + stdReceive
-
-    # thread = threading.Thread(name=str(i), target=findThroughput, args=([i]))
-    # thread.start()
-    # # (avg, std) = getThroughput("../NEW_increasing_message_size/" + str(i), 1, 600, 120, 60)
-exit(1)
-
-for i in [1, 500, 1000, 5000, 10000, 20000, 30000, 40000, 50000, 100000, 150000, 200000, 500000, 1000000]:
-    (avgAll, stdAll) = getThroughput("../NEW_increasing_message_size/" + str(i), 1, 600, 120, 60,
-                                     "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
-    (avgList, stdList) = getThroughput("../NEW_increasing_message_size/" + str(i), 1, 600, 120, 60, "LIST_QUEUES")
-    (avgSend, stdSend) = getThroughput("../NEW_increasing_message_size/" + str(i), 1, 600, 120, 60,
-                                       "SEND_MESSAGE")
-    (avgReceive, stdReceive) = getThroughput("../NEW_increasing_message_size/" + str(i), 1, 600, 120, 60,
-                                             "RECEIVE_MESSAGE")
-
-    # (avgAll, stdAll) = getResponseTimeCOOL("../NEW_increasing_message_size/" + str(i), 1, 600, 120, 60,
-    # "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
-    # (avgList, stdList) = getResponseTimeCOOL("../NEW_increasing_message_size/" + str(i), 1, 600, 120, 60, "LIST_QUEUES")
-    # (avgSend, stdSend) = getResponseTimeCOOL("../NEW_increasing_message_size/" + str(i), 1, 600, 120, 60,
-    #                                          "SEND_MESSAGE")
-    # (avgReceive, stdReceive) = getResponseTimeCOOL("../NEW_increasing_message_size/" + str(i), 1, 600, 120, 60,
-    #                                                "RECEIVE_MESSAGE")
-    print str(
-        i) + " " + avgAll + " " + stdAll + " " + avgList + " " + stdList + " " + avgSend + " " + stdSend + " " + avgReceive + " " + stdReceive
-
-    # thread = threading.Thread(name=str(i), target=findThroughput, args=([i]))
-    # thread.start()
-    # # (avg, std) = getThroughput("../NEW_increasing_message_size/" + str(i), 1, 600, 120, 60)
-
-exit(1)
-
-for i in [2, 5, 10, 15, 20, 25, 30, 35, 40, 45]:
-    getThroughput("../NEW_increasing_number_of_Clients/" + str(i), 1, 600, 120, 60)
-
-exit(1)
-
-# getThroughput("../2k10MWThreads10Connections1MWSmallDBxLarge/1", 1, 600, 120, 60)
-# getThroughput("../2k10MWThreads20Connections1MWSmallDBxLarge/1", 1, 600, 120, 60)
-# getThroughput("../2k20MWThreads10Connections1MWSmallDBxLarge/1", 1, 600, 120, 60)
-# getThroughput("../2k20MWThreads20Connections1MWSmallDBxLarge/1", 1, 600, 120, 60)
-#
-# getThroughput("../2k10MWThreads10Connections1MWMediumDBxLarge/1", 1, 600, 120, 60)
-# getThroughput("../2k10MWThreads20Connections1MWMediumDBxLarge/1", 1, 600, 120, 60)
-# getThroughput("../2k20MWThreads10Connections1MWMediumDBxLarge/1", 1, 600, 120, 60)
-# getThroughput("../2k20MWThreads20Connections1MWMediumDBxLarge/1", 1, 600, 120, 60)
-#
-# getThroughput("../2k10MWThreads10Connections1MWSmall/1", 1, 600, 120, 60)
-# getThroughput("../2k10MWThreads20Connections1MWSmall/1", 1, 600, 120, 60)
-# getThroughput("../2k20MWThreads10Connections1MWSmall/1", 1, 600, 120, 60)
-# getThroughput("../2k20MWThreads20Connections1MWSmall/1", 1, 600, 120, 60)
-#
-# getThroughput("../2k10MWThreads10Connections1MWMedium/1", 1, 600, 120, 60)
-# getThroughput("../2k10MWThreads20Connections1MWMedium/1", 1, 600, 120, 60)
-# getThroughput("../2k20MWThreads10Connections1MWMedium/1", 1, 600, 120, 60)
-# getThroughput("../2k20MWThreads20Connections1MWMedium/1", 1, 600, 120, 60)
-# #
-# #
-# if True:
-# exit(1)
-
+# calculates time middleware spent on each component
 def getTimeSpentOnEachComponent(middlewareInstanceDir, percentageToRemove):
     files = [f for f in listdir(middlewareInstanceDir)]
 
@@ -468,8 +232,8 @@ def getTimeSpentOnEachComponent(middlewareInstanceDir, percentageToRemove):
         system("sed -i '' -e '" + str(num_lines - percentageInLines) + "," + str(
             num_lines) + "d' " + directoryForTempResults + "/" + f)
 
-    # (avg, sd) = getAverageAndSd(directoryForTempResults, "GOT CONNECTION", "2")
-    # print "CONNECTION: " + avg + ", " + sd
+    (avg, sd) = getAverageAndSd(directoryForTempResults, "GOT CONNECTION", "2")
+    print "CONNECTION: " + avg + ", " + sd
 
     (avg, sd) = getAverageAndSd(directoryForTempResults, "DB REQUEST", "2")
     print "REQUEST: " + avg + ", " + sd
@@ -483,17 +247,8 @@ def getTimeSpentOnEachComponent(middlewareInstanceDir, percentageToRemove):
     (avg, sd) = getAverageAndSd(directoryForTempResults, "# OF ENTERS", "2")
     print "TIMES TO ENTER: " + avg + ", " + sd
 
-    (avg, sd) = getAverageAndSd(directoryForTempResults, "NOTHING INSIDE", "2")
-    print "TIMES (NOTHING) INSIDE: " + avg + ", " + sd
-
     (avg, sd) = getAverageAndSd(directoryForTempResults, "READING INSIDE", "2")
     print "TIMES (DOING) INSIDE: " + avg + ", " + sd
 
     shutil.rmtree(directoryForTempResults)
 
-
-getTimeSpentOnEachComponent("../connectionsIncreasingFor30_35/30/middlewareInstance1", 0.01)
-# getTimeSpentOnEachComponent("../traceFor20Minutes/25/middlewareInstance2", 0.2)
-# #
-# getData("../AGAIN2k10MWThreads10Connections1MWSmall", [1], 1, 0.0)
-# getResponseTimeAndThroughput("../trace100clientsWithMoreLogging10ClientsBARZ/10")

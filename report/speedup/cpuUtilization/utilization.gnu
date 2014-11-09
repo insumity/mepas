@@ -2,7 +2,7 @@
 set terminal postscript eps enhanced color font 'Times-NewRoman,14' linewidth 1.5
 set output 'utilization.eps'
 
-set xlabel "Number of Middlewares, (20 connections and 20 threads per Middleware)"
+set xlabel "Number of Middlewares (20 connections and 20 threads per Middleware)"
 set ylabel "Average CPU Utilization (%)"
 set title "Increasing Number of Middlewares: 10 Client Instances (100 clients/instance) uniformly distributed per Middleware" 
 

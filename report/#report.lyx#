@@ -4855,11 +4855,7 @@ reference "experimentConf"
 placement h
 wide false
 sideways false
-status collapsed
-
-\begin_layout Plain Layout
-
-\end_layout
+status open
 
 \begin_layout Plain Layout
 \begin_inset Box Boxed
@@ -5038,16 +5034,20 @@ clientsData
 \shape italic
 a
 \shape default
- corresponds to the numberOfClients per 
+ corresponds to the 
 \end_layout
 
 \begin_layout Plain Layout
-# instance and 
+# numberOfClients per instance and 
 \shape italic
 b
 \shape default
  the startingId of every client.
- The first tuple of 
+ The first tuple 
+\end_layout
+
+\begin_layout Plain Layout
+# of 
 \begin_inset Quotes eld
 \end_inset
 
@@ -5055,11 +5055,7 @@ clientsData
 \begin_inset Quotes erd
 \end_inset
 
- corresponds to the first client 
-\end_layout
-
-\begin_layout Plain Layout
-# instance, second to the second, etc.
+ corresponds to the first client instance, second to the second, etc.
  
 \end_layout
 
@@ -5323,7 +5319,7 @@ name "sec:experiments"
 In this section we present the experiments conducted including their evaluation.
  In all the experiments client's throughput and response time was presented
  unless stated otherwise.
- Also all the receives of messages in our experiments were successful.
+ Also, all the receives of messages in our experiments were successful.
 \end_layout
 
 \begin_layout Subsection*
@@ -5370,10 +5366,17 @@ reference "trace"
 
 \end_inset
 
+, 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "trace-1"
+
+\end_inset
+
  the throughput and response time values of our traces can been seen.
- In this figure response time was averaged over the interval of one minute
- while throughput was calculated per second and averaged over the interval
- of one minute.
+ In the response time figure, response time was averaged over the interval
+ of one minute while in the throughput figure throughput was calculated
+ per second and averaged over the interval of one minute.
 \end_layout
 
 \begin_layout Standard
@@ -5385,19 +5388,8 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
-	filename trace1Hour/responseTime/responseTime.eps
-	scale 130
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
-\align center
-\begin_inset Graphics
 	filename trace1Hour/throughput/throughput.eps
-	scale 128
+	scale 120
 
 \end_inset
 
@@ -5409,8 +5401,8 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Response time and throughput of an one hour trace with 2 client instances
- (50 clients/instance) and 1 middleware instance (20 threads, 20 connections)
+Throughput of an one hour trace with 2 client instances (50 clients/instance)
+ and 1 middleware instance (20 threads, 20 connections)
 \end_layout
 
 \end_inset
@@ -5431,9 +5423,52 @@ name "trace"
 \end_layout
 
 \begin_layout Standard
-Based on the results of the trace, we calculate the average of all types
- of requests which is 16.668, as well as the time spent on a specific request
- shown below:
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename trace1Hour/responseTime/responseTime.eps
+	scale 120
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Response time of an one hour trace with 2 client instances (50 clients/instance)
+ and 1 middleware instance (20 threads, 20 connections)
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "trace-1"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Based on the results of the trace, we calculated the average of all types
+ of requests which is 16.668 milliseconds, as well as the time spent on a
+ specific request shown below:
 \begin_inset ERT
 status open
 
@@ -5605,7 +5640,7 @@ status open
 
 \begin_layout Standard
 We were also interested in the time spent on each component during the trace,
- those times were calculated and are presented below:
+ those values are presented below:
 \begin_inset ERT
 status open
 
@@ -5812,13 +5847,11 @@ The time to receive a connection is almost nonexistent, this is because
  The time waiting for a worker thread is quite high and was to be expected
  since we have 100 clients and only 20 worker threads.
  So at any point in time 80 clients connections could possibly be waiting.
- Network time is also really low and this makes sense since the throughput
- between two instances is (iperf).
 \end_layout
 
 \begin_layout Standard
 As we can see our system is stable under load.
- In the Figure 
+ In Figure 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "trace"
@@ -5831,14 +5864,19 @@ S requests is pretty much the same.
  LIST_QUEUES requests and because a RECEIVE_MESSAGE is only called if a
  message is going to be received.
  So the amount of SEND_MESSAGE requests should be almost the same with the
- RECEIVE_MESSAGE requests.
- The average response time of the LIST_QUEUES is a bit lower than the response
+ amount of RECEIVE_MESSAGE requests.
+ Because of this, in the upcoming experiments we are not going to plot the
+ throughput for a specific type of a request but only for all types of requests.
+\end_layout
+
+\begin_layout Standard
+The average response time of the LIST_QUEUES is a bit lower than the response
  time of the two other types of requests.
  Our assumption was that this is because LIST_QUEUES does not modify the
  database, neither with an INSERT or a DELETE.
  To verify this claim we checked the database request average response time
  for every type of request.
- The results are shown below:
+ The results verified our claim and are shown below:
 \begin_inset ERT
 status open
 
@@ -5980,7 +6018,7 @@ As was mentioned earlier in this report, we have a
 closed system
 \series default
 .
- This means that interactive response time law should apply to our results.
+ This means that the interactive response time law should apply to our results.
  The interactive law states that 
 \begin_inset Formula $R=\frac{N}{X}-Z$
 \end_inset
@@ -6002,8 +6040,8 @@ closed system
 \end_inset
 
  is the throughput.
- Our response time is about 16.668ms, we have 100 clients and our think time
- is 0.
+ Our average response time is 16.668ms, we have 100 clients and our think
+ time is 0.
  In reality 
 \begin_inset Formula $Z$
 \end_inset
@@ -6040,11 +6078,7 @@ Warm Up and Cool Down
 For all the following experiments, every data point in the plots corresponds
  to a 10 minute execution.
  From those 10 minutes the first 2 minutes have been removed, as well as
- 
-\end_layout
-
-\begin_layout Standard
-the last 1 minute.
+ the last 1 minute.
  Those minutes have been removed as they are considered the 
 \begin_inset Quotes eld
 \end_inset
@@ -6061,10 +6095,10 @@ cool down
 \begin_inset Quotes erd
 \end_inset
 
- phase respectively.
+ phases respectively.
  Those number were derived by checking the trace and seeing that after 2
- minutes our system stabilizes and until one minute before the end the system
- is stabilized.
+ minutes our system stabilizes and until one minute before the end of the
+ execution the system is still stable.
 \end_layout
 
 \begin_layout Subsection*
@@ -6072,8 +6106,8 @@ Throughput Plots
 \end_layout
 
 \begin_layout Standard
-In all the following plots the throughput was calculated per 20seconds and
- averaged over the time of the experiment (excluding 
+In all the following plots the throughput was calculated per 20 seconds
+ and averaged over the time of the experiment (excluding 
 \begin_inset Quotes eld
 \end_inset
 
@@ -6137,7 +6171,7 @@ failed to send message ERROR: could not extend file "base/16389/16427.6":
 We realized the problem was the amount of available memory in our instance's
  disk.
  We solved this problem by increasing the available size of our disks and
- rerun the experiments.
+ reran the experiments.
  Afterwards no such failed response was received.
  The disk space was increasing because we are not VACUUMing
 \begin_inset Foot
@@ -6154,7 +6188,7 @@ http://www.postgresql.org/docs/9.3/static/sql-vacuum.html
 \end_layout
 
 \begin_layout Standard
-Configuration: The experiment was concuded with:
+The experiment was concuded with the following configuration:
 \end_layout
 
 \begin_layout Itemize
@@ -6170,7 +6204,7 @@ Configuration: The experiment was concuded with:
 \end_layout
 
 \begin_layout Itemize
-message sizes in number of characters that taken were: 
+message sizes in number of characters, values that were used are: 
 \begin_inset Formula $1$
 \end_inset
 
@@ -6236,9 +6270,19 @@ Hypothesis
 \series default
 : We expect to have increased response times as well as decreased throughput.
  This is because by increasing the message size network time needed to send
- and receive a message will increase but mostly because the database is
- going to become slower when handling more data.
- 
+ and receive a message will increase but most importantly because the database
+ is going to become slower when handling more data.
+ We say the database and not the network because by using the iperf
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+https://iperf.fr/
+\end_layout
+
+\end_inset
+
+ tool we saw bandwidth between instances of the magnitude of some Gbps (1Gbps+).
 \end_layout
 
 \begin_layout Standard
@@ -6263,21 +6307,10 @@ status open
 \end_layout
 
 \begin_layout Plain Layout
-\align center
-\begin_inset Graphics
-	filename increasingMessageSize/responseTime/responseTime.eps
-	scale 120
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Increasing the Message Size
+Throughput when Increasing the Message Size
 \end_layout
 
 \end_inset
@@ -6302,10 +6335,58 @@ name "increasingMessageSize"
 \end_layout
 
 \begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename increasingMessageSize/responseTime/responseTime.eps
+	scale 120
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Response Time when Increasing the Message Size
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "increasingMessageSize-1"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
 As we can see in Figure 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "increasingMessageSize"
+
+\end_inset
+
+ and Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "increasingMessageSize-1"
 
 \end_inset
 
@@ -6331,8 +6412,8 @@ RECEIVE_MESSAGE
 .
  This was expected but we weren't expecting such a huge response time for
  LIST_QUEUES requests since they do not move any messages around.
- With further investigation why this was the case we found the following
- message in the PostgreSQL logs: 
+ While investigating why this was the case we found the following message
+ in the PostgreSQL logs: 
 \begin_inset Quotes eld
 \end_inset
 
@@ -6866,7 +6947,7 @@ checkpoint_segments
  are quite faster and much less compared to SEND_MESSAGE requests which
  is the one creating the logs of the checkpoints.
  The high standard deviation in all of those experiments is easily explained
- by thinking that when no log checkpoint is taking place, database requests
+ by realizing that when no log checkpoint is taking place, database requests
  can be served quite quickly but at the moments when checkpoints are being
  logged the system as a whole becomes slower and therefore we have higher
  database requests response times.
@@ -6890,10 +6971,7 @@ Increasing the Number of Connections
 \begin_layout Standard
 In this experiment we increased the number of connections to the database
  while everything else remained stable.
-\end_layout
-
-\begin_layout Standard
-Configuration: The experiment was conducted with:
+ This experiment was conducted with the following confugration:
 \end_layout
 
 \begin_layout Itemize
@@ -6948,21 +7026,10 @@ status open
 \end_layout
 
 \begin_layout Plain Layout
-\align center
-\begin_inset Graphics
-	filename increasingConnections/responseTime/responseTime.eps
-	scale 120
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Increasing the Number of Connections
+Throughput when Increasing the Number of Connections
 \end_layout
 
 \end_inset
@@ -6983,6 +7050,47 @@ name "increasingNumberOfConnections"
 \end_layout
 
 \begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename increasingConnections/responseTime/responseTime.eps
+	scale 120
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Response Time when Increasing the Number of Connections
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "increasingNumberOfConnections-1"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
 Figure 
 \begin_inset CommandInset ref
 LatexCommand ref
@@ -6990,7 +7098,14 @@ reference "increasingNumberOfConnections"
 
 \end_inset
 
- shows the throughput and response time of our system while increasing the
+ and 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "increasingNumberOfConnections-1"
+
+\end_inset
+
+ show the throughput and response time of our system while increasing the
  number of connections.
  The corresponding results were as expected up to 20 number of connections.
  After 20 connections we see a slow decrease in throughput which was not
@@ -7002,7 +7117,7 @@ reference "increasingNumberOfConnections"
 getConnection()
 \shape default
  from our connection pool is always going to return a new connection if
- the number of maximum connections have not been reached yet and only then
+ the number of maximum connections has not been reached yet and only then
  it is going to start reusing connections.
  So in our case when we have for instance 80 connections there are going
  to be created 80 connections in the pool although only 20 of them are being
@@ -7029,7 +7144,8 @@ http://www.postgresql.org/docs/9.3/static/connect-estab.html
 
 \end_inset
 
- Making the database slower has as a consequence of slowing up our system.
+ Making the database slower has as a consequence of slowing up our system
+ and therefore reduced throughput.
 \end_layout
 
 \begin_layout Subsubsection*
@@ -7038,11 +7154,8 @@ Increasing the Number of Threads
 
 \begin_layout Standard
 In this experiment we increased the number of middleware threads while everythin
-g else remained stable.
-\end_layout
-
-\begin_layout Standard
-Configuration: The experiment was conducted with:
+g else remained the same.
+ For this experiment we had the following configuration:
 \end_layout
 
 \begin_layout Itemize
@@ -7063,12 +7176,10 @@ Configuration: The experiment was conducted with:
 Hypothesis
 \series default
 : Because we have 20 connections in our system we would except throughput
- to increase as we increase the number of threads since with more thread
+ to increase as we increase the number of threads, since with more threads
  we will be able to utilize the given connections.
- In our previous experiment where we increased the number of connections
- we saw that there was still an increased throughput with 25 connections.
- So we would except here as well that a bit less than 20 threads will already
- have utilized our 20 connections.
+ We except throughput to get saturated after about 20 threads since the
+ middleware threads will not be able to receive connections.
 \end_layout
 
 \begin_layout Standard
@@ -7081,18 +7192,7 @@ status open
 \align center
 \begin_inset Graphics
 	filename increasingThreads/throughput/throughput.eps
-	scale 120
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
-\align center
-\begin_inset Graphics
-	filename increasingThreads/responseTime/responseTime.eps
-	scale 120
+	scale 112
 
 \end_inset
 
@@ -7103,7 +7203,7 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Increasing the Number of Threads
+Throughput when Increasing the Number of Threads
 \end_layout
 
 \end_inset
@@ -7124,6 +7224,47 @@ name "increasingNumberOfThreads"
 \end_layout
 
 \begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename increasingThreads/responseTime/responseTime.eps
+	scale 112
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Response Time when Increasing the Number of Threads
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "increasingNumberOfThreads-1"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
 As we can see in Figure 
 \begin_inset CommandInset ref
 LatexCommand ref
@@ -7131,11 +7272,52 @@ reference "increasingNumberOfThreads"
 
 \end_inset
 
- the throughput increases as excepted 
+ and 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "increasingNumberOfThreads-1"
+
+\end_inset
+
+ the throughput increased as excepted and gets saturated after 20 threads,
+ though there still are some glitches.
+ We also see high variance in the response time after 50 threads.
+ Both of these observations can be explained.
+ The reason is that our system has 50 clients, so when we have 50 threads
+ we can think there is a correspondence between threads and clients.
+ After 50 clients there is contention between the threads on which is going
+ to pick up the client, i.e.
+ which thread is going to pick up a socket.
 \end_layout
 
 \begin_layout Subsubsection*
 Increasing Both Threads and Connections
+\end_layout
+
+\begin_layout Standard
+With this experiment we wanted to see what will happen when increasing the
+ number of middleware threads and connections at the same time.
+ For this experiment we had the following configuration:
+\end_layout
+
+\begin_layout Itemize
+1 m3.large client instance with 50 clients 
+\end_layout
+
+\begin_layout Itemize
+1 m3.large middleware
+\end_layout
+
+\begin_layout Itemize
+1 m3.large database
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+Hypothesis
+\series default
+: blah
 \end_layout
 
 \begin_layout Standard
@@ -7148,7 +7330,7 @@ status open
 \align center
 \begin_inset Graphics
 	filename increasingBothClientsAndConnections/throughput/throughput.eps
-	scale 120
+	scale 110
 
 \end_inset
 
@@ -7177,11 +7359,29 @@ Increasing Both the Number of Threads and Connections
 \end_inset
 
 
+\begin_inset CommandInset label
+LatexCommand label
+name "increasingBoth"
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+As we can see in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "increasingBoth"
+
+\end_inset
+
+ blha.
 \end_layout
 
 \begin_layout Subsection*
@@ -7208,7 +7408,7 @@ In this experiment we increased the number of clients with the following
 \end_layout
 
 \begin_layout Itemize
-1 m3.large middleware with 20 middleware threads 20 connections
+1 m3.large middleware with 20 middleware threads and 20 connections
 \end_layout
 
 \begin_layout Itemize
@@ -7262,6 +7462,13 @@ Increasing the Number of Clients
 \end_inset
 
 
+\begin_inset CommandInset label
+LatexCommand label
+name "increasingClients"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Plain Layout
@@ -7273,30 +7480,43 @@ Increasing the Number of Clients
 
 \end_layout
 
+\begin_layout Standard
+Looking at Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "increasingClients"
+
+\end_inset
+
+ we can see that throughput increases and saturates at about 100 clients.
+ On the other hand response time is strictly increasing.
+ We believe that the increase in response time and the early saturation
+ has nothing to do with the instances running the clients.
+ To prove our claim we conducted the next experiment where we spread the
+ clients in many instances.
+\end_layout
+
 \begin_layout Subsubsection*
 Spreading Clients
 \end_layout
 
 \begin_layout Standard
-and clients are not the bottleneck of our system that
-\end_layout
-
-\begin_layout Standard
 In order to prove that in our previous experiment there was no contention
- in the clients that lead to the saturation of the throughput we conducted
- the following experiment where we took 100 clients and spreaded them across
- multiple client instances.
+ in the clients and that clients are not the bottlenech of oyr system we
+ conducted the following experiment where we took 100 clients and spreaded
+ them across multiple client instances.
  Initially we started with one client instance having 100 clients, then
  2 client instances having 50 clients each, etc.
  The configuration for this experiment was the following:
 \end_layout
 
 \begin_layout Itemize
-Variable number of m3.large client instances
+Variable number of m3.large client instances, values checked were 1, 2, 4,
+ 5 and 10
 \end_layout
 
 \begin_layout Itemize
-1 m3.large middleware with 20 middleware threads 20 connections
+1 m3.large middleware with 20 middleware threads and 20 connections
 \end_layout
 
 \begin_layout Itemize
@@ -7317,7 +7537,7 @@ status open
 \align center
 \begin_inset Graphics
 	filename spreadingClients/throughput/throughput.eps
-	scale 120
+	scale 110
 
 \end_inset
 
@@ -7328,7 +7548,7 @@ status open
 \align center
 \begin_inset Graphics
 	filename spreadingClients/responseTime/responseTime.eps
-	scale 120
+	scale 110
 
 \end_inset
 
@@ -7345,9 +7565,12 @@ Spreading Clients into Many Client Instances
 \end_inset
 
 
-\end_layout
+\begin_inset CommandInset label
+LatexCommand label
+name "spreadingClients"
 
-\begin_layout Plain Layout
+\end_inset
+
 
 \end_layout
 
@@ -7357,7 +7580,20 @@ Spreading Clients into Many Client Instances
 \end_layout
 
 \begin_layout Standard
-As we can see 
+We can see in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "spreadingClients"
+
+\end_inset
+
+ that even when we spread the 100 clients in many instances throughput is
+ not changed.
+ If the reason throughput saturated in 100 clients was because of contention
+ on the clients instance then spreading the clients in many instances would
+ have improved throughput which is not the case.
+ This leads us to state the bottleneck of our system is for sure not the
+ clients.
 \end_layout
 
 \begin_layout Subsection*
@@ -7365,25 +7601,67 @@ Speedup - Finding the Bottleneck
 \end_layout
 
 \begin_layout Standard
-It is our belief that the bottleneck is the database.
- For sure it is not the clients as was explained previously.
+It is our belief that the bottleneck of our system is the database.
  In order to prove our claim we are going to check what happens when increasing
- the number of middlewares.
+ the number of middlewares while the workload remains constant.
  For this experiment we decided to use a r3.2xlarge instance for the database
  to show that even with such a powerful machine the database is going to
  utilize most of its CPU usage while increasing the number of middlewares.
+ The configuration of this experiment was the following:
+\end_layout
+
+\begin_layout Itemize
+10 m3.large client instances with 100 clients each 
+\end_layout
+
+\begin_layout Itemize
+Variable number of middlewares with 20 middleware threads and 20 connections
+ each.
+ Number of middlewares that was used was 1, 2 and 5.
+ We could not try with 10 middlewares since such an experiment would need
+ 21 instances to get executed.
+ Then amount of clients was also uniformly distributed to the middlewares,
+ e.g.
+ with 2 middlewares 5 client instances were connected to the one middleware
+ and the other 5 instances to the other middleware.
+\end_layout
+
+\begin_layout Itemize
+1 r3.2xlarge database instance
 \end_layout
 
 \begin_layout Standard
-clients and middlewares were m3.large ...
- 
+In Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "speedup"
+
+\end_inset
+
+we can see the speedup.
+ Speedup corresponds to the response time using 1 middleware divided by
+ the response time using N middlewares.
+ The speedup was calculated based on the following data where average response
+ time corresponds to the average response time of all the requests:
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+
+\backslash
+
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
-Speedup calculated based on response time.
-\end_layout
-
-\begin_layout Standard
+\align center
 \begin_inset Tabular
 <lyxtabular version="3" rows="4" columns="3">
 <features rotate="0" tabularvalignment="middle">
@@ -7404,7 +7682,7 @@ Number of Middlewares
 \begin_inset Text
 
 \begin_layout Plain Layout
-Average Response Time for all types of requests (ms)
+Average Response Time (ms)
 \end_layout
 
 \end_inset
@@ -7511,136 +7789,26 @@ Standard Deviation
 \end_inset
 
 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+
+\backslash
+
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
-\begin_inset Tabular
-<lyxtabular version="3" rows="4" columns="3">
-<features rotate="0" tabularvalignment="middle">
-<column alignment="center" valignment="top">
-<column alignment="center" valignment="top">
-<column alignment="center" valignment="top">
-<row>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-Number of Middlewares
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-Throughput for all types of requests (requests/s)
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-Standard Deviation
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-1
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-10222.4214286
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-191.01678284
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-2
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-16906.9833333
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-81.5825047383
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-5
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-18370.6571429
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-501.37283824
-\end_layout
-
-\end_inset
-</cell>
-</row>
-</lyxtabular>
-
-\end_inset
-
-
+The goal was to show that response time is not proportionally decreased
+ when increasing the middlewares since the database is the bottleneck.
 \end_layout
 
 \begin_layout Standard
@@ -7653,7 +7821,7 @@ status open
 \align center
 \begin_inset Graphics
 	filename speedup/speedup/throughput.eps
-	scale 120
+	scale 110
 
 \end_inset
 
@@ -7665,15 +7833,18 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-
+Speedup
 \end_layout
 
 \end_inset
 
 
-\end_layout
+\begin_inset CommandInset label
+LatexCommand label
+name "speedup"
 
-\begin_layout Plain Layout
+\end_inset
+
 
 \end_layout
 
@@ -7683,20 +7854,40 @@ status open
 \end_layout
 
 \begin_layout Standard
+As we can see in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "speedup"
+
+\end_inset
+
+ when increasing the number of middlewares from one to two there is significant
+ increase of about 64% since the new speedup is 1.64.
+ But increasing the middlewares from two to 5 has a negligible speedup.
+ This is because the database is not able to support the increased number
+ of requests received from the five middlewares.
+ In order to prove our claim we generated a plot depicted in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "CPUUtilization"
+
+\end_inset
+
+ corresponding to CPU utilization of the middlewares and the database while
+ the number of middlewares is increased.
+\end_layout
+
+\begin_layout Standard
 \begin_inset Float figure
 wide false
 sideways false
 status open
 
 \begin_layout Plain Layout
-
-\end_layout
-
-\begin_layout Plain Layout
 \align center
 \begin_inset Graphics
 	filename speedup/cpuUtilization/utilization.eps
-	scale 120
+	scale 110
 
 \end_inset
 
@@ -7738,30 +7929,77 @@ reference "CPUUtilization"
 
  the average middleware CPU utilization is reduced when we increase the
  number of middlewares while the database CPU utilization increases.
- It is our belief that is shows us the bottleneck in a lovely and nice way.
+ Please note that this graph might be a bit misleading since a database
+ is executed on an r3.2xlarge instance with 8 virtual CPUs while a middleware
+ runs on an m3.large instance with 2 virtual CPUs.
+ So the difference between CPU utilization in terms of resouces is much
+ higher than the one depicted in the figure.
+ 
 \end_layout
 
 \begin_layout Standard
-My next value would be to try with 10 middlewares but this was not possible
- because of EC2 limits on having more than 20 instances running on one availabil
-ity zone.
+It is our belief that the aforementioned experiments show that the database
+ is the bottleneck.
 \end_layout
 
 \begin_layout Subsection*
-Scale Out
+Scale-Up and Scale-Out
 \end_layout
 
 \begin_layout Standard
-clients and middlewares were m3.large ...
- Database was r3.2xlarge to show that the database as the bottleneck ...
+Finally we present the scale-up and scale-out functions of our system shown
+ in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "scaleUp"
+
+\end_inset
+
+ and 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "scaleOut"
+
+\end_inset
+
+ respectively.
+ Scale-out tests how our system deals when increasing both the clients and
+ the middlewares and is defined as the response time having one client instance
+ and one middleware divided by the response time when having N client instances
+ using N middlewares.
+ Similarly to scale-up, scale-out tests how our system behaves with increasing
+ load but instead of response-time it is based on the throughput.
+ Both scale-up and scale-out should ideally be constant.
+ For the scaling experiments we used the following configuration:
+\end_layout
+
+\begin_layout Itemize
+Variable number of m3.large client instances with 100 clients each 
+\end_layout
+
+\begin_layout Itemize
+Variable number of middlewares with 20 middleware threads and 20 connections
+ each
+\end_layout
+
+\begin_layout Itemize
+One r3.2xlarge database instance
 \end_layout
 
 \begin_layout Standard
-had to increase number of connections to 200
-\end_layout
-
-\begin_layout Standard
-Scale-up
+For this experiment we increased the number of maximum connections in the
+ PostgreSQL configuration file to 200 changing the 
+\shape italic
+max_connections
+\shape default
+ line in the 
+\family typewriter
+/etc/postgresql/9.3/main/postgresql.conf
+\family default
+ file.
+ This was done because when we use 9 middlewares the databasse needs to
+ open 9 times 20 connections which exceeded PostgreSQL default maximum connectio
+n size.
 \end_layout
 
 \begin_layout Standard
@@ -7774,7 +8012,7 @@ status open
 \align center
 \begin_inset Graphics
 	filename scaleout/scaleup/scaleup.eps
-	scale 120
+	scale 110
 
 \end_inset
 
@@ -7786,8 +8024,15 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-
+Scale-Up
 \end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "scaleUp"
 
 \end_inset
 
@@ -7801,10 +8046,6 @@ status open
 \end_inset
 
 
-\end_layout
-
-\begin_layout Standard
-Scale-out
 \end_layout
 
 \begin_layout Standard
@@ -7817,7 +8058,7 @@ status open
 \align center
 \begin_inset Graphics
 	filename scaleout/scaleout/throughput.eps
-	scale 120
+	scale 110
 
 \end_inset
 
@@ -7829,8 +8070,15 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-
+Scale-Out
 \end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "scaleOut"
 
 \end_inset
 
@@ -7840,6 +8088,25 @@ status open
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+As we can see in Figures 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "scaleUp"
+
+\end_inset
+
+ and 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "scaleOut"
+
+\end_inset
+
+ both scale-up and scale-out are far from the ideal one which was excepted
+ since the database prevents them from being closer to the ideal one.
 \end_layout
 
 \begin_layout Subsection*
@@ -7897,16 +8164,16 @@ getResponse()
 \shape italic
 getThroughput()
 \shape default
- methods and passing them to Gnuplot by hand.
- We we would also have followed a more iterative approach: changing something
+ methods and passing them to Gnuplot.
+ We would also have followed a more iterative approach: changing something
  in the system, running the experiments, getting back the experimental results,
  changing something in the system, ...
  .
 \end_layout
 
 \begin_layout Standard
-We believe we had a good understanding of our system where we showed that
- the database is the bottlenech.
+We believe we developed a nice system and had a good understanding of our
+ system where we showed that the database is its bottleneck.
  We are also confident that we learned a lot about developing and benchmarking
  applications, some database internal characteristics, as well as deploying
  an application to the cloud.
