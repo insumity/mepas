@@ -6,7 +6,7 @@ set ylabel "Response time (ms)"
 set title "Trace for 1 hour: 2 Client Instances (50 clients/instance), 1 MW (20 threads, 20 connections)" 
 
 # set key bottom right
-set xrange [0:61]
+set xrange [0:60.5]
 set yrange [0:50]
 
 

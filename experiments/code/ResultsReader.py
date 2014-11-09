@@ -61,7 +61,7 @@ def getTrace(experimentName, clientInstances, totalTimeInSeconds, typeOfMessage)
         # output = commands.getstatusoutput(command + " | " + "wc")
         #
         # # extract result from wc command
-        #     numberOfRequests = int(" ".join(output[1].split()).split(' ', 1)[0])
+        # numberOfRequests = int(" ".join(output[1].split()).split(' ', 1)[0])
         #     sum += numberOfRequests
         #     sdeviation += (numberOfRequests * numberOfRequests)
         #     times += 1
@@ -167,10 +167,8 @@ def getData(experimentName, possibleValues, numberOfClientInstances, percentageT
     # TODO .. remove temporary files - directories
 
 
-# getData("../traceFor1Hour/", [1, 5, 10])
-
 def getResponseTime(experimentDir, clientInstances, timeInSeconds, warmUpInSeconds, coolDownInSeconds,
-                        typeOfMessage):
+                    typeOfMessage):
     # files could be quite big, use wc instead of reading them
     # every line in a client file contains a successful request
 
@@ -281,34 +279,99 @@ def getThroughput(experimentDir, clientInstances, timeInSeconds, warmUpInSeconds
     shutil.rmtree(directoryForTempResults)
     return (average, std)
 
-# def findThroughput(i):
-for i in [4, 5]:
-    (avg, std) = getThroughput("../NEW_NEW_scale_out/" + str(i), i, 600, 120, 60, "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
+
+# returns average cpu usage of the system and standard deviation
+# startTime and endTime are string of this format "08-11 21:02:23"
+def getCPUUsage(filePathOfUsage, startTime, endTime):
+    result = os.popen(
+        "awk -F'|' '{ if ($1 > \"" + startTime + "\" && $1 < \"" + endTime + "\") print $3 }' " + filePathOfUsage +
+        " | awk -F' ' '{ sum += ($1 + $2); sumq += ($1 + $2) * ($1 + $2); n++; } END { print sum /n, sqrt(sumq/n- (sum/n)**2); }'").read();
+
+    return (result.split()[0], result.split()[1])
+
+
+result = getCPUUsage("/Users/bandwitch/git/mepas/experiments/NEW_speedup/1/database/cpu_usage", "08-11 20:22:58",
+                     "08-11 20:30:16")
+print result
+result = getCPUUsage("/Users/bandwitch/git/mepas/experiments/NEW_speedup/2/database/cpu_usage", "08-11 21:00:19",
+                     "08-11 21:06:53")
+print result
+result = getCPUUsage("/Users/bandwitch/git/mepas/experiments/NEW_speedup/5/database/cpu_usage", "08-11 21:46:32",
+                     "08-11 21:52:52")
+print result
+#
+# print "middlewares"
+# for i in [1]:
+#     j = 1
+#     while j <= i:
+#         result = getCPUUsage(
+#             "/Users/bandwitch/git/mepas/experiments/NEW_speedup/" + str(i) + "/middlewareInstance" + str(
+#                 j) + "/cpu_usage", "08-11 20:22:58", "08-11 20:30:16")
+#         print str(j) + ": " + str(result[0]) + "  " + str(result[1])
+#         j += 1
+# print result
+#
+# print "middlewares"
+# for i in [2]:
+#     j = 1
+#     while j <= i:
+#         result = getCPUUsage(
+#             "/Users/bandwitch/git/mepas/experiments/NEW_speedup/" + str(i) + "/middlewareInstance" + str(
+#                 j) + "/cpu_usage", "08-11 20:01:19", "08-11 21:05:53")
+#         print str(j) + ": " + str(result[0]) + "  " + str(result[1])
+#         j += 1
+# print result
+#
+# print "middlewares"
+# for i in [5]:
+#     j = 1
+#     while j <= i:
+#         result = getCPUUsage(
+#             "/Users/bandwitch/git/mepas/experiments/NEW_speedup/" + str(i) + "/middlewareInstance" + str(
+#                 j) + "/cpu_usage", "08-11 21:46:32", "08-11 21:52:52")
+#         print str(j) + ": " + str(result[0]) + "  " + str(result[1])
+#         j += 1
+# print result
+# exit(1)
+# # def findThroughput(i):
+for i in [80, 90, 100]:
+    clientInstances = 1
+    (avg, std) = getThroughput("../NEW_NEW_increasing_both/" + str(i), clientInstances, 600, 120, 60, "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
     print str(i) + " " + avg + " " + std
 exit(1)
-# # exit(1)
-# for i in [1, 2, 3, 4, 5, 9]:
-#     (avgAll, stdAll) = getThroughput("../NEW_NEW_NEW_increasing_threads/" + str(i), 1, 600, 120, 60,
+
+for i in [1, 2, 3, 4, 5, 9]:
+    clientInstances = i
+    (avg, std) = getThroughput("../NEW_scale_out/" + str(i), clientInstances, 600, 120, 60, "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
+    print str(i) + " " + avg + " " + std
+exit(1)
+# exit(1)
+# for i in [1000000]:
+#     clientInstances = 1
+#     # TAKE CARE OF THE CLIENT Instances you use
+#     (avgAll, stdAll) = getThroughput("../NEW_NEW_increasing_message_size/" + str(i), clientInstances, 600, 120, 60,
 #                                            "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
-#   #  (avgList, stdList) = getResponseTimeCOOL("../NEW_increasing_number_of_clients/" + str(i), 1, 600, 120, 60,
-#    #                                          "LIST_QUEUES")
-#     #(avgSend, stdSend) = getResponseTimeCOOL("../NEW_increasing_number_of_clients/" + str(i), 1, 600, 120, 60,
-#      #                                        "SEND_MESSAGE")
-#     #(avgReceive, stdReceive) = getResponseTimeCOOL("../NEW_increasing_number_of_clients/" + str(i), 1, 600, 120, 60,
-#        #                                            "RECEIVE_MESSAGE")
+#   (avgList, stdList) = getResponseTimeCOOL("NEW_NEW_increasing_message_size/" + str(i), clientInstances, 600, 120, 60,
+#                                             "LIST_QUEUES")
+#     (avgSend, stdSend) = getResponseTimeCOOL("../NEW_increasing_number_of_clients/" + str(i), 1, 600, 120, 60,
+#                                             "SEND_MESSAGE")
+#     (avgReceive, stdReceive) = getResponseTimeCOOL("../NEW_increasing_number_of_clients/" + str(i), 1, 600, 120, 60,
+#                                                   "RECEIVE_MESSAGE")
 #     print str(
 #         i) + " " + avgAll + " " + stdAll# + " " + avgList + " " + stdList + " " + avgSend + " " + stdSend + " " + avgReceive + " " + stdReceive
 # exit(1)
 
 for i in [1, 2, 3, 4, 5, 9]:
-    (avgAll, stdAll) = getResponseTime("../NEW_scale_out/" + str(i), 1, 600, 120, 60,
-                                           "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
-    (avgList, stdList) = getResponseTime("../NEW_scale_out/" + str(i), 1, 600, 120, 60,
-                                       "LIST_QUEUES")
-    (avgSend, stdSend) = getResponseTime("../NEW_scale_out/" + str(i), 1, 600, 120, 60,
-                                             "SEND_MESSAGE")
-    (avgReceive, stdReceive) = getResponseTime("../NEW_scale_out/" + str(i), 1, 600, 120, 60,
-                                                   "RECEIVE_MESSAGE")
+    clientInstances = i
+    (avgAll, stdAll) = getResponseTime("../NEW_scale_out/" + str(i), clientInstances, 600, 120, 60,
+                                       "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
+    (avgList, stdList) = getResponseTime("../NEW_scale_out/" + str(i), clientInstances, 600, 120, 60,
+                                         "LIST_QUEUES")
+    (avgSend, stdSend) = getResponseTime("../NEW_scale_out/" + str(i), clientInstances, 600, 120, 60,
+                                         "SEND_MESSAGE")
+    (avgReceive, stdReceive) = getResponseTime("../NEW_scale_out/" + str(i), clientInstances, 600,
+                                               120, 60,
+                                               "RECEIVE_MESSAGE")
     print str(
         i) + " " + avgAll + " " + stdAll + " " + avgList + " " + stdList + " " + avgSend + " " + stdSend + " " + avgReceive + " " + stdReceive
 

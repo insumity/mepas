@@ -33,12 +33,12 @@ conf = \
      "username": "ubuntu", "variable": "threadPoolSize", "values": []}
 
 # verify this experiment has not yet been created
-if isdir(conf["nameOfTheExperiment"]):
-    print "There exists already an experiment with the given name: " + conf["nameOfTheExperiment"]
-    print "Please change the experiment name or delete the directory of the experiment"
-    exit(1)
-
-os.mkdir(conf["nameOfTheExperiment"])
+# if isdir(conf["nameOfTheExperiment"]):
+#     print "There exists already an experiment with the given name: " + conf["nameOfTheExperiment"]
+#     print "Please change the experiment name or delete the directory of the experiment"
+#     exit(1)
+#
+# os.mkdir(conf["nameOfTheExperiment"])
 
 
 jarFile = "../../mepas.jar"
@@ -261,7 +261,7 @@ def threadCode(values):
 
 
 def start():
-    for i in [4, 5]:
+    for i in [9]:
         thread = threading.Thread(target=threadCode, args=([[i]]))
         thread.start()
 

@@ -19,7 +19,7 @@ from Utilities import *
 # exit(1)
 
 conf = \
-    {"nameOfTheExperiment": "../NEW_increasing_message_size",
+    {"nameOfTheExperiment": "../NEW_NEW_increasing_message_size",
      "placement": "us-west-2c",
 
      "databaseType": "m3.large",
@@ -53,7 +53,7 @@ conf = \
      "username": "ubuntu",
 
      "variable": "messageSize",
-     "values": [1, 500, 1000, 5000, 10000, 20000, 30000, 40000, 50000, 100000, 150000, 200000, 500000, 1000000]
+     "values": [1000000]
     }
 
 
@@ -122,7 +122,7 @@ for variable in conf["values"]:
 
     # clean database
 
-    auxiliaryFunctionsFilePath = "../../src/main/resources/auxiliary_functionsNOLIMIT.sql"
+    auxiliaryFunctionsFilePath = "../../src/main/resources/auxiliary_functions_no_limits.sql"
     basicFunctionsFilePath = "../../src/main/resources/read_committed_basic_functions.sql"
 
     print ">>> Going to clean and initialize database"
@@ -253,9 +253,9 @@ for variable in conf["values"]:
     scpFrom("logs/*", localDirectoryResults, conf["username"], databaseIP[0])
     print ">>> log files from database received"
 
-    instancesRetriever.terminateInstance(database)
-    for client in clients:
-        instancesRetriever.terminateInstance(client)
-
-    for middleware in middlewares:
-        instancesRetriever.terminateInstance(middleware)
+    # instancesRetriever.terminateInstance(database)
+    # for client in clients:
+    #     instancesRetriever.terminateInstance(client)
+    #
+    # for middleware in middlewares:
+    #     instancesRetriever.terminateInstance(middleware)

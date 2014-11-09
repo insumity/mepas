@@ -7,7 +7,7 @@ set title "Trace for 1 hour: 2 Client Instances (50 clients/instance), 1 MW (20 
 
 set key bottom right
 
-set xrange [0:61]
+set xrange [0:60.5]
 set yrange [0:7500]
 
 
@@ -20,4 +20,4 @@ set style line 3 lt 3 lc rgb "yellow" lw 1
 set style line 4 lt 4 lc rgb "green" lw 1
 
 set xtics 0, 5
-plot "throughputAllRequests.csv" using 1:2:3 title "Troughput for LIST\\_QUEUES, SEND\\_MESSAGE and RECEIVE\\_MESSAGE" with errorlines ls 1, "throughputListQueues.csv" using 1:2:3 title "Throughput for LIST\\_QUEUES" with lines ls 2, "throughputReceiveMessage.csv" using 1:2:3 title "Throughput for RECEIVE\\_MESSAGE" with errorlines ls 3, "throughputSendMessage.csv" using 1:2:3 title "Throughput for SEND\\_MESSAGE" with errorlines ls 4
+plot "throughputAllRequests.csv" using 1:2:3 title "Throughput for LIST\\_QUEUES, SEND\\_MESSAGE and RECEIVE\\_MESSAGE" with errorlines ls 1, "throughputListQueues.csv" using 1:2:3 title "Throughput for LIST\\_QUEUES" with lines ls 2, "throughputReceiveMessage.csv" using 1:2:3 title "Throughput for RECEIVE\\_MESSAGE" with errorlines ls 3, "throughputSendMessage.csv" using 1:2:3 title "Throughput for SEND\\_MESSAGE" with errorlines ls 4

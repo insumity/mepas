@@ -1,9 +1,9 @@
 set terminal postscript eps enhanced color font 'Times-NewRoman,14' linewidth 1.5
 set output 'responseTime.eps'
 
-set xlabel "Connections"
+set xlabel "Number of Client Instances"
 set ylabel "Response time (ms)"
-set title "Increasing Number of Connections: 1 Client Instance (50 clients/instance), 1 MW (20 threads)" 
+set title "Increasing Number of Client Instances, 1 MW (20 threads, 20 connections)"
 
 set key bottom right
 set xrange [0:10.1]

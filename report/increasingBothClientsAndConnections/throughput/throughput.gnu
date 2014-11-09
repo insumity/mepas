@@ -8,7 +8,7 @@ set title "Increasing Number of Threads and Connections: 1 Client Instance (50 c
 
 set key bottom right
 
-set xrange [0:71]
+set xrange [0:101]
 set yrange [0:5000]
 
 
@@ -21,4 +21,4 @@ set style line 1 lt 1 lc rgb "red" lw 1
 #set style line 4 lt 4 lc rgb "green" lw 1
 
 set xtics 0, 5
-plot "throughputAllRequests.csv" using 1:2:3 title "Troughput for LIST\\_QUEUES, SEND\\_MESSAGE and RECEIVE\\_MESSAGE" with errorlines ls 1
+plot "throughputAllRequests.csv" using 1:2:3 title "Throughput for LIST\\_QUEUES, SEND\\_MESSAGE and RECEIVE\\_MESSAGE" with errorlines ls 1
