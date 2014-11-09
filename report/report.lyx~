@@ -5124,18 +5124,7 @@ reference "experimentConf"
 \shape italic
 for
 \shape default
- loop of our experiments, the 
-\shape italic
-for
-\shape default
- loop actually corresponds to the loop shown in Figure 
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "flowExperiment"
-
-\end_inset
-
-.
+ loop of our experiments.
  For instance if we needed to run an experiment increasing both the number
  of threads and the number of connections we could just use the given configurat
 ion and also add the statement 

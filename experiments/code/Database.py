@@ -46,11 +46,8 @@ class Database:
         connection.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
         cursor.callproc("initialize_database")
 
-        for client in range(0, numberOfClients):
-            cursor.callproc("create_client", ["client" + str(client + 1).zfill(3)])
-
-        for queue in range(0, numberOfQueues):
-            cursor.callproc("create_queue", ["queue" + str(queue + 1).zfill(3)])
+        cursor.callproc("create_clients", [numberOfClients])
+        cursor.callproc("create_queues", [numberOfQueues])
 
         connection.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_READ_COMMITTED)
         return

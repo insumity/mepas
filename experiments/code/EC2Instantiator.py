@@ -30,7 +30,7 @@ class EC2Instantiator:
         return instance
 
     def createDatabase(self, instanceType):
-        databaseAMI = 'ami-cb450dfb'
+        databaseAMI = 'ami-e34209d3'
         inst = self.createInstance(databaseAMI, instanceType)
         inst.add_tag("Name", "database")
         return inst

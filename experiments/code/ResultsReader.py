@@ -169,13 +169,7 @@ def getData(experimentName, possibleValues, numberOfClientInstances, percentageT
 
 # getData("../traceFor1Hour/", [1, 5, 10])
 
-def getResponseTime(experimentDir, what):
-    result = os.popen("grep -h '" + what + "' " + experimentDir + "/*" + " | " +
-                      "awk -F'\\t' '{ sum += $2; sumsq += $2 * $2; n++ } END { if (n > 0) print sum / n, sqrt(sumsq/n- (sum/n)**2); }' ").read()
-    return result
-
-
-def getResponseTimeCOOL(experimentDir, clientInstances, timeInSeconds, warmUpInSeconds, coolDownInSeconds,
+def getResponseTime(experimentDir, clientInstances, timeInSeconds, warmUpInSeconds, coolDownInSeconds,
                         typeOfMessage):
     # files could be quite big, use wc instead of reading them
     # every line in a client file contains a successful request
@@ -287,15 +281,13 @@ def getThroughput(experimentDir, clientInstances, timeInSeconds, warmUpInSeconds
     shutil.rmtree(directoryForTempResults)
     return (average, std)
 
-
-
 # def findThroughput(i):
-for i in [2]:
-    (avg, std) = getThroughput("../NEW_NEW_NEW_speedup/" + str(i), 10, 600, 120, 60, "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
+for i in [4, 5]:
+    (avg, std) = getThroughput("../NEW_NEW_scale_out/" + str(i), i, 600, 120, 60, "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
     print str(i) + " " + avg + " " + std
 exit(1)
-# exit(1)
-# for i in [50 , 70]:
+# # exit(1)
+# for i in [1, 2, 3, 4, 5, 9]:
 #     (avgAll, stdAll) = getThroughput("../NEW_NEW_NEW_increasing_threads/" + str(i), 1, 600, 120, 60,
 #                                            "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
 #   #  (avgList, stdList) = getResponseTimeCOOL("../NEW_increasing_number_of_clients/" + str(i), 1, 600, 120, 60,
@@ -308,14 +300,14 @@ exit(1)
 #         i) + " " + avgAll + " " + stdAll# + " " + avgList + " " + stdList + " " + avgSend + " " + stdSend + " " + avgReceive + " " + stdReceive
 # exit(1)
 
-for i in [1, 2, 4, 5, 10]:
-    (avgAll, stdAll) = getResponseTimeCOOL("../NEW_dividing_clients/" + str(i), 1, 600, 120, 60,
+for i in [1, 2, 3, 4, 5, 9]:
+    (avgAll, stdAll) = getResponseTime("../NEW_scale_out/" + str(i), 1, 600, 120, 60,
                                            "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
-    (avgList, stdList) = getResponseTimeCOOL("../NEW_dividing_clients/" + str(i), 1, 600, 120, 60,
+    (avgList, stdList) = getResponseTime("../NEW_scale_out/" + str(i), 1, 600, 120, 60,
                                        "LIST_QUEUES")
-    (avgSend, stdSend) = getResponseTimeCOOL("../NEW_dividing_clients/" + str(i), 1, 600, 120, 60,
+    (avgSend, stdSend) = getResponseTime("../NEW_scale_out/" + str(i), 1, 600, 120, 60,
                                              "SEND_MESSAGE")
-    (avgReceive, stdReceive) = getResponseTimeCOOL("../NEW_dividing_clients/" + str(i), 1, 600, 120, 60,
+    (avgReceive, stdReceive) = getResponseTime("../NEW_scale_out/" + str(i), 1, 600, 120, 60,
                                                    "RECEIVE_MESSAGE")
     print str(
         i) + " " + avgAll + " " + stdAll + " " + avgList + " " + stdList + " " + avgSend + " " + stdSend + " " + avgReceive + " " + stdReceive

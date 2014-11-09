@@ -22,7 +22,7 @@ from Utilities import *
 # exit(1)
 
 conf = \
-    {"nameOfTheExperiment": "../NEW_NEW_NEW_NEW_speedup",
+    {"nameOfTheExperiment": "../NEW_NEW_scale_out",
      "placement": "us-west-2c",
      "databaseType": "r3.2xlarge",
      "clientInstances": (1, "m3.large"),
@@ -33,13 +33,14 @@ conf = \
      "username": "ubuntu", "variable": "threadPoolSize", "values": []}
 
 # verify this experiment has not yet been created
-# if isdir(conf["nameOfTheExperiment"]):
-#     print "There exists already an experiment with the given name: " + conf["nameOfTheExperiment"]
-#     print "Please change the experiment name or delete the directory of the experiment"
-#     exit(1)
-#
-# os.mkdir(conf["nameOfTheExperiment"])
-# #
+if isdir(conf["nameOfTheExperiment"]):
+    print "There exists already an experiment with the given name: " + conf["nameOfTheExperiment"]
+    print "Please change the experiment name or delete the directory of the experiment"
+    exit(1)
+
+os.mkdir(conf["nameOfTheExperiment"])
+
+
 jarFile = "../../mepas.jar"
 
 # clean the directory with ant and make the JAR
@@ -53,13 +54,12 @@ def threadCode(values):
     # FIXME FIXME FIXME
 
     conf = \
-        {"nameOfTheExperiment": "../NEW_NEW_NEW_NEW_speedup", "placement": "us-west-2c", "databaseType": "r3.2xlarge",
+        {"nameOfTheExperiment": "../NEW_NEW_scale_out", "placement": "us-west-2c", "databaseType": "r3.2xlarge",
          "clientInstances": (10, "m3.large"), "middlewareInstances": (1, "m3.large"), "databaseUsername": "ubuntu",
          "databasePassword": "mepas$1$2$3$", "databaseName": "mepas", "databasePortNumber": 5432,
          "middlewarePortNumber": 6789, "runningTimeInSeconds": 600, "threadPoolSize": 20, "connectionPoolSize": 20,
          "totalClients": 1000, "totalQueues": 1000, "messageSize": 20, "mappings": [],
-         "clientsData": [(100, 1), (100, 101), (100, 201), (100, 301), (100, 401), (100, 501), (100, 601), (100, 701),
-                         (100, 801), (100, 901)],
+         "clientsData": [],
          "username": "ubuntu", "variable": "threadPoolSize", "values": values}
 
     for variable in conf["values"]:
@@ -70,16 +70,16 @@ def threadCode(values):
         instancesRetriever = EC2Instantiator(access_key, secret_access, conf["placement"])
 
         conf["middlewareInstances"] = (variable, "m3.large")
+        conf["clientInstances"] = (variable, "m3.large")
+        conf["totalClients"] = variable * 100
+        conf["totalQueues"] = variable * 100
 
-        clientInstancesPerMW = 10 / variable
         i = 0
-        j = 0
-        while i < 10:
-            conf["mappings"].append((i, j))
-            if i == 10 or ((i + 1) % clientInstancesPerMW) == 0:
-                j += 1
+        while i < variable:
+            conf["mappings"].append((i, i))
+            conf["clientsData"].append((100, 1 + (i * 100)))
             i += 1
-        print conf["mappings"]
+
 
         # you always need one database instance for every experiment
         database = instancesRetriever.createDatabase(conf["databaseType"])
@@ -261,7 +261,7 @@ def threadCode(values):
 
 
 def start():
-    for i in [10]:
+    for i in [4, 5]:
         thread = threading.Thread(target=threadCode, args=([[i]]))
         thread.start()
 

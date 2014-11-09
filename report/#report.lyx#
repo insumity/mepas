@@ -2370,18 +2370,18 @@ Serializable
 byte
 \shape default
  array.
- This array's length is calculated and the resulted length is transformed
- to exactly 4 bytes (1 
+ This array's length is calculated and the created length is transformed
+ to bytes as well, to exactly 4 bytes (1 
 \shape italic
 int
 \shape default
 ).
- The length is concatenated with the serialized byte array, with the length
- being in the front.
+ The transformed length is concatenated with the serialized byte array,
+ with the length being in the front.
  This concatanted array is what is being transmitted between the client
  and the middleware.
- The length is added so when the middleware starts reading data from the
- client it can read the length of the upcoming object (look 
+ The length is added to so when the middleware starts reading data from
+ the client it can read the length of the upcoming object (look 
 \shape italic
 InternalSocket
 \shape default
@@ -2392,12 +2392,11 @@ InternalSocket
 Request
 \shape default
  object.
- The middleware creates the response in the exact same way before sending
+ The middleware formats the response in the exact same way before sending
  it to the client.
- Although this is not necessary for the client, since the client blocks
- until he reads the response.
- But it was done nevertheless for consistency reasons so the clients and
- the middlewares send and receive in the same way.
+ Although this is not necessary for the client since the client blocks until
+ he reads the response, it was done for consistency reasons so the clients
+ and the middlewares send and receive in the same way.
 \end_layout
 
 \begin_layout Subsubsection*
@@ -3413,6 +3412,55 @@ General Remarks
 \end_layout
 
 \begin_layout Subsubsection*
+Building with Ant
+\end_layout
+
+\begin_layout Standard
+Ant was used to build the project.
+ Ant's build file is 
+\family typewriter
+build.xml
+\family default
+ and can be found in the root directory of the project.
+ It contains the following targes:
+\end_layout
+
+\begin_layout Itemize
+compile: which just builds the system.
+\end_layout
+
+\begin_layout Itemize
+jar: creates the executable JAR.
+\end_layout
+
+\begin_layout Itemize
+test: runs all the tests of the system.
+ Beware that all the tests might take some time to get executed and also
+ a database needs to exist in the system for some of the tests to successfully
+ get executed.
+\end_layout
+
+\begin_layout Itemize
+clean: removes the generated class files and the executable JAR.
+\end_layout
+
+\begin_layout Standard
+Initially we were planning to test our system using the Dryad cluster which
+ has Java 7 installed.
+ For this reason wes re-implemented part of the 
+\shape italic
+Optional
+\shape default
+ class found in Java 8.
+ Also almost everywhere the try-with-resources, a feature that appeared
+ in Java 7, is being used so we can be assured that the respective 
+\shape italic
+close()
+\shape default
+ method is called, even in case of an exception.
+\end_layout
+
+\begin_layout Subsubsection*
 One Request and One Response Class Per Request Type
 \end_layout
 
@@ -3445,21 +3493,7 @@ Request
 Response
 \shape default
  abstract classes with some of their basic methods.
- Note that the 
-\shape italic
-Request
-\shape default
- class uses a generic type 
-\shape italic
-R
-\shape default
-, tha is a sublcass of 
-\shape italic
-Response
-\shape default
-.
- This was done to avoid possibly bugs like issuing a send message request
- and expecting a list queues response.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -3633,59 +3667,6 @@ if-else-...
  
 \end_layout
 
-\begin_layout Subsubsection*
-Java 7
-\end_layout
-
-\begin_layout Standard
-Initially we were planning to test our system using the Dryad cluster which
- has Java 7 installed.
- For this reason wes re-implemented part of the 
-\shape italic
-Optional
-\shape default
- class found in Java 8.
- Also almost everywhere the try-with-resources, a feature that appeared
- in Java 7, is being used so we can be assured that the respective 
-\shape italic
-close()
-\shape default
- method is called, even in case of an exception.
-\end_layout
-
-\begin_layout Subsubsection*
-Building with Ant
-\end_layout
-
-\begin_layout Standard
-Ant was used to build the project.
- Ant's build file is 
-\family typewriter
-build.xml
-\family default
- and can be found in the root directory of the project.
- It contains the following targes:
-\end_layout
-
-\begin_layout Itemize
-compile: which just builds the system.
-\end_layout
-
-\begin_layout Itemize
-jar: creates the executable JAR.
-\end_layout
-
-\begin_layout Itemize
-test: runs all the tests of the system.
- Beware that all the tests might take some time to get executed and also
- a database needs to exist in the system for some of the tests to successfully
- get executed.
-\end_layout
-
-\begin_layout Itemize
-clean: removes the generated class files and the executable JAR.
-\end_layout
-
 \begin_layout Section
 Testing
 \begin_inset CommandInset label
@@ -3699,9 +3680,8 @@ name "sec:testing"
 
 \begin_layout Standard
 Correctness of our system was of foremost importance, therefore testing
- played an impo rtant role while developing the system.
- Many parts of the system have been tested with unit tests (the Intellij
- IDEA 13 coverage tool shows that 83% of the classes were covered).
+ played an important role while developing the system.
+ Parts of the system have been tested with unit tests.
  Although testing the system took its fair amount of time we do believe
  it was worth it since it helped us find bugs while still working locally
  with the system that if they appeared when running experiments would be
@@ -3834,7 +3814,7 @@ EndToEndWithMessages
 \end_layout
 
 \begin_layout Subsubsection*
-EndToEnd Class
+EndToEnd
 \end_layout
 
 \begin_layout Standard
@@ -3874,7 +3854,7 @@ Middleware
 \end_layout
 
 \begin_layout Subsubsection*
-EndToEndWithMessages Class
+EndToEndWithMessages
 \end_layout
 
 \begin_layout Standard
@@ -4202,7 +4182,7 @@ connection.size()
 \end_layout
 
 \begin_layout Section
-Experimental Setup and Analysis
+Experimental Setup and Experiments Analysis
 \begin_inset CommandInset label
 LatexCommand label
 name "sec:experimentalsetup"
@@ -4225,16 +4205,15 @@ Flow
 \end_layout
 
 \begin_layout Standard
-Before presenting the exact details of our experimental setup we present
- the general flow of how an experiment is conducted, which is depicted in
- Figure 
+Before presenting the exact details on our experimental setup we present
+ in Figure 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "flowExperiment"
 
 \end_inset
 
-.
+the general overview of how an experiment is conducted.
 \end_layout
 
 \begin_layout Standard
@@ -4289,178 +4268,10 @@ EC2 Instances
 \end_layout
 
 \begin_layout Standard
-All our experiments were conducted using Amazon Elastic Compute Cloud (EC2)
- instances.
- We never executed more than one middleware in one instance and never executed
- more than two executions of the 
-\shape italic
-Client
-\shape default
- class in one instance as well.
- Also all instances of an experiment were located in the same availability
- zone
-\begin_inset Foot
-status open
-
-\begin_layout Plain Layout
-http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.
-html
-\end_layout
-
-\end_inset
-
-.
- We also never mixed clients, middlewares or the database in the same instance.
- 
-\end_layout
-
-\begin_layout Standard
-In order to setup the instances to use them for experiments we launched
- an instance based on 
-\begin_inset Quotes eld
-\end_inset
-
-Ubuntu Server 14.04 LTS (HVM), SSD Volume Type
-\begin_inset Quotes erd
-\end_inset
-
- Amazon Machine Image (AMI) and for client and middleware instances we installed
- the 
-\begin_inset Quotes eld
-\end_inset
-
-openjdk-7 jdk
-\begin_inset Quotes erd
-\end_inset
-
- pasckage to be able to execute the JAR.
- For the database instance we installed 
-\begin_inset Quotes eld
-\end_inset
-
-postgresql
-\begin_inset Quotes erd
-\end_inset
-
- and for both of them we installed 
-\begin_inset Quotes eld
-\end_inset
-
-dstat
-\begin_inset Quotes erd
-\end_inset
-
- that was used for CPU, memory and network utilization logging.
-\end_layout
-
-\begin_layout Standard
-In order for PostgreSQL to accept TCP connections and allow anybody from
- outside the instance to access our database we changed the line 
-\shape italic
-listen_addresses='localhost'
-\shape default
- to 
-\shape italic
-listen_addresses='*'
-\shape default
- in the 
-\family typewriter
-/etc/postgresql/9.3/main/postgresql.conf
-\family default
- configuration file, as well as added the line 
-\shape italic
-host all all 0.0.0.0/0 md5
-\shape default
- to the file 
-\family typewriter
-/etc/postgresql/9.3/main/pg_hba.conf
-\family default
-.
- 
-\end_layout
-
-\begin_layout Standard
-After those instances were created we generated their corresponding AMI's
- so we could easily launch client, middleware or database instances without
- having to re-do the installations described above.
-\end_layout
-
-\begin_layout Standard
-All the instances used the same general security group that allowed access
- from any IP for all inbound and outbound connections.
- This security group was used when launching our instances.
-\end_layout
-
-\begin_layout Standard
-Note that in Figure 
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "flowExperiment"
-
-\end_inset
-
- we show that instances are launched and terminated for every run of an
- experiment.
- This might be costly since when using EC2 instances you pay per hour even
- if you use an instance for just a minute.
- Nevertheless, this approach for doing the experiments simplified a lot
- our flow.
-\end_layout
-
-\begin_layout Standard
-EC2 instances can vary in their type
-\begin_inset Foot
-status open
-
-\begin_layout Plain Layout
-http://aws.amazon.com/ec2/instance-types/
-\end_layout
-
-\end_inset
-
-.
- The types
-\begin_inset Foot
-status open
-
-\begin_layout Plain Layout
-\begin_inset Quotes eld
-\end_inset
-
-The t2 types of instances are designed to provide moderate baseline performance
- and the capability to burst to significantly higher performance as required
- by your workload.
-\begin_inset Quotes erd
-\end_inset
-
- (http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/t2-instances.html)
-\end_layout
-
-\end_inset
-
- that were used in our experiments and some of their characteristics are
- shown in the table below.
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-
-\backslash
-
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
 \begin_inset Tabular
-<lyxtabular version="3" rows="5" columns="3">
+<lyxtabular version="3" rows="5" columns="4">
 <features rotate="0" tabularvalignment="middle">
+<column alignment="center" valignment="top">
 <column alignment="center" valignment="top">
 <column alignment="center" valignment="top">
 <column alignment="center" valignment="top">
@@ -4469,7 +4280,7 @@ status open
 \begin_inset Text
 
 \begin_layout Plain Layout
-Type of Instance
+Model
 \end_layout
 
 \end_inset
@@ -4483,11 +4294,20 @@ vCPU
 
 \end_inset
 </cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Mem (GiB)
+\end_layout
+
+\end_inset
+</cell>
 <cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
-Memory (GiB)
+
 \end_layout
 
 \end_inset
@@ -4507,6 +4327,15 @@ t2.small
 \begin_inset Text
 
 \begin_layout Plain Layout
+1*
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
 1
 \end_layout
 
@@ -4516,7 +4345,7 @@ t2.small
 \begin_inset Text
 
 \begin_layout Plain Layout
-1
+
 \end_layout
 
 \end_inset
@@ -4536,6 +4365,15 @@ t2.medium
 \begin_inset Text
 
 \begin_layout Plain Layout
+2*
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
 2
 \end_layout
 
@@ -4545,7 +4383,7 @@ t2.medium
 \begin_inset Text
 
 \begin_layout Plain Layout
-2
+
 \end_layout
 
 \end_inset
@@ -4570,11 +4408,20 @@ m3.large
 
 \end_inset
 </cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
 7.5
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
 \end_layout
 
 \end_inset
@@ -4599,11 +4446,20 @@ r3.2xlarge
 
 \end_inset
 </cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
 61
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
 \end_layout
 
 \end_inset
@@ -4616,6 +4472,123 @@ r3.2xlarge
 
 \end_layout
 
+\begin_layout Standard
+* burstable performance
+\end_layout
+
+\begin_layout Standard
+All our experiments were conducted using Amazon Elastic Compute Cloud (EC2)
+ instances.
+ We never executed more than one middleware in one instance and never executed
+ more than two executions of the 
+\shape italic
+Client
+\shape default
+ class in one instance as well.
+ Also all instances of an experiment were located in the same availability
+ zone
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.
+html
+\end_layout
+
+\end_inset
+
+.
+ We also never mixed clients, middlewares or the database in the same instance.
+ In order to setup the instances to be used we launched an instance based
+ on 
+\begin_inset Quotes eld
+\end_inset
+
+Ubuntu Server 14.04 LTS (HVM), SSD Volume Type
+\begin_inset Quotes erd
+\end_inset
+
+ Amazon Machine Image (AMI) and we installed the following.
+\end_layout
+
+\begin_layout Standard
+For Client & Middleware Instances we installed the following pasckages:
+\end_layout
+
+\begin_layout Itemize
+openjdk-7 jdk: to be able to execute the JAR
+\end_layout
+
+\begin_layout Itemize
+dstat: dstat is used for logging cpu usage
+\end_layout
+
+\begin_layout Standard
+For the database instance we installed the following packages:
+\end_layout
+
+\begin_layout Itemize
+dstat: dstat is used for logging cpu usage
+\end_layout
+
+\begin_layout Itemize
+postgresql
+\end_layout
+
+\begin_layout Standard
+In order for PostgreSQL to accept TCP connections from outside the local
+ machine we changed its configuration file 
+\family typewriter
+/etc/postgresql/9.3/main/postgresql.conf
+\family default
+ and changed the line 
+\shape italic
+listen_addresses='localhost'
+\shape default
+ to 
+\shape italic
+listen_addresses='*'
+\shape default
+.
+ We also added this line 
+\shape italic
+host all all 0.0.0.0/0 md5
+\shape default
+ to 
+\family typewriter
+/etc/postgresql/9.3/main/pg_hba.conf
+\family default
+ to allow anybody from outside to access our database.
+\end_layout
+
+\begin_layout Standard
+After those instances were created we generated their corresponding AMI's
+ so we could easily launch client, middleware or database instances without
+ having to re-do the installations described above.
+\end_layout
+
+\begin_layout Standard
+All the instances used the same general security group that allowed acces
+ from any IP for all inbound and outbound connections.
+ This security group was used when launching our instances.
+\end_layout
+
+\begin_layout Standard
+Note that in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "flowExperiment"
+
+\end_inset
+
+ we show that instances are launched and terminated for every run of an
+ experiment.
+ This might be costly since when using EC2 instances you pay per hour even
+ if you used an instance for just a minute.
+ Nevertheless, this approach for doing the experiments simplified a lot
+ our flow.
+\end_layout
+
 \begin_layout Subsubsection*
 Implementation
 \end_layout
@@ -4625,7 +4598,7 @@ The experimental setup implementation was solely done using Python together
  with these packages: 
 \end_layout
 
-\begin_layout Itemize
+\begin_layout Description
 boto
 \begin_inset Foot
 status open
@@ -4640,7 +4613,7 @@ https://github.com/boto/boto
  Its main use was to launch and terminate instances on demand.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout Description
 pexpect
 \begin_inset Foot
 status open
@@ -4653,8 +4626,8 @@ https://github.com/pexpect/pexpect
 
  for connecting to the EC2 instances used in the experiments and executing
  appropriate commands.
- Using pexpect we connected to an EC2 instance using SSH and issued interactivel
-y commands.
+ Using pexpect we connected to an EC2 instance using SSH and issused interactive
+ly commands.
  For example we could start the middleware issuing a 
 \begin_inset Quotes eld
 \end_inset
@@ -4663,7 +4636,7 @@ java -jar ...
 \begin_inset Quotes erd
 \end_inset
 
- command and at some later point in time send the string 
+ command and at some later point in thime send the string 
 \begin_inset Quotes eld
 \end_inset
 
@@ -4674,7 +4647,7 @@ STOP
  to gracefully stop the middleware.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout Description
 psycopg2
 \begin_inset Foot
 status open
@@ -4731,13 +4704,13 @@ Middleware
 \shape italic
 Database
 \shape default
-: contains methods that are needed to get the database in a valid initial
- state before the beginning of an experiment.
+: contains methods that are need to set up the database in a correct state
+ before the beginning of an experiment.
 \end_layout
 
 \begin_layout Standard
-In order for the experiments to get executed, notice that the following
- have to been done in the machine runninng the experiments:
+In order for the experiment to run notice that the following have to been
+ done in the machine doing the experiments:
 \end_layout
 
 \begin_layout Itemize
@@ -4760,7 +4733,7 @@ ssh
 \begin_inset Quotes erd
 \end_inset
 
- a machine when the SSH key has been added, since doing 
+ a machine when the SSH key has been added since doing 
 \shape italic
 ssh ubuntu@host
 \shape default
@@ -4831,7 +4804,7 @@ reference "experimentConf"
 
 \end_inset
 
- with added comments explaining the values that are not self-explanatory.
+ with added comments explaining most of the keys.
 \end_layout
 
 \begin_layout Standard
@@ -4949,40 +4922,18 @@ status open
 \end_layout
 
 \begin_layout Plain Layout
-# 
-\begin_inset Quotes eld
-\end_inset
-
-mappings
-\begin_inset Quotes erd
-\end_inset
-
- maps a client instance to a middleware instance in the form 
-\shape italic
-(a, b)
+# mappings maps client instance to middleware instances in the form (a,
+ b)
 \end_layout
 
 \begin_layout Plain Layout
-# where 
-\shape italic
-a
-\shape default
- corresponds to the index of a client instance and 
-\shape italic
-b
-\shape default
- to the index of
+# where a corresponds to the index of a client instance and b to the index
+ of
 \end_layout
 
 \begin_layout Plain Layout
 # a middleware instance.
  Indexes start from 0.
- For instance in the following mapping
-\end_layout
-
-\begin_layout Plain Layout
-the first tuple states that we connect the first client instance with the
- first middleware.
 \end_layout
 
 \begin_layout Plain Layout
@@ -5005,44 +4956,13 @@ status open
 \end_layout
 
 \begin_layout Plain Layout
-# 
-\begin_inset Quotes eld
-\end_inset
-
-clientsData
-\begin_inset Quotes erd
-\end_inset
-
- contains pairs in order of the form 
-\shape italic
-(a, b)
-\shape default
- where 
-\shape italic
-a
-\shape default
- corresponds to the numberOfClients per 
+# corresponds to the numberOfClients per instance and the startingId of
+ every client.
 \end_layout
 
 \begin_layout Plain Layout
-# instance and 
-\shape italic
-b
-\shape default
- the startingId of every client.
- The first tuple of 
-\begin_inset Quotes eld
-\end_inset
-
-clientsData
-\begin_inset Quotes erd
-\end_inset
-
- corresponds to the first client 
-\end_layout
-
-\begin_layout Plain Layout
-# instance, second to the second, etc.
+# First tuple corresponds to the first client instance, second to the second,
+ etc.
  
 \end_layout
 
@@ -5071,8 +4991,8 @@ status open
 \end_layout
 
 \begin_layout Plain Layout
-"values": [5, 10, 15] # possible values in this case correspond to thread
- pool sizes
+"values": [5, 10, 15] # possible values to try, in this case these are the
+ possible thread pool sizes
 \end_layout
 
 \begin_layout Plain Layout
@@ -5118,27 +5038,16 @@ reference "experimentConf"
 \end_inset
 
  cannot be used for all kind of experiments.
- For example it cannot be used in an experiment trying to increase two values
- at the same time.
+ For example in an experiment trying to increase two values at the same
+ time it cannot be immediately used.
  In such cases a small addition was done inside the 
 \shape italic
 for
 \shape default
- loop of our experiments, the 
-\shape italic
-for
-\shape default
- loop actually corresponds to the loop shown in Figure 
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "flowExperiment"
-
-\end_inset
-
-.
+ loop of our experiments.
  For instance if we needed to run an experiment increasing both the number
  of threads and the number of connections we could just use the given configurat
-ion and also add the statement 
+ion and also do 
 \shape italic
 conf[
 \begin_inset Quotes eld
@@ -5148,7 +5057,7 @@ connectionPoolSize
 \begin_inset Quotes erd
 \end_inset
 
-]=variable
+]
 \shape default
  in our 
 \shape italic

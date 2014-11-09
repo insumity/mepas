@@ -8,6 +8,9 @@ import java.util.logging.LogRecord;
 
 import static ch.ethz.inf.asl.utils.Verifier.hasText;
 
+/**
+ * This class can be used to log events.
+ */
 public class Logger {
     private java.util.logging.Logger logger;
 
@@ -18,6 +21,12 @@ public class Logger {
 
     }
 
+    /**
+     * Creates the logger that is going to log in the given file. All the messages logged by this
+     * logger contain time stamps from the moment the logger was created.
+     * @param filePath path of the file where logs are going to be saved.
+     * @throws IOException in case there is an error corresponding the given file path.
+     */
     public Logger(String filePath) throws IOException {
         hasText(filePath, "Given filePath cannot be empty!");
 
@@ -32,6 +41,9 @@ public class Logger {
         startingTime = System.currentTimeMillis();
     }
 
+    /**
+     * Closes the logger.
+     */
     public void close() {
         for (Handler handler : this.logger.getHandlers()) {
             handler.flush();
@@ -48,6 +60,11 @@ public class Logger {
     }
 
 
+    /**
+     * Logs given message in this format "timestamp\tmessage" where timestamp
+     * corresponds to the time in ms since the logger was created.
+     * @param message content to log
+     */
     public void log(String message) {
         StringBuilder builder = new StringBuilder();
 

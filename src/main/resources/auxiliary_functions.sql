@@ -22,3 +22,24 @@ BEGIN
   CREATE INDEX ON message (arrival_time);
 END
 $$ LANGUAGE plpgsql;
+
+
+-- to be used by the experiment tester to quicker create a number of clients & queues in the system
+CREATE FUNCTION create_clients(p_numclients integer)
+  RETURNS void AS $$
+BEGIN
+  FOR i IN 1 .. p_numclients LOOP
+    INSERT INTO client (name) VALUES  (i);
+  END LOOP;
+END
+$$ LANGUAGE plpgsql;
+
+CREATE FUNCTION create_queues(p_numqueues integer)
+  RETURNS void AS $$
+BEGIN
+  FOR i IN 1 .. p_numqueues LOOP
+    INSERT INTO queue (name) VALUES (i);
+  END LOOP;
+END
+$$ LANGUAGE plpgsql;
+

@@ -20,15 +20,15 @@ public class ClientMessagingProtocolImplTest {
         new ClientMessagingProtocolImpl(null, 23, false);
     }
 
-    @Test(groups = SMALL)
-    public void testSayHello() throws IOException {
-        Socket mockedSocket = mock(Socket.class);
-        OutputStream outputStream = mockedSocket.getOutputStream();
-        InputStream inputStream = mockedSocket.getInputStream();
-
-        ClientMessagingProtocolImpl protocol = new ClientMessagingProtocolImpl(mockedSocket, 1, false);
-        protocol.sayHello("some client");
-
-//        verify(outputStream).write();
-    }
+//    @Test(groups = SMALL)
+//    public void testSayHello() throws IOException {
+//        Socket mockedSocket = mock(Socket.class);
+//        OutputStream outputStream = mockedSocket.getOutputStream();
+//        InputStream inputStream = mockedSocket.getInputStream();
+//
+//        ClientMessagingProtocolImpl protocol = new ClientMessagingProtocolImpl(mockedSocket, 1, false);
+//        protocol.sayHello("some client");
+//
+////        verify(outputStream).write();
+//    }
 }

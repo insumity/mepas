@@ -10,6 +10,9 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * This class corresponds to a set of clients.
+ */
 public class Client {
 
     private List<Request> sentRequests = new LinkedList<>();
@@ -39,6 +42,10 @@ public class Client {
         return receivedResponses;
     }
 
+    /**
+     * Initializes an object based on the given configuration.
+     * @param configuration
+     */
     public Client(ConfigurationReader configuration)  {
 
         this.hostName = configuration.getProperty("middlewareHost");
@@ -62,6 +69,10 @@ public class Client {
 
     }
 
+    /**
+     * Start the clients for executing.
+     * @param isEndToEndTest true if this is an end-to-end test, false otherwise
+     */
     public void start(boolean isEndToEndTest) {
         for (int i = 0; i < numberOfClients; ++i) {
             try {

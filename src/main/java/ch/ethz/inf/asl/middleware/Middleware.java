@@ -16,6 +16,9 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
 
+/**
+ * This class corresponds to the middleware and is used to start the middleware.
+ */
 public class Middleware {
 
     private BlockingQueue<InternalSocket> sockets;
@@ -89,6 +92,10 @@ public class Middleware {
         }
     }
 
+    /**
+     * Starts executing the middleware.
+     * @param isEndToEndTest true if it is an end-to-end test, false othwerwise
+     */
     public void start(boolean isEndToEndTest) {
         Executor threadPool = new ThreadPool(threadPoolSize);
         middlewareRunnables = new MiddlewareRunnable[threadPoolSize];
@@ -121,7 +128,10 @@ public class Middleware {
         }
     }
 
-
+    /**
+     * Initiates a middleware based on the given configuration.
+     * @param configuration
+     */
     public Middleware(ConfigurationReader configuration) {
 
         String databaseHost = configuration.getProperty("databaseHost");
