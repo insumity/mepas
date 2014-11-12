@@ -226,7 +226,7 @@ reference "tiers"
  depicts the three tiers and they way they are connected to each other.
  As can been seen in the figure there is only one database while there can
  be more than one middlewares that are identical to each other and are connected
- to the database, as well as many clients connecting to different middlewares.
+ to the database, as well as many clients connected to different middlewares.
  
 \end_layout
 
@@ -523,8 +523,8 @@ While designing the system we came to the realization that the communication
  and the database.
  They are the same in the sense that when a client wants to send a message
  he has to issue some kind of send message request to the middleware.
- Similarly when the middleware wants to serve a send message request or
- the client he can issue a send message to the database.
+ Similarly when the middleware wants to serve a send message request for
+ the client it can issue a send message to the database.
  Because of this we created the interface that can be seen in Figure 
 \begin_inset CommandInset ref
 LatexCommand ref
@@ -721,7 +721,12 @@ receiveMessage()
 \shape default
  method since it only reads a message from the system but is not actually
  removing it.
- 
+ Also all the methods that retrieve a message actually return an object
+ of 
+\shape italic
+Optional<Message>
+\shape default
+ type which could possibly be empty if there was no receive.
 \end_layout
 
 \begin_layout Subsection*
@@ -731,7 +736,7 @@ Database
 \begin_layout Standard
 The PostgreSQL database management system was used, specifically PostgreSQL
  (release 9.3.5).
- It was need for the system to persistent store information so a database
+ It was needed for the system to persistent store information, so a database
  was used to store the needed information for the clients, the queues and
  the messages.
  For this reason three tables were created as can been seen in Figure 
@@ -771,7 +776,7 @@ table, while
 \shape italic
  queue_id
 \shape default
- is connected to the
+ is associated to the
 \shape italic
  id 
 \shape default
@@ -1168,7 +1173,7 @@ receiver_id
 \shape italic
 NULL
 \shape default
-), this is also checked in the stored function and is explained later on.
+), this is also checked in the stored functions and is explained later on.
 \end_layout
 
 \begin_layout Standard
@@ -1214,8 +1219,8 @@ CREATE INDEX ON message (arrival_time)
 \end_layout
 
 \begin_layout Standard
-The first index was introduced to make faster the retrieval of message since
- most of them are based on a 
+The first index was introduced to make faster the retrieval of messages
+ since most of them are based on a 
 \shape italic
 receiver_id 
 \shape default
@@ -1247,7 +1252,7 @@ status open
 
 \end_inset
 
- that the in a multicolumn index the leftmost column can also be efficiently
+ that the left-most column in a multicolumn index can also be efficiently
  used solo.
  The case where 
 \shape italic
@@ -1288,11 +1293,7 @@ Stored functions were created using the PL/pgSQL procedural language to
  reduce the network communication time between the middleware and the database.
  Also stored functions have the advantage that they are compiled already
  by the DBMS and their query plan has been generated so they can be reused
- and therefore increa
-\emph on
-se
-\emph default
- performance.
+ and therefore increase performance.
  The code for the stored functions can be found in 
 \family typewriter
 read_committed_basic_functions.sql
@@ -1301,8 +1302,8 @@ read_committed_basic_functions.sql
 \family typewriter
 src/main/resources
 \family default
- and all of them are used to be able to implement the interface shown in
- Figure 
+ and all of them are used in order to implement the interface shown in Figure
+ 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "protocol"
@@ -1726,7 +1727,7 @@ What is being logged?
 
 \begin_layout Standard
 The only thing that is being logged in the database while it is being used
- is he the CPU, network and memory utilization using the dstat
+ is the CPU, network and memory utilization using the dstat
 \begin_inset Foot
 status open
 
@@ -1794,7 +1795,7 @@ SELECT * FROM ...
 \end_inset
 
  queries were issued on the database, no stored functions were created for
- this since they are only used for the console and quite sparingly.
+ this since they are only used for the console and quite sparingly as well.
 \end_layout
 
 \begin_layout Standard
@@ -1859,7 +1860,8 @@ Middleware
 \begin_layout Standard
 The middleware implements the messaging system, it receives requests/messages
  from clients and has to use the database in order to persist those messages,
- as well as retrieve the messages from the database to return to the clients.
+ as well as retrieve the messages from the database to return them to the
+ clients.
  Obviously if we want to be able to support more than one client the middleware
  needs to be multi-threaded.
  The interface that the middleware has to implement can be seen in Figure
@@ -1887,11 +1889,11 @@ In this approach the middleware would have some threads, also known as worker
  from the client.
  When a connection is established the thread blocks and waits for a request
  from the client.
- When it receives the request it, it executes the request meaning it issues
- the corresponding operations to the database and then returns the response
- back to the client.
+ When it receives the request it, it executes the request, i.e.
+ it issues the corresponding operations to the database, and then returns
+ the response back to the client.
  Afterwards it closes the connection and waits for the next client connection.
- Although this approach can support an arbitrary number of client it is
+ Although this approach can support an arbitrary number of clients it is
  quite wasteful and slow since for every request-response interaction the
  client has to establish a connection with the middleware.
  
@@ -1922,7 +1924,7 @@ This approach uses Java New IO.
 \end_layout
 
 \begin_layout Standard
-Our approach followed a different way.
+Our approach follows a different path.
  Its main idea is to have a queue of sockets corresponding to connections
  from the clients.
  Every time a client connects to the middleware the socket is being added
@@ -2234,7 +2236,7 @@ command
 execute()
 \shape default
  method might block if the underlying queue is full.
- The queue of the threads that is used internally by this classes to 
+ The queue of the threads that is used internally by this class to 
 \begin_inset Quotes eld
 \end_inset
 
@@ -2343,7 +2345,7 @@ ArrayBlockingQueue
 \shape italic
 getConnection()
 \shape default
- that are waiting are waiting in a FIFO way.
+ that are waiting, are waiting in a FIFO way.
 \end_layout
 
 \begin_layout Subsubsection*
@@ -2391,7 +2393,7 @@ Request
  Although this is not necessary for the client, since the client blocks
  until he reads the response.
  But it was done nevertheless for consistency reasons so the clients and
- the middlewares send and receive in the same way.
+ the middlewares send and receive messages in the same way.
 \end_layout
 
 \begin_layout Subsubsection*
@@ -2403,9 +2405,10 @@ From the above description of the system it is easy to see that there are
  two main parts of the system were a request could stuck waiting.
  The one is in the sockets queue waiting until its socket is being worked
  on by a worker thread.
- The second part is waiting for the connection, after getting the request
- the middleware might have to wait for others worker threads to finish their
- database requests until it is able to proceed with its own.
+ The second part is waiting for the connection, after getting a request
+ from the client the middleware might have to wait for others worker threads
+ to finish their database requests until it is able to proceed with its
+ own.
  Until then it waits in the connection queue of the connection pool.
 \end_layout
 
@@ -2415,7 +2418,7 @@ What is being logged?
 
 \begin_layout Standard
 Every worker thread in the middleware logs its own data.
- This was done so they worker threads do not contend with each other while
+ This was done so the worker threads do not contend with each other while
  logging.
  Afterwards the logs can be merged and be sorted by time to be analyzed.
 \end_layout
@@ -2565,8 +2568,16 @@ WAITING THREAD
  This number merely shows how many times the socket entered the queue from
  the moment it had data for reading until all its data (one request) were
  read.
- In the above snippet the number is 1 which means the moment the whole request
- was read at once (all the data were there) by the worker thread.
+ In the above snippet the number is 1 which means that the whole request
+ was read at once (all the data were there) when the worker thread 
+\begin_inset Quotes eld
+\end_inset
+
+looked
+\begin_inset Quotes erd
+\end_inset
+
+ at the socket.
 \end_layout
 
 \begin_layout Enumerate
@@ -2617,9 +2628,9 @@ LIST_QUEUES
 \end_inset
 
 .
- The value of this log actually also contains the time for request to be
- sent to the database, executed in the database and then sent back to the
- middleware.
+ The value of this log actually also contains the time for the request to
+ be sent to the database, executed in the database and then sent back to
+ the middleware.
  
 \end_layout
 
@@ -2667,7 +2678,8 @@ DB REQUEST
 \end_layout
 
 \begin_layout Standard
-Similarly to the database the CPU, memory and network utilization are logged.
+Similarly to the database the CPU, memory and network utilization of the
+ middleware are logged.
  
 \end_layout
 
@@ -3012,7 +3024,7 @@ list_queues
 
  queues.
  This way we noticed that the number of messages in the database was always
- in the around a hundred.
+ around a hundred.
  This workload also has the benefit of using three different types of requests.
  Also notice that our clients do not use the 
 \shape italic
@@ -3045,17 +3057,24 @@ queue
  In such a case an error is logged and a failed response message is returned
  to the client.
  For this reason we chose to avoid that types of requests.
+ 
+\shape italic
+sayGoodbye()
+\shape default
+ is used on the other hand but is not actually removing the client from
+ the system, it just informs the middleware to remove this client's socket
+ from its sockets queue.
 \end_layout
 
 \begin_layout Standard
 Initially clients were not sending random strings as content to each other
- but instead where sending a counter that was increased after every send.
+ but instead were sending a counter that was increased after every send.
  This was helpful for verifying that the system was operating correctly.
- This counter was replaced with random string during the 
+ This counter was replaced with a random string during the 
 \begin_inset Quotes eld
 \end_inset
 
-increasing the message size
+increasing message size
 \begin_inset Quotes erd
 \end_inset
 
@@ -3340,7 +3359,7 @@ numberOfClients
 \begin_inset Quotes erd
 \end_inset
 
- (number of threads) that are going to be executed by these
+ (number of threads) that are going to be executed by this
 \shape italic
  Client
 \shape default
@@ -3353,7 +3372,7 @@ totalClients
 \end_inset
 
  are the total clients currently in the system, i.e.
- where a client can send a message.
+ range of ids where a client can send a message.
  Since many 
 \shape italic
 Client
@@ -3580,7 +3599,7 @@ MessagingProtocol
 \shape italic
 Request
 \shape default
- and every one calls its correspond protocol method.
+ and every one calls its corresponding protocol method.
  For example the 
 \shape italic
 execute()
@@ -3693,7 +3712,7 @@ name "sec:testing"
 
 \begin_layout Standard
 Correctness of our system was of foremost importance, therefore testing
- played an impo rtant role while developing the system.
+ played an important role while developing the system.
  Many parts of the system have been tested with unit tests (the Intellij
  IDEA 13 coverage tool shows that 83% of the classes were covered).
  Although testing the system took its fair amount of time we do believe
@@ -3763,8 +3782,8 @@ TestConstants
 \shape italic
 testutils
 \shape default
- package, are using the local database which is being accessed by the constants
- given in the same file.
+ package, are using the local database which is being accessed using the
+ constants given in the same file.
 \end_layout
 
 \begin_layout Subsection*
@@ -3846,8 +3865,8 @@ Middleware
  In this scenario there are 2 clients connected to each middleware.
  The clients are being executed for 20 seconds and they communicate with
  each other by sending and receiving messages.
- At the end of their execution it is verified that number of requests sent
- by the clients were actually received by the middleware and no more.
+ At the end of their execution it is verified that the number of requests
+ sent by the clients were actually received by the middleware and no more.
  And that the number of responses sent from the middlewares were actually
  received by the clients.
  In order to check the requests and responses that were being sent and received
@@ -3876,7 +3895,7 @@ This test uses one middleware and 2 clients that send and receive specific
  messages with each other.
  It is verified that every client actually receives the messages sent by
  the other and with the expected content.
- In order to so do it uses the 
+ In order to do so it uses the 
 \shape italic
 ClientMessagingProtocolImpl
 \shape default
@@ -3939,7 +3958,7 @@ Quite some
 \shape italic
 NullPointerException
 \shape default
-.
+'s.
  One of them was in the 
 \shape italic
 Message
@@ -4085,6 +4104,8 @@ RETURN QUERY SELECT * FROM message WHERE id = received_message_id
  The aforementioned bug was not found using tests but was noticed through
  the use of counter in the content of the messages, it was quickly noticed
  that different clients received messages with the exact same counter.
+ Afterwards we changed the stored functions test to try to recognize if
+ such a problem still resides.
 \end_layout
 
 \begin_layout Standard
@@ -4336,7 +4357,8 @@ postgresql
 \begin_inset Quotes erd
 \end_inset
 
- and for both of them we installed 
+.
+ For all the instances we installed 
 \begin_inset Quotes eld
 \end_inset
 
@@ -4397,8 +4419,8 @@ reference "flowExperiment"
  experiment.
  This might be costly since when using EC2 instances you pay per hour even
  if you use an instance for just a minute.
- Nevertheless, this approach for doing the experiments simplified a lot
- our flow.
+ Nevertheless, this approach experimental approach simplified a lot our
+ flow.
 \end_layout
 
 \begin_layout Standard
@@ -4753,7 +4775,7 @@ Database
 
 \begin_layout Standard
 In order for the experiments to get executed, notice that the following
- have to been done in the machine running the experiments:
+ have to be done in the machine running the experiments:
 \end_layout
 
 \begin_layout Itemize
@@ -5055,7 +5077,8 @@ clientsData
 \begin_inset Quotes erd
 \end_inset
 
- corresponds to the first client instance, second to the second, etc.
+ corresponds to the first client instance, second to the second instance,
+ etc.
  
 \end_layout
 
@@ -5172,8 +5195,8 @@ for
 \shape italic
 for
 \shape default
- loop was also added in a function so we can use multithreading to run experimen
-ts concurrently.
+ loop was also added in a function in some experiments so we could use multithre
+ading to run experiments concurrently.
  Note however that all the experiments running at the same time cannot use
  more than 20 
 \series bold
@@ -5319,7 +5342,7 @@ name "sec:experiments"
 In this section we present the experiments conducted including their evaluation.
  In all the experiments client's throughput and response time was presented
  unless stated otherwise.
- Also, all the receives of messages in our experiments were successful.
+ Also not that all the receives of messages in our experiments were successful.
 \end_layout
 
 \begin_layout Subsection*
@@ -5332,15 +5355,15 @@ In order to check our system's stability we ran an one hour trace with the
 \end_layout
 
 \begin_layout Itemize
-2 t2.small client instances with 50 clients each
+Two t2.small client instances with 50 clients each
 \end_layout
 
 \begin_layout Itemize
-1 t2.small middleware instance with 20 middleware threads and 20 connections
+One t2.small middleware instance with 20 middleware threads and 20 connections
 \end_layout
 
 \begin_layout Itemize
-1 t2.medium database
+One t2.medium database
 \end_layout
 
 \begin_layout Standard
@@ -5366,16 +5389,16 @@ reference "trace"
 
 \end_inset
 
-, 
+ and 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "trace-1"
 
 \end_inset
 
- the throughput and response time values of our traces can been seen.
+ the throughput and response time values of our trace can been seen.
  In the response time figure, response time was averaged over the interval
- of one minute while in the throughput figure throughput was calculated
+ of one minute while in the throughput figure, throughput was calculated
  per second and averaged over the interval of one minute.
 \end_layout
 
@@ -5866,7 +5889,8 @@ S requests is pretty much the same.
  So the amount of SEND_MESSAGE requests should be almost the same with the
  amount of RECEIVE_MESSAGE requests.
  Because of this, in the upcoming experiments we are not going to plot the
- throughput for a specific type of a request but only for all types of requests.
+ throughput for a specific type of a request but only the average throughput
+ for all the types of requests.
 \end_layout
 
 \begin_layout Standard
@@ -6070,7 +6094,7 @@ closed system
  All the upcoming results have been verified using the interactive law.
 \end_layout
 
-\begin_layout Section*
+\begin_layout Subsection*
 Warm Up and Cool Down
 \end_layout
 
@@ -6096,9 +6120,9 @@ cool down
 \end_inset
 
  phases respectively.
- Those number were derived by checking the trace and seeing that after 2
- minutes our system stabilizes and until one minute before the end of the
- execution the system is still stable.
+ Those numbers were derived by checking the trace and seeing that after
+ 2 minutes our system stabilizes and until one minute before the end of
+ the execution the system is still stable.
 \end_layout
 
 \begin_layout Subsection*
@@ -6107,7 +6131,8 @@ Throughput Plots
 
 \begin_layout Standard
 In all the following plots the throughput was calculated per 20 seconds
- and averaged over the time of the experiment (excluding 
+ and averaged over the time of the experiment, of course by excluding the
+ 
 \begin_inset Quotes eld
 \end_inset
 
@@ -6123,7 +6148,7 @@ cool down
 \begin_inset Quotes erd
 \end_inset
 
- phases of course).
+ phases.
 \end_layout
 
 \begin_layout Subsection*
@@ -6192,19 +6217,20 @@ The experiment was concuded with the following configuration:
 \end_layout
 
 \begin_layout Itemize
-1 m3.large client instance with 50 clients 
+One m3.large client instance with 50 clients 
 \end_layout
 
 \begin_layout Itemize
-1 m3.large middleware with 20 middleware threads and 20 connections
+One m3.large middleware with 20 middleware threads and 20 connections
 \end_layout
 
 \begin_layout Itemize
-1 m3.large database
+One m3.large database
 \end_layout
 
 \begin_layout Itemize
-message sizes in number of characters, values that were used are: 
+message sizes in number of characters was changed, the values that were
+ used are: 
 \begin_inset Formula $1$
 \end_inset
 
@@ -6282,7 +6308,8 @@ https://iperf.fr/
 
 \end_inset
 
- tool we saw bandwidth between instances of the magnitude of some Gbps (1Gbps+).
+ tool we saw that the bandwidth between instances is of the magnitude of
+ some Gbps (1Gbps+).
 \end_layout
 
 \begin_layout Standard
@@ -6299,7 +6326,7 @@ status open
 \align center
 \begin_inset Graphics
 	filename increasingMessageSize/throughput/throughput.eps
-	scale 110
+	scale 120
 
 \end_inset
 
@@ -6310,7 +6337,7 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Throughput of Increasing the Message Size
+Throughput when Increasing the Message Size
 \end_layout
 
 \end_inset
@@ -6344,7 +6371,7 @@ status open
 \align center
 \begin_inset Graphics
 	filename increasingMessageSize/responseTime/responseTime.eps
-	scale 110
+	scale 120
 
 \end_inset
 
@@ -6355,7 +6382,7 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Response Time Increasing the Message Size
+Response Time when Increasing the Message Size
 \end_layout
 
 \end_inset
@@ -6410,7 +6437,7 @@ RECEIVE_MESSAGE
 \end_inset
 
 .
- This was expected but we weren't expecting such a huge response time for
+ This was expected but we were not expecting such a huge response time for
  LIST_QUEUES requests since they do not move any messages around.
  While investigating why this was the case we found the following message
  in the PostgreSQL logs: 
@@ -6958,8 +6985,8 @@ Number of Connections Versus Number of Middleware Threads
 \end_layout
 
 \begin_layout Standard
-In our system design there is strong correspondence between database connections
- and middleware threads given to the database.
+In our system design there is strong relation between database connections
+ and middleware threads.
  We wanted to have a better look at the performance of the system when those
  two factors are combined.
 \end_layout
@@ -6975,15 +7002,15 @@ In this experiment we increased the number of connections to the database
 \end_layout
 
 \begin_layout Itemize
-1 m3.large client instance with 50 clients 
+One m3.large client instance with 50 clients 
 \end_layout
 
 \begin_layout Itemize
-1 m3.large middleware with 20 middleware threads
+One m3.large middleware with 20 middleware threads
 \end_layout
 
 \begin_layout Itemize
-1 m3.large database
+One m3.large database
 \end_layout
 
 \begin_layout Standard
@@ -7026,21 +7053,10 @@ status open
 \end_layout
 
 \begin_layout Plain Layout
-\align center
-\begin_inset Graphics
-	filename increasingConnections/responseTime/responseTime.eps
-	scale 110
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Increasing the Number of Connections
+Throughput when Increasing the Number of Connections
 \end_layout
 
 \end_inset
@@ -7061,6 +7077,47 @@ name "increasingNumberOfConnections"
 \end_layout
 
 \begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename increasingConnections/responseTime/responseTime.eps
+	scale 110
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Response Time when Increasing the Number of Connections
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "increasingNumberOfConnections-1"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
 Figure 
 \begin_inset CommandInset ref
 LatexCommand ref
@@ -7068,7 +7125,14 @@ reference "increasingNumberOfConnections"
 
 \end_inset
 
- shows the throughput and response time of our system while increasing the
+ and 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "increasingNumberOfConnections-1"
+
+\end_inset
+
+ show the throughput and response time of our system while increasing the
  number of connections.
  The corresponding results were as expected up to 20 number of connections.
  After 20 connections we see a slow decrease in throughput which was not
@@ -7082,8 +7146,8 @@ getConnection()
  from our connection pool is always going to return a new connection if
  the number of maximum connections has not been reached yet and only then
  it is going to start reusing connections.
- So in our case when we have for instance 80 connections there are going
- to be created 80 connections in the pool although only 20 of them are being
+ So in our case when we have for instance 80 connections, 80 connections
+ are going to be created in the pool although only 20 of them are being
  used at a specific point in time.
  This means that the database is going to be overwhelmed with more new processes
 : 
@@ -7122,15 +7186,15 @@ g else remained the same.
 \end_layout
 
 \begin_layout Itemize
-1 m3.large client instance with 50 clients 
+One m3.large client instance with 50 clients 
 \end_layout
 
 \begin_layout Itemize
-1 m3.large middleware with 20 connections
+One m3.large middleware with 20 connections
 \end_layout
 
 \begin_layout Itemize
-1 m3.large database
+One m3.large database
 \end_layout
 
 \begin_layout Standard
@@ -7142,7 +7206,7 @@ Hypothesis
  to increase as we increase the number of threads, since with more threads
  we will be able to utilize the given connections.
  We except throughput to get saturated after about 20 threads since the
- middleware threads will not be able to receive connections.
+ extra middleware threads will not be able to receive connections.
 \end_layout
 
 \begin_layout Standard
@@ -7163,21 +7227,10 @@ status open
 \end_layout
 
 \begin_layout Plain Layout
-\align center
-\begin_inset Graphics
-	filename increasingThreads/responseTime/responseTime.eps
-	scale 110
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Increasing the Number of Threads
+Throughput when Increasing the Number of Threads
 \end_layout
 
 \end_inset
@@ -7198,10 +7251,58 @@ name "increasingNumberOfThreads"
 \end_layout
 
 \begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename increasingThreads/responseTime/responseTime.eps
+	scale 110
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Response Time when Increasing the Number of Threads
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "increasingNumberOfThreads-1"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
 As we can see in Figure 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "increasingNumberOfThreads"
+
+\end_inset
+
+ and 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "increasingNumberOfThreads-1"
 
 \end_inset
 
@@ -7213,101 +7314,14 @@ reference "increasingNumberOfThreads"
  we can think there is a correspondence between threads and clients.
  After 50 clients there is contention between the threads on which is going
  to pick up the client, i.e.
- which thread is going to pick up a socket.
-\end_layout
-
-\begin_layout Subsubsection*
-Increasing Both Threads and Connections
+ which thread is going to pick up a socket which contention leads to the
+ aforementioned unexpected results.
 \end_layout
 
 \begin_layout Standard
-With this experiment we wanted to see what will happen when increasing the
- number of middleware threads and connections at the same time.
- For this experiment we had the following configuration:
-\end_layout
-
-\begin_layout Itemize
-1 m3.large client instance with 50 clients 
-\end_layout
-
-\begin_layout Itemize
-1 m3.large middleware
-\end_layout
-
-\begin_layout Itemize
-1 m3.large database
-\end_layout
-
-\begin_layout Standard
-
-\series bold
-Hypothesis
-\series default
-: blah
-\end_layout
-
-\begin_layout Standard
-\begin_inset Float figure
-wide false
-sideways false
-status open
-
-\begin_layout Plain Layout
-\align center
-\begin_inset Graphics
-	filename increasingBothClientsAndConnections/throughput/throughput.eps
-	scale 110
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
-\align center
-\begin_inset Graphics
-	filename increasingBothClientsAndConnections/responseTime/responseTime.eps
-	scale 110
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
-\align center
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-Increasing Both the Number of Threads and Connections
-\end_layout
-
-\end_inset
-
-
-\begin_inset CommandInset label
-LatexCommand label
-name "increasingBoth"
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-As we can see in Figure 
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "increasingBoth"
-
-\end_inset
-
- blha.
+From this and the previous experiment we conclude that its meaningless to
+ have more threads than connections, as well as more threads than the number
+ of clients that are going to be connected in the middleware.
 \end_layout
 
 \begin_layout Subsection*
@@ -7330,15 +7344,15 @@ In this experiment we increased the number of clients with the following
 \end_layout
 
 \begin_layout Itemize
-1 m3.large client instance with a variable number clients 
+One m3.large client instance with a variable number clients 
 \end_layout
 
 \begin_layout Itemize
-1 m3.large middleware with 20 middleware threads and 20 connections
+One m3.large middleware with 20 middleware threads and 20 connections
 \end_layout
 
 \begin_layout Itemize
-1 m3.large database
+One m3.large database
 \end_layout
 
 \begin_layout Standard
@@ -7347,10 +7361,11 @@ In this experiment we increased the number of clients with the following
 Hypothesis
 \series default
 : Increasing the number of clients is expected to have a consequence on
- the throughput which is going to increase.
+ the throughput, which is going to increase.
  By checking previous experiments on what was the CPU utilization of the
  instances running the clients we would assume that you can run quite some
- clients before having contention problems in your client's instance.
+ clients, in the magnitude of hundreds, before having contention problems
+ in your client's instance.
 \end_layout
 
 \begin_layout Standard
@@ -7363,7 +7378,7 @@ status open
 \align center
 \begin_inset Graphics
 	filename increasingClientsOneInstance/throughput/throughput.eps
-	scale 110
+	scale 120
 
 \end_inset
 
@@ -7374,7 +7389,7 @@ status open
 \align center
 \begin_inset Graphics
 	filename increasingClientsOneInstance/responseTime/responseTime.eps
-	scale 110
+	scale 120
 
 \end_inset
 
@@ -7428,7 +7443,7 @@ Spreading Clients
 
 \begin_layout Standard
 In order to prove that in our previous experiment there was no contention
- in the clients and that clients are not the bottlenech of oyr system we
+ in the clients and that clients are not the bottleneck of our system we
  conducted the following experiment where we took 100 clients and spreaded
  them across multiple client instances.
  Initially we started with one client instance having 100 clients, then
@@ -7442,11 +7457,11 @@ Variable number of m3.large client instances, values checked were 1, 2, 4,
 \end_layout
 
 \begin_layout Itemize
-1 m3.large middleware with 20 middleware threads and 20 connections
+One m3.large middleware with 20 middleware threads and 20 connections
 \end_layout
 
 \begin_layout Itemize
-1 m3.large database
+One m3.large database
 \end_layout
 
 \begin_layout Standard
@@ -7471,21 +7486,10 @@ status open
 \end_layout
 
 \begin_layout Plain Layout
-\align center
-\begin_inset Graphics
-	filename spreadingClients/responseTime/responseTime.eps
-	scale 110
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Spreading Clients into Many Client Instances
+Throughput when Spreading Clients into Many Client Instances
 \end_layout
 
 \end_inset
@@ -7506,6 +7510,47 @@ name "spreadingClients"
 \end_layout
 
 \begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename spreadingClients/responseTime/responseTime.eps
+	scale 110
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Response Time when Spreading Clients into Many Client Instances
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "spreadingClients-1"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
 We can see in Figure 
 \begin_inset CommandInset ref
 LatexCommand ref
@@ -7513,13 +7558,20 @@ reference "spreadingClients"
 
 \end_inset
 
+ and Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "spreadingClients-1"
+
+\end_inset
+
  that even when we spread the 100 clients in many instances throughput is
  not changed.
- If the reason throughput saturated in 100 clients was because of contention
- on the clients instance then spreading the clients in many instances would
- have improved throughput which is not the case.
- This leads us to state the bottleneck of our system is for sure not the
- clients.
+ If the reason throughput saturated in 100 clients in the previous experiment
+ was because of contention on the clients instance, then spreading the clients
+ in many instances would have improved throughput which is not the case.
+ This leads us to be confident that the bottleneck of our system is for
+ sure not the clients.
 \end_layout
 
 \begin_layout Subsection*
@@ -7532,12 +7584,12 @@ It is our belief that the bottleneck of our system is the database.
  the number of middlewares while the workload remains constant.
  For this experiment we decided to use a r3.2xlarge instance for the database
  to show that even with such a powerful machine the database is going to
- utilize most of its CPU usage while increasing the number of middlewares.
+ utilize most of its CPU usage.
  The configuration of this experiment was the following:
 \end_layout
 
 \begin_layout Itemize
-10 m3.large client instances with 100 clients each 
+Ten m3.large client instances with 100 clients each, so 1000 clients in total
 \end_layout
 
 \begin_layout Itemize
@@ -7553,7 +7605,7 @@ Variable number of middlewares with 20 middleware threads and 20 connections
 \end_layout
 
 \begin_layout Itemize
-1 r3.2xlarge database instance
+One r3.2xlarge database instance
 \end_layout
 
 \begin_layout Standard
@@ -7858,7 +7910,7 @@ reference "CPUUtilization"
  Please note that this graph might be a bit misleading since a database
  is executed on an r3.2xlarge instance with 8 virtual CPUs while a middleware
  runs on an m3.large instance with 2 virtual CPUs.
- So the difference between CPU utilization in terms of resouces is much
+ So the difference between CPU utilization in terms of resources is much
  higher than the one depicted in the figure.
  
 \end_layout
@@ -7900,12 +7952,13 @@ reference "scaleOut"
 \end_layout
 
 \begin_layout Itemize
-Variable number of m3.large client instances with 100 clients each 
+Variable number (= to number of middlewares) of m3.large client instances
+ with 100 clients each 
 \end_layout
 
 \begin_layout Itemize
-Variable number of middlewares with 20 middleware threads and 20 connections
- each
+Variable number (= to number of client instances) of middlewares with 20
+ middleware threads and 20 connections each
 \end_layout
 
 \begin_layout Itemize
@@ -7925,7 +7978,7 @@ max_connections
  file.
  This was done because when we use 9 middlewares the databasse needs to
  open 9 times 20 connections which exceeded PostgreSQL default maximum connectio
-n size.
+n size of 100.
 \end_layout
 
 \begin_layout Standard
@@ -7937,16 +7990,12 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
-	filename scaleout/scaleup/scaleup.eps
+	filename scaleOutAndscaleUp/scaleup/scaleup.eps
 	scale 110
 
 \end_inset
 
 
-\end_layout
-
-\begin_layout Plain Layout
-\align center
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
@@ -7965,10 +8014,6 @@ name "scaleUp"
 
 \end_layout
 
-\begin_layout Plain Layout
-
-\end_layout
-
 \end_inset
 
 
@@ -7983,16 +8028,12 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
-	filename scaleout/scaleout/throughput.eps
+	filename scaleOutAndscaleUp/scaleout/throughput.eps
 	scale 110
 
 \end_inset
 
 
-\end_layout
-
-\begin_layout Plain Layout
-\align center
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
@@ -8017,7 +8058,7 @@ name "scaleOut"
 \end_layout
 
 \begin_layout Standard
-As we can see in Figures 
+As we can see in Figurs 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "scaleUp"
@@ -8032,7 +8073,7 @@ reference "scaleOut"
 \end_inset
 
  both scale-up and scale-out are far from the ideal one which was excepted
- since the database prevents them from being closer to the ideal one.
+ since the database is our bottleneck.
 \end_layout
 
 \begin_layout Subsection*
@@ -8102,7 +8143,7 @@ We believe we developed a nice system and had a good understanding of our
  system where we showed that the database is its bottleneck.
  We are also confident that we learned a lot about developing and benchmarking
  applications, some database internal characteristics, as well as deploying
- an application to the cloud.
+ an application in the cloud.
 \end_layout
 
 \end_body

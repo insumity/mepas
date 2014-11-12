@@ -27,7 +27,7 @@ class Middleware:
         return "(host: {0}, threadPoolSize: {1}, connectionPoolSize: {2})" \
                "".format(self.host, self.threadPoolSize, self.connectionPoolSize)
 
-    # assumes executable JAR is on the home directory with name "mepas.jar" FIXME
+    # assumes executable JAR is on the project directory with name "mepas.jar"
     # when this method finishes it means the middleware has started
     def start(self):
         properties = [("databaseHost", self.databaseHost), ("databasePortNumber", self.databasePortNumber),
