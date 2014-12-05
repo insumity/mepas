@@ -314,31 +314,6 @@ SEND_MESSAGE
 \end_inset
 
  which is also the throughput of our system.
- Similary we can see that the throughput of 
-\begin_inset Quotes eld
-\end_inset
-
-SEND_MESSAGE
-\begin_inset Quotes erd
-\end_inset
-
- is 
-\begin_inset Formula $X=\frac{50}{304.199+(75.2135+130.552)}=0.098req/ms=98req/s$
-\end_inset
-
- and of 
-\begin_inset Quotes eld
-\end_inset
-
-RECEIVE_MESSAGE
-\begin_inset Quotes erd
-\end_inset
-
- is 
-\begin_inset Formula $X=\frac{50}{130.552+(75.2135+304.199)}=0.098req/ms=98req/s$
-\end_inset
-
-.
 \end_layout
 
 \begin_layout Standard
@@ -518,10 +493,6 @@ k
 \end_inset
 
  Experiment
-\end_layout
-
-\begin_layout Standard
-
 \end_layout
 
 \begin_layout Standard

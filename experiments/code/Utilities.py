@@ -22,7 +22,7 @@ def executeCommand(username, host, command):
 
 # copies the file in the home directory of host
 def scpTo(file, newFileName, username, host):
-    system("scp -C " + file + " " + getSSHAddress(username, host) + ":" + newFileName)
+    system("scp " + file + " " + getSSHAddress(username, host) + ":" + newFileName)
 
 # copies the file from the host to the current directory
 def scpFrom(file, where, username, host):

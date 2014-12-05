@@ -1,0 +1,12 @@
+# small python script to read the csv file used to generate the response time plot
+# for milestone and calculate the throughput using the interactive response time law
+ 
+for line in open("responseTimeAllRequests.csv"):
+	point = int(line.split()[0])
+	responseTime = float(line.split()[1])
+	if (point == 0):
+		continue
+
+	calculatedThroughput = (50.0 / (responseTime)) * 1000
+	print str(point) + " " + str(responseTime) + " " + str(calculatedThroughput)
+

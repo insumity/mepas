@@ -252,3 +252,10 @@ def getTimeSpentOnEachComponent(middlewareInstanceDir, percentageToRemove):
 
     shutil.rmtree(directoryForTempResults)
 
+
+print getThroughput("../2_k_experiment/20_threads_20_connections_m3_xlarge_db", 1, 600, 120, 60, "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
+print getThroughput("../2_k_experiment/20_threads_40_connections_m3_xlarge_db", 1, 600, 120, 60, "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
+print getThroughput("../2_k_experiment/40_threads_20_connections_m3_xlarge_db", 1, 600, 120, 60, "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
+print getThroughput("../2_k_experiment/40_threads_40_connections_m3_xlarge_db", 1, 600, 120, 60, "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
+
+
