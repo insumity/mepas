@@ -17,55 +17,19 @@ from Utilities import *
 
 
 
-conf = \
-    {"nameOfTheExperiment": "../2_k_expenriment",
-     "placement": "us-west-2c",
-
-     "databaseType": "m3.xlarge",
-
-     "clientInstances": (1, "m3.large"),
-     "middlewareInstances": (1, "m3.large"),
-
-     "databaseUsername": "ubuntu",
-     "databasePassword": "mepas$1$2$3$",
-     "databaseName": "mepas",
-     "databasePortNumber": 5432,
-
-     "middlewarePortNumber": 6789,
-
-     "runningTimeInSeconds": 600,
-
-     "threadPoolSize": 20,
-     "connectionPoolSize": 40,
-
-     "totalClients": 100,
-     "totalQueues": 50,
-     "messageSize": 20,
-
-     # mapping between client instances and middleware instances
-     # e.g. if (a, b) is in mapping it means that client[a] returned by
-     # getClientsIPs() is going to connect to middleware[b] where b is
-     # returned by middlewareIPs
-     "mappings": [(0, 0)],  # , (1, 0)], # (2, 1), (3, 1)],
-     "clientsData": [(100, 1)],  #, (50, 51)], # (25, 51), (25, 76)],
-
-     "username": "ubuntu",
-
-     "variable": "threadPoolSize",
-     "values": [40]
-     # "values": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28,
-     #            29, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100]
-    }
+conf = {"nameOfTheExperiment": "../10_and_30_clients_experiment_1_queue",
+                               "placement": "us-west-2c",
+}
 
 
 
-# verify this experiment has not yet been created
-# if isdir(conf["nameOfTheExperiment"]):
-#     print "There exists already an experiment with the given name: " + conf["nameOfTheExperiment"]
-#     print "Please change the experiment name or delete the directory of the experiment"
-#     exit(1)
-#
-# os.mkdir(conf["nameOfTheExperiment"])
+#verify this experiment has not yet been created
+if isdir(conf["nameOfTheExperiment"]):
+    print "There exists already an experiment with the given name: " + conf["nameOfTheExperiment"]
+    print "Please change the experiment name or delete the directory of the experiment"
+    exit(1)
+
+os.mkdir(conf["nameOfTheExperiment"])
 
 jarFile = "../../mepas.jar"
 
@@ -82,9 +46,9 @@ instancesRetriever = EC2Instantiator(access_key, secret_access, conf["placement"
 def threadCode(values):
 
     conf = \
-        {"nameOfTheExperiment": "../2_k_experiment",
+        {"nameOfTheExperiment": "../10_and_30_clients_experiment_1_queue",
          "placement": "us-west-2c",
-         "databaseType": "m3.xlarge",
+         "databaseType": "m3.large",
          "clientInstances": (1, "m3.large"),
          "middlewareInstances": (1, "m3.large"),
          "databaseUsername": "ubuntu",
@@ -94,20 +58,22 @@ def threadCode(values):
          "middlewarePortNumber": 6789,
          "runningTimeInSeconds": 600,
          "threadPoolSize": 20,
-         "connectionPoolSize": 40,
-         "totalClients": 100,
-         "totalQueues": 50,
+         "connectionPoolSize": 20,
+         "totalClients": 2,
+         "totalQueues": 2,
          "messageSize": 20,
          "mappings": [(0, 0)],
-         "clientsData": [(100, 1)],
+         "clientsData": [(2, 1)],
          "username": "ubuntu",
 
-         "variable": "threadPoolSize",
+         "variable": "totalClients",
          "values": values}
 
     for variable in conf["values"]:
 
         conf[conf["variable"]] = variable
+        conf["clientsData"][0] = (variable, 1)
+        print conf["clientsData"]
 
         # you always need one database instance for every experiment
         database = instancesRetriever.createDatabase(conf["databaseType"])
@@ -288,7 +254,7 @@ def threadCode(values):
 
 
 def start():
-    for i in [40]:
+    for i in [10, 30]:
         thread = threading.Thread(target=threadCode, args=([[i]]))
         thread.start()
 start()

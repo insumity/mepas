@@ -253,9 +253,11 @@ def getTimeSpentOnEachComponent(middlewareInstanceDir, percentageToRemove):
     shutil.rmtree(directoryForTempResults)
 
 
-print getThroughput("../2_k_experiment/20_threads_20_connections_m3_xlarge_db", 1, 600, 120, 60, "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
-print getThroughput("../2_k_experiment/20_threads_40_connections_m3_xlarge_db", 1, 600, 120, 60, "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
-print getThroughput("../2_k_experiment/40_threads_20_connections_m3_xlarge_db", 1, 600, 120, 60, "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
-print getThroughput("../2_k_experiment/40_threads_40_connections_m3_xlarge_db", 1, 600, 120, 60, "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
+getTimeSpentOnEachComponent("../10_and_30_clients_experiment_1_queue/30/middlewareInstance1", 0.1)
+# print getThroughput("../2_clients_experiment/2", 1, 600, 120, 60, "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
+# print getThroughput("../2_k_experiment/20_threads_40_connections_m3_xlarge_db", 1, 600, 120, 60, "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
+# print getThroughput("../10_and_30_clients_experiment_1_queue/30", 1, 600, 120, 60, "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
+# print getResponseTime("../10_and_30_clients_experiment_1_queue/30", 1, 600, 120, 60, "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
+# print getThroughput("../2_k_experiment/40_threads_40_connections_m3_xlarge_db", 1, 600, 120, 60, "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
 
 
