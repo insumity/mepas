@@ -17,7 +17,7 @@ from Utilities import *
 
 
 
-conf = {"nameOfTheExperiment": "../10_and_30_clients_experiment_1_queue",
+conf = {"nameOfTheExperiment": "../50_clients_1_threadTWICE",
                                "placement": "us-west-2c",
 }
 
@@ -46,7 +46,7 @@ instancesRetriever = EC2Instantiator(access_key, secret_access, conf["placement"
 def threadCode(values):
 
     conf = \
-        {"nameOfTheExperiment": "../10_and_30_clients_experiment_1_queue",
+        {"nameOfTheExperiment": "../50_clients_1_threadTWICE",
          "placement": "us-west-2c",
          "databaseType": "m3.large",
          "clientInstances": (1, "m3.large"),
@@ -57,8 +57,8 @@ def threadCode(values):
          "databasePortNumber": 5432,
          "middlewarePortNumber": 6789,
          "runningTimeInSeconds": 600,
-         "threadPoolSize": 20,
-         "connectionPoolSize": 20,
+         "threadPoolSize": 1,
+         "connectionPoolSize": 1,
          "totalClients": 2,
          "totalQueues": 2,
          "messageSize": 20,
@@ -254,7 +254,7 @@ def threadCode(values):
 
 
 def start():
-    for i in [10, 30]:
+    for i in [50]:
         thread = threading.Thread(target=threadCode, args=([[i]]))
         thread.start()
 start()

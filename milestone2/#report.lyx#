@@ -32,7 +32,7 @@
 \spacing single
 \use_hyperref false
 \papersize default
-\use_geometry false
+\use_geometry true
 \use_package amsmath 1
 \use_package amssymb 1
 \use_package cancel 1
@@ -56,6 +56,7 @@
 \shortcut idx
 \color #008000
 \end_index
+\bottommargin 2cm
 \secnumdepth 3
 \tocdepth 3
 \paragraph_separation indent
@@ -1916,7 +1917,20 @@ reference "2_k_experiment"
 \end_layout
 
 \begin_layout Section
+System Queues
+\end_layout
+
+\begin_layout Standard
+Talk about where we have queues in our system ...
+ what we calculated in our first milestone1
+\end_layout
+
+\begin_layout Section
 Model the whole System as one queue
+\end_layout
+
+\begin_layout Subsection*
+One Thread & One Connection
 \end_layout
 
 \begin_layout Standard
@@ -1929,10 +1943,57 @@ reference "oneQueue"
 \end_inset
 
 .
- To check this model we are going to use the 20 threads, 20 connections,
- 1 database m3 large and 100 clients all m3large instances.
- With this experiment the throughput is 4810requests/second and service
- time is ...
+ To check this model we are going to use the 1 threads, 1 connections, 1
+ database m3 large and 2 clients all m3large instances.
+ With this experiment we have:
+\end_layout
+
+\begin_layout Standard
+lambda * Arrival rate (= throughput ...
+ because of job flow balance) = 993 requests/sec = 0.993 requests / ms and
+ the mean service time of our system is E[s] = 0.934259
+\end_layout
+
+\begin_layout Standard
+which means the utilization of our queue ??/device is ??? r = lambda * E[s]
+ = 0.993 * 0.934259 = 0.9277 = 92.77%
+\end_layout
+
+\begin_layout Standard
+Using this we calculate the waiting time which is E[w] = E[s] / (1 - r)
+ = 0.934259 / (1 - 0.9277)
+\end_layout
+
+\begin_layout Standard
+CONNECTION: 0.000256094, 0.0165939 
+\end_layout
+
+\begin_layout Standard
+REQUEST: 0.934259, 0.913034 
+\end_layout
+
+\begin_layout Standard
+IN WORKER THREAD QUEUE: 0.659202, 0.895857 
+\end_layout
+
+\begin_layout Standard
+TIMES A SOCKET IS WORKED for a REQUEST TO BE READ: 1, 0 
+\end_layout
+
+\begin_layout Standard
+TIMES TO ENTER: 1.53631, 26.2023 
+\end_layout
+
+\begin_layout Standard
+TIMES (DOING) INSIDE: 1.00002, 0.933932 
+\end_layout
+
+\begin_layout Standard
+('993.364285714', '66.0613894561') 
+\end_layout
+
+\begin_layout Standard
+('2.00468', '1.25358') 
 \end_layout
 
 \begin_layout Standard
@@ -1957,7 +2018,7 @@ status open
 \begin_inset Graphics
 	filename images/oneQueue.png
 	lyxscale 30
-	scale 15
+	scale 22
 
 \end_inset
 
@@ -1993,6 +2054,13 @@ Queueing Network
 \end_layout
 
 \begin_layout Standard
+Run MVA and all the stuff here ...
+ show similar plots.
+ benefit.
+ 
+\end_layout
+
+\begin_layout Standard
 \begin_inset Float figure
 wide false
 sideways false
@@ -2002,8 +2070,8 @@ status open
 \align center
 \begin_inset Graphics
 	filename images/queueingNetwork.png
-	lyxscale 15
-	scale 16
+	lyxscale 20
+	scale 20
 
 \end_inset
 

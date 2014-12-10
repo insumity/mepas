@@ -32,7 +32,7 @@
 \spacing single
 \use_hyperref false
 \papersize default
-\use_geometry false
+\use_geometry true
 \use_package amsmath 1
 \use_package amssymb 1
 \use_package cancel 1
@@ -56,6 +56,7 @@
 \shortcut idx
 \color #008000
 \end_index
+\bottommargin 2cm
 \secnumdepth 3
 \tocdepth 3
 \paragraph_separation indent
@@ -95,16 +96,60 @@ Advanced System Lab
 \end_inset
 
  project.
- We start this report by giving a brief introduction ..
- In Section ..
- we discuss in more detail the response time law and how it applies on one
- of our previous experiments.
- We continue in Section ...
- with a 2^k experiment.
- Afterwares in Section we describe our system as a black box.
- We model our system as a network of queues in Section and run MVA ..
- to show.
- We conclude our report in Section ..
+ We start this report by giving a brief introduction about this milestone's
+ objectives.
+ Next we delve into the interactive response time law and how it applies
+ on our system in Section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:Interactive-Response-Time"
+
+\end_inset
+
+.
+ In Section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:The-2-Experiment"
+
+\end_inset
+
+ we show our 
+\begin_inset Formula $2^{k}$
+\end_inset
+
+ experimental design that was missing from our first milestone.
+ We continue in Section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:systemQueues"
+
+\end_inset
+
+ by describing where queueing is occuring in our system.
+ Afterwards, in sections 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:oneQueue"
+
+\end_inset
+
+ and 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:Queueing-Network"
+
+\end_inset
+
+ we gradually describe our analytical queueing models for our system.
+ We conclude our report in Section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:Conclusion"
+
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Section
@@ -118,19 +163,33 @@ name "sec:introduction"
 
 \end_layout
 
+\begin_layout Standard
+Goal of this milestone was to develop an analytical queueing model for our
+ first milestone system.
+ After developing the model it was needed to derive the performance characterist
+ics of our system and predict its performance which is going to be compared
+ with our results from the first milestone.
+ We are supposed to use operational laws ....
+\end_layout
+
 \begin_layout Section
 Interactive Response Time Law
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:Interactive-Response-Time"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
-CLOSED SYSTEM ...
- TODO
-\end_layout
-
-\begin_layout Standard
-In the report of the first milestone we verified that our results were successfu
-lly satisfying the interactive respone time law and specifically we showed
- that the law holds in our trace.
+As was already stated in the report of the first milestone we have a closed
+ system.
+ Therefore the response time law applies to our experimental results.
+ We have verified that our results were successfully satisfying the interactive
+ respone time law and specifically showed that the law holds in our trace
+ in the previous report.
  In this section we are going to have a closer look to this law by verifying
  it in our 
 \begin_inset Quotes eld
@@ -163,7 +222,20 @@ Increasing the Message Size
 \end_inset
 
  is the throughput.
- 
+ Let us also remind the reader that for the message size experiment the
+ configuration was the following:
+\end_layout
+
+\begin_layout Itemize
+One m3.large client instance with 50 clients 
+\end_layout
+
+\begin_layout Itemize
+One m3.large middleware with 20 middleware threads and 20 connections
+\end_layout
+
+\begin_layout Itemize
+One m3.large database
 \end_layout
 
 \begin_layout Standard
@@ -180,9 +252,8 @@ reference "responseTimeLaw"
  of requests, also the think time is zero in this case but more on that
  later.
  As well ass the number of clients in the message size experiment is 50.
- As can be see in the figure the corresponding throughput lines match each
+ As can be seen in the figure the corresponding throughput lines match each
  other which clearly states that our system satisfies the law.
- 
 \end_layout
 
 \begin_layout Standard
@@ -522,16 +593,30 @@ k
 
 \end_inset
 
- Experiment 
+ Experiment
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:The-2-Experiment"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
-(logs exist in 2_k_experiment directory)
+(logs exist in 
+\family typewriter
+2_k_experiment
+\family default
+ directory)
 \end_layout
 
 \begin_layout Standard
-Since we did not have a 2^k experimental design in our first milestone we
- did one for this milestone.
+Since we did not have a 
+\begin_inset Formula $2^{k}$
+\end_inset
+
+ experimental design in our first milestone we did one for this milestone.
  The factors we use for this design were the number of connections (A) to
  the database, the number of threads (B) in the thread pool of the middleware
  and the Amazon EC2 instance type (C) of our database.
@@ -546,9 +631,26 @@ reference "2_k_experiment"
 \end_layout
 
 \begin_layout Standard
-The following we used 1 client instance with 100 clients and run each one
- of them for 10 minutes removing 2 minutes for warm-up and 1 for cool-down.
- Midddleware and client instances were using m3.large instances.
+The following configuration:
+\end_layout
+
+\begin_layout Itemize
+One m3.large client instance with 100 clients 
+\end_layout
+
+\begin_layout Itemize
+One m3.large middleware with A connections and B middleware threads
+\end_layout
+
+\begin_layout Itemize
+One database of C instance type
+\end_layout
+
+\begin_layout Standard
+For the following results we ran each experiment for 10 minutes and removed
+ two minutes from the beginning of our logs correspond to the warm-up phase,
+ as well as one minute from the end corresponding to the cool-down phase.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -1908,24 +2010,182 @@ reference "2_k_experiment"
 
 \end_inset
 
- .We can see that increasing the number of threads has a negative effect
+.
+ We can see that increasing the number of threads has a negative effect
  on the performance of our system.
  This can be explained.
  Changing the instance type which the database is using is beneficiary for
  the system (1302 + ...) because we know the middleware is the database.
+ TODO
 \end_layout
 
 \begin_layout Section
-System Queues
+Queueing in the System
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:systemQueues"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
-Talk about where we have queues in our system ...
- what we calculated in our first milestone1
+Before starting with modelling our system we discuss on the queueing that
+ occurs in our system.
+ Queueing can occur in many places.
+ The ones that first come in our mind are the following.
+\end_layout
+
+\begin_layout Itemize
+Middleware Threads: There is a fixed number of middleware threads working
+ on receiving the requests from the clients.
+ If more clients try to communicate with the middleware than the number
+ of threads then queueing occurs and a client is served when a middleware
+ thread picks up his socket as was explaned in the previous report.
+ This queue is a First Come, First Serverd (FCFS) queue.
+ There is no queueing in case the number of clients is less than the number
+ of threads.
+ But implicit queuing could exists due to the number of thread our system
+ can handle as will be explained below.
+\end_layout
+
+\begin_layout Itemize
+Connections to the Database: We also have a fixed amound of database connections.
+ Middleware threads are the ones that use connections so if the number of
+ threads is the same as the number of connections then there is no queueing
+ for getting connections.
+ This was the case in most of our previous experiments (except the obvious
+ one where we increased the number of middlewares VERIFY TODO).
+ This implies that there is no queuing actually happening.
+ But there is queueing happening in the database.
+ Again, implicit queueing could occur due to hardware limitations.
+\end_layout
+
+\begin_layout Itemize
+Database: Since all of the requests work on the same table there is going
+ to be queueing in our system.
+ The database cannot be fully parallel.
+ Furthermore by the way we implemented the receive_message stored function
+ (using 
+\begin_inset Quotes eld
+\end_inset
+
+FOR UPDATE
+\begin_inset Quotes erd
+\end_inset
+
+) there is locking that could possibly queue up requests.
+\end_layout
+
+\begin_layout Itemize
+Network: The network is used when a request is sent from the client to the
+ middleware, a response is sent from the middleware to the client and when
+ the middleware is communicating with the database.
+ Queueing is possible to happen while TCP packets are being transmitted
+ to their destination, intermediatery routers.
+ From our previous experiments although we did not calculate network response
+ and service times explicitly we did not find any specific delays on the
+ network.
+ Also by using iperf we show that the bandwitdth between our instances is
+ quite high.
+ We are going to consider the network as a delay center in our later model
+ which means that there are not queueing happening and requests spend the
+ same amount of time in the network.
+\end_layout
+
+\begin_layout Itemize
+Number of Threads and Processors: Although we could use a high number of
+ threads in our system not all of them can be executed at the same time
+ due to hardware constraints, number of processors etc.
+ TODO
+\end_layout
+
+\begin_layout Itemize
+Serialization stuff???
+\end_layout
+
+\begin_layout Standard
+In the following models we simplified our analysis by considering infinite
+ buffer capacity and infinite population size, as well as an FCFS service
+ discipline as was suggested in the lectures (VERIFY).
+ We are also assuming exponentially distributed arrivals as well as service
+ times.
+ Finally we are going to use the Kendall notation for our queues.
+ Therefore most of our queues are going to be of the form 
+\begin_inset Quotes eld
+\end_inset
+
+M/M/m/+oo/+oo/FCFS
+\begin_inset Quotes erd
+\end_inset
+
+ which can be abbrevaited to 
+\begin_inset Quotes eld
+\end_inset
+
+M/M/m
+\begin_inset Quotes erd
+\end_inset
+
+ where m is the number of servers.
 \end_layout
 
 \begin_layout Section
 Model the whole System as one queue
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:oneQueue"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In this section we start by modelling our system as one M/M/1 queue.
+ This model is going to be refined later on.
+ We are going to consider the service of the queue the one that contains
+ the middleware and database operations, so what is happening when a middleware
+ thread picks up a socket, reads the client's request and send back to the
+ client the response.
+ We are not going to take network into consideration.
+\end_layout
+
+\begin_layout Subsection*
+One Server
+\end_layout
+
+\begin_layout Standard
+In order to check our model's results we are going to use ...
+ 
+\end_layout
+
+\begin_layout Standard
+For this model we used our 
+\begin_inset Quotes eld
+\end_inset
+
+ give name
+\begin_inset Quotes erd
+\end_inset
+
+ experiment.
+ 
+\end_layout
+
+\begin_layout Standard
+We can easily see that the the UTILIZATION (INTENSITY) is > 1, though our
+ system is stable.
+\end_layout
+
+\begin_layout Standard
+EXPLAING WHY The system is shit and it doesn't work ...
+ the E[w] is far off ...and is hard to calculate id using Little's Law ...
+\end_layout
+
+\begin_layout Standard
+Then show that even with more threads it's even worse
 \end_layout
 
 \begin_layout Standard
@@ -1938,10 +2198,57 @@ reference "oneQueue"
 \end_inset
 
 .
- To check this model we are going to use the 20 threads, 20 connections,
- 1 database m3 large and 100 clients all m3large instances.
- With this experiment the throughput is 4810requests/second and service
- time is ...
+ To check this model we are going to use the 1 threads, 1 connections, 1
+ database m3 large and 2 clients all m3large instances.
+ With this experiment we have:
+\end_layout
+
+\begin_layout Standard
+lambda * Arrival rate (= throughput ...
+ because of job flow balance) = 993 requests/sec = 0.993 requests / ms and
+ the mean service time of our system is E[s] = 0.934259
+\end_layout
+
+\begin_layout Standard
+which means the utilization of our queue ??/device is ??? r = lambda * E[s]
+ = 0.993 * 0.934259 = 0.9277 = 92.77%
+\end_layout
+
+\begin_layout Standard
+Using this we calculate the waiting time which is E[w] = E[s] / (1 - r)
+ = 0.934259 / (1 - 0.9277)
+\end_layout
+
+\begin_layout Standard
+CONNECTION: 0.000256094, 0.0165939 
+\end_layout
+
+\begin_layout Standard
+REQUEST: 0.934259, 0.913034 
+\end_layout
+
+\begin_layout Standard
+IN WORKER THREAD QUEUE: 0.659202, 0.895857 
+\end_layout
+
+\begin_layout Standard
+TIMES A SOCKET IS WORKED for a REQUEST TO BE READ: 1, 0 
+\end_layout
+
+\begin_layout Standard
+TIMES TO ENTER: 1.53631, 26.2023 
+\end_layout
+
+\begin_layout Standard
+TIMES (DOING) INSIDE: 1.00002, 0.933932 
+\end_layout
+
+\begin_layout Standard
+('993.364285714', '66.0613894561') 
+\end_layout
+
+\begin_layout Standard
+('2.00468', '1.25358') 
 \end_layout
 
 \begin_layout Standard
@@ -1966,7 +2273,7 @@ status open
 \begin_inset Graphics
 	filename images/oneQueue.png
 	lyxscale 30
-	scale 15
+	scale 22
 
 \end_inset
 
@@ -1997,8 +2304,29 @@ name "oneQueue"
 
 \end_layout
 
+\begin_layout Subsection*
+\begin_inset Formula $m$
+\end_inset
+
+ Servers
+\end_layout
+
+\begin_layout Standard
+For refining the model we are going to consider again a model with one queue
+ but this time with more than one server.
+ For server we are going to consider a middleware thread.
+ PUT FIGURE HERE TODO.
+\end_layout
+
 \begin_layout Section
 Queueing Network
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:Queueing-Network"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -2018,8 +2346,8 @@ status open
 \align center
 \begin_inset Graphics
 	filename images/queueingNetwork.png
-	lyxscale 15
-	scale 16
+	lyxscale 20
+	scale 20
 
 \end_inset
 
@@ -2030,7 +2358,7 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-M/M/1 queueing system
+Queueing Network
 \end_layout
 
 \end_inset
@@ -2050,8 +2378,23 @@ name "queueingNetwork"
 
 \end_layout
 
+\begin_layout Subsection*
+Finding Bottleneck
+\end_layout
+
+\begin_layout Standard
+Use operational laws to find demand ...
+\end_layout
+
 \begin_layout Section
 Conclusion
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:Conclusion"
+
+\end_inset
+
+
 \end_layout
 
 \end_body
