@@ -24,8 +24,8 @@
 \font_tt_scale 100
 \graphics default
 \default_output_format default
-\output_sync 0
-\bibtex_command default
+\output_sync 1
+\bibtex_command bibtex
 \index_command default
 \float_placement H
 \paperfontsize default
@@ -118,7 +118,7 @@ reference "sec:The-2-Experiment"
 \begin_inset Formula $2^{k}$
 \end_inset
 
- experimental design that was missing from our first milestone.
+ experimental design.
  We continue in Section 
 \begin_inset CommandInset ref
 LatexCommand ref
@@ -126,7 +126,14 @@ reference "sec:systemQueues"
 
 \end_inset
 
- by describing where queueing is occuring in our system.
+ by describing where queueing occurs in our system and in Section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:Queues-Assumptions"
+
+\end_inset
+
+ we state our assumptions about our queues in our models.
  Afterwards, in sections 
 \begin_inset CommandInset ref
 LatexCommand ref
@@ -165,11 +172,18 @@ name "sec:introduction"
 
 \begin_layout Standard
 Goal of this milestone was to develop an analytical queueing model for our
- first milestone system.
+ system.
  After developing the model it was needed to derive the performance characterist
 ics of our system and predict its performance which is going to be compared
  with our results from the first milestone.
- We are supposed to use operational laws ....
+ All the formulas used for this report were taken from 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "DBLP:journals/sigmetrics/Jain90"
+
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Section
@@ -186,10 +200,10 @@ name "sec:Interactive-Response-Time"
 \begin_layout Standard
 As was already stated in the report of the first milestone we have a closed
  system.
- Therefore the response time law applies to our experimental results.
- We have verified that our results were successfully satisfying the interactive
- respone time law and specifically showed that the law holds in our trace
- in the previous report.
+ Therefore the response time law should apply to our results.
+ We have verified that our results were successfully satisfying the response
+ time law and specifically showed that the law holds in our trace in the
+ previous report.
  In this section we are going to have a closer look to this law by verifying
  it in our 
 \begin_inset Quotes eld
@@ -202,28 +216,39 @@ Increasing the Message Size
  experiment from the first milestone.
  Before going on let us remind the reader of the interactive law.
  The interactive response time law states the following: 
-\begin_inset Formula $X=\frac{N}{R+Z}$
+\begin_inset Formula 
+\[
+X=\frac{N}{R+Z}
+\]
+
 \end_inset
 
- where 
-\begin_inset Formula $R$
+where
+\begin_inset Formula $X$
 \end_inset
 
- is the response time, 
+ is the throughput, 
 \begin_inset Formula $N$
 \end_inset
 
  is the number of clients issuing requests, 
+\begin_inset Formula $R$
+\end_inset
+
+ is the response time of a request, and 
 \begin_inset Formula $Z$
 \end_inset
 
- is the think time and 
-\begin_inset Formula $X$
+ is the think time.
+ Let us also remind the reader that for the 
+\begin_inset Quotes eld
 \end_inset
 
- is the throughput.
- Let us also remind the reader that for the message size experiment the
- configuration was the following:
+Increasing the Message Size
+\begin_inset Quotes erd
+\end_inset
+
+ experiment the configuration was the following:
 \end_layout
 
 \begin_layout Itemize
@@ -249,11 +274,10 @@ reference "responseTimeLaw"
  we can see the real calculated throughput of our system compared to the
  throughput calculated using the response time law.
  The throughput was calculated using the response time of all the types
- of requests, also the think time is zero in this case but more on that
- later.
- As well ass the number of clients in the message size experiment is 50.
+ of requests, while the think time is zero.
  As can be seen in the figure the corresponding throughput lines match each
- other which clearly states that our system satisfies the law.
+ other which clearly states that our system satisfies the aforementioned
+ law.
 \end_layout
 
 \begin_layout Standard
@@ -296,16 +320,17 @@ name "responseTimeLaw"
 \end_layout
 
 \begin_layout Standard
-We would like to note that in all the checks we did with the afforementioned
+We would like to note that in all the checks we did with the aforementioned
  law we used the response time and throughput for all the types of requests
  but never checked a specific type of request individually.
  Let us see what happens for a specific type of a request, for example let
  us assume we are looking at the experiment where we used messages of 
-\begin_inset Formula $2*10^{6}$
+\begin_inset Formula $2\cdot10^{5}$
 \end_inset
 
  characters.
- In this case from the experiment we the results depicted in Figure 
+ In this case from the experiment we get the results depicted in Figure
+ 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "responseTimeLaw2"
@@ -313,9 +338,9 @@ reference "responseTimeLaw2"
 \end_inset
 
 .
- Note that the throughputs are all pretty much the same.
+ Note that the calculated throughput values are all pretty much the same.
  The explanation of this was given in the first report and has to do with
- the way clients work, they issue almost the same amount of requests per
+ the way clients work: they issue almost the same amount of requests per
  given type.
  Based on those results let us try to apply the response time law to see
  if it applies for every specific type of request.
@@ -327,12 +352,26 @@ LIST_QUEUES
 \begin_inset Quotes erd
 \end_inset
 
- request we have the following throughput 
-\begin_inset Formula $X=\frac{50}{75.2135+0}=0.664req/ms=664req/s$
+ request we have the following throughput
+\begin_inset Formula 
+\[
+X=\frac{N}{R+Z}=\frac{50}{75.2135+0}=0.664req/ms=664req/s
+\]
+
 \end_inset
 
- .
- 664 is quite different from 98 which is 
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $664req/s$
+\end_inset
+
+ is quite different from 
+\begin_inset Formula $98req/s$
+\end_inset
+
+ which is 
 \begin_inset Quotes eld
 \end_inset
 
@@ -378,19 +417,44 @@ SEND_MESSAGE
 \begin_inset Quotes erd
 \end_inset
 
- request.
+ request as can be seen in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "thinkTimeFigure"
+
+\end_inset
+
+.
+ Note here that the 
+\begin_inset Quotes eld
+\end_inset
+
+RECEIVE_MESSAGE
+\begin_inset Quotes erd
+\end_inset
+
+ request is issued only when there is a message to be received.
+ Nevertheless 
+\begin_inset Quotes eld
+\end_inset
+
+RECEIVE_MESSAGE
+\begin_inset Quotes erd
+\end_inset
+
+ is called most of the times.
  So the think time is actually 
 \begin_inset Formula $Z=304.199+130.552=434.751$
 \end_inset
 
- .
- By using this think time let us calculate the throughput again which now
+.
+ By using this think time we can calculate the throughput again which now
  is: 
 \begin_inset Formula $X=\frac{50}{75.2135+434.751}=0.098req/ms=98req/s$
 \end_inset
 
  which is also the throughput of our system.
- Similary we can see that the throughput of 
+ Similarly we can see that the throughput of 
 \begin_inset Quotes eld
 \end_inset
 
@@ -558,12 +622,12 @@ RECEIVE_MESSAGE
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Throughput and Response Time Calculated for Every Type of Request when message
- size is 
-\begin_inset Formula $2*10^{6}$
+Throughput and Response Time Calculated for Every Type of Request when Message
+ Size is 
+\begin_inset Formula $2\cdot10^{5}$
 \end_inset
 
- characters 
+ Characters 
 \end_layout
 
 \end_inset
@@ -572,6 +636,48 @@ Throughput and Response Time Calculated for Every Type of Request when message
 \begin_inset CommandInset label
 LatexCommand label
 name "responseTimeLaw2"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename images/thinkTime.png
+	lyxscale 20
+	scale 90
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Flow of a Client Issuing Requests with their Corresponding Response Times
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "thinkTimeFigure"
 
 \end_inset
 
@@ -604,22 +710,16 @@ name "sec:The-2-Experiment"
 \end_layout
 
 \begin_layout Standard
-(logs exist in 
-\family typewriter
-2_k_experiment
-\family default
- directory)
-\end_layout
-
-\begin_layout Standard
 Since we did not have a 
 \begin_inset Formula $2^{k}$
 \end_inset
 
- experimental design in our first milestone we did one for this milestone.
- The factors we use for this design were the number of connections (A) to
- the database, the number of threads (B) in the thread pool of the middleware
+ experimental design in our first milestone we created one for this milestone.
+ The factors we used for this design were the number of connections (A)
+ to the database, the number of middleware threads (B) in the thread pool
  and the Amazon EC2 instance type (C) of our database.
+ We chose those factors in order to check their impact on the performance
+ of our system.
  The levels for every factor can be seen in Figure 
 \begin_inset CommandInset ref
 LatexCommand ref
@@ -631,7 +731,7 @@ reference "2_k_experiment"
 \end_layout
 
 \begin_layout Standard
-The following configuration:
+The following configuration was used for the experiments:
 \end_layout
 
 \begin_layout Itemize
@@ -647,10 +747,51 @@ One database of C instance type
 \end_layout
 
 \begin_layout Standard
-For the following results we ran each experiment for 10 minutes and removed
- two minutes from the beginning of our logs correspond to the warm-up phase,
- as well as one minute from the end corresponding to the cool-down phase.
- 
+
+\series bold
+Hypothesis:
+\series default
+ We expect the major increase on our system's performance to happen when
+ changing the instance type of the database from m3.large to m3.xlarge.
+ This is because we showed in the first milestone that the database is our
+ bottleneck.
+ Similarly based on our previous 
+\begin_inset Quotes eld
+\end_inset
+
+Increasing the Number of Threads
+\begin_inset Quotes erd
+\end_inset
+
+ and 
+\begin_inset Quotes eld
+\end_inset
+
+Increasing the Number of Connections
+\begin_inset Quotes erd
+\end_inset
+
+ experiments we do not except a great impact when changing those factors.
+ In spite of that we used those three factors because we considered it interesti
+ng to see how they all interact with each other.
+\end_layout
+
+\begin_layout Standard
+We ran each of the 
+\begin_inset Formula $2^{3}$
+\end_inset
+
+ experiments for 10 minutes and removed two minutes from the beginning of
+ our logs corresponding to the warm-up phase, as well as one minute from
+ the end corresponding to the cool-down phase.
+ In Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "2_k_experiment"
+
+\end_inset
+
+ the throughput for every experiment is depicted.
 \end_layout
 
 \begin_layout Standard
@@ -1043,6 +1184,43 @@ name "2_k_experiment"
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+In Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "2_k_sign_table"
+
+\end_inset
+
+ we can see the 
+\series bold
+sign table
+\series default
+ for calculating the effects of our design.
+ Our results can be interpreted as follows.
+ The mean performance is 6028 requests/sec, the effect of changing the instance
+ type was the greater one with 1302 requests/sec and was expected to be
+ the greater one.
+ Increasing the number of connections has an effect of 103 requests/sec.
+ Positive throughput also have the following combinations of AB, AC and
+ ABC.
+ Checking Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "2_k_sign_table"
+
+\end_inset
+
+ we can also see that there are two cases with negative effect.
+ The first one is when increasing the number of threads, while the second
+ one when increasing the number of threads as well as changing database
+ instance type.
+ This implies that it is probably worthless to just increase the number
+ of threads.
+ And since we can see in AB it does not make sense to increase the number
+ of threads without also increasing the number of connections.
 \end_layout
 
 \begin_layout Standard
@@ -1995,6 +2173,13 @@ Sign Table for Calculating Effects
 \end_inset
 
 
+\begin_inset CommandInset label
+LatexCommand label
+name "2_k_sign_table"
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -2003,20 +2188,14 @@ Sign Table for Calculating Effects
 \end_layout
 
 \begin_layout Standard
-In Figure 
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "2_k_experiment"
-
+This 
+\begin_inset Formula $2^{3}$
 \end_inset
 
-.
- We can see that increasing the number of threads has a negative effect
- on the performance of our system.
- This can be explained.
- Changing the instance type which the database is using is beneficiary for
- the system (1302 + ...) because we know the middleware is the database.
- TODO
+ experimental design verified our previous knowledge about the factors from
+ our previous experiments.
+ But it also showed us that some combinations of factors and levels is useless,
+ something we did not know from our previous results.
 \end_layout
 
 \begin_layout Section
@@ -2041,33 +2220,53 @@ Before starting with modelling our system we discuss on the queueing that
 Middleware Threads: There is a fixed number of middleware threads working
  on receiving the requests from the clients.
  If more clients try to communicate with the middleware than the number
- of threads then queueing occurs and a client is served when a middleware
- thread picks up his socket as was explaned in the previous report.
- This queue is a First Come, First Serverd (FCFS) queue.
+ of threads then queueing occurs.
+ A client is served when a middleware thread picks the client's socket as
+ was explained in the previous report.
+ This queue is a First In, First Out (FIFO) queue, also known as First Come,
+ First Served (FCFS) queue.
  There is no queueing in case the number of clients is less than the number
  of threads.
- But implicit queuing could exists due to the number of thread our system
- can handle as will be explained below.
+ But implicit queuing could exist due to the number of thread our CPU can
+ handle as will be explained below.
 \end_layout
 
 \begin_layout Itemize
-Connections to the Database: We also have a fixed amound of database connections.
+Connections to the Database: We also have a fixed amount of database connections.
  Middleware threads are the ones that use connections so if the number of
  threads is the same as the number of connections then there is no queueing
  for getting connections.
- This was the case in most of our previous experiments (except the obvious
- one where we increased the number of middlewares VERIFY TODO).
- This implies that there is no queuing actually happening.
- But there is queueing happening in the database.
- Again, implicit queueing could occur due to hardware limitations.
+ This was the case in most of our previous experiments, except the 
+\begin_inset Quotes eld
+\end_inset
+
+Increasing the number of Threads
+\begin_inset Quotes erd
+\end_inset
+
+ (with more than 20 threads) and 
+\begin_inset Quotes eld
+\end_inset
+
+Increasing the Number of Connections
+\begin_inset Quotes erd
+\end_inset
+
+ (with less than 20 connections) experiment.
+ Therefore in most of our experiments there was no queueing in this part
+ of the system.
+ Not although that there is queueing happening in the database as will be
+ explained below.
 \end_layout
 
 \begin_layout Itemize
 Database: Since all of the requests work on the same table there is going
- to be queueing in our system.
- The database cannot be fully parallel.
- Furthermore by the way we implemented the receive_message stored function
- (using 
+ to be queueing in the database, since the DBMS cannot operate fully parallel.
+ Furthermore by the way we implemented the 
+\shape italic
+receive_message
+\shape default
+ stored function using the 
 \begin_inset Quotes eld
 \end_inset
 
@@ -2075,7 +2274,7 @@ FOR UPDATE
 \begin_inset Quotes erd
 \end_inset
 
-) there is locking that could possibly queue up requests.
+ clause, there is definitely at this part of the database.
 \end_layout
 
 \begin_layout Itemize
@@ -2083,32 +2282,74 @@ Network: The network is used when a request is sent from the client to the
  middleware, a response is sent from the middleware to the client and when
  the middleware is communicating with the database.
  Queueing is possible to happen while TCP packets are being transmitted
- to their destination, intermediatery routers.
- From our previous experiments although we did not calculate network response
- and service times explicitly we did not find any specific delays on the
- network.
- Also by using iperf we show that the bandwitdth between our instances is
- quite high.
- We are going to consider the network as a delay center in our later model
- which means that there are not queueing happening and requests spend the
- same amount of time in the network.
+ to their destination through intermediary routers.
+ From our previous experiments although we did not calculate network times
+ explicitly explicitly we did not find any specific delays on the network.
+ Using 
+\begin_inset Quotes eld
+\end_inset
+
+iperf
+\begin_inset Quotes erd
+\end_inset
+
+ as well showed really huge bandwidth (1Gbps+) if compared to the small
+ size of our messages (each of our message contained only 20 characters),
+ furthermore we used Wireshark and found out that the message with the greatest
+ size had a size of only 709 bytes.
+ Because of this we are not going to consider the network in our models
+ since we believe that no really queueing is happening in it and requests
+ spend the same amount of time in the network.
 \end_layout
 
 \begin_layout Itemize
-Number of Threads and Processors: Although we could use a high number of
- threads in our system not all of them can be executed at the same time
- due to hardware constraints, number of processors etc.
- TODO
+CPU: We could argue that using a high number of middleware threads or concurrent
+ database connections in our system would increase performance.
+ This in some degree is true but there is a limit.
+ Since using a high number of threads in our system not all of them can
+ be executed at the same time due to hardware constraints like number of
+ processors etc.
+ In some sense this can be considered as queueing since a processor has
+ to context-switch between executed operations.
+ We are going to consider this when designing our μ function later on.
 \end_layout
 
 \begin_layout Itemize
-Serialization stuff???
+Serialization: Finally we would like to note that 
+\shape italic
+synchronized
+\shape default
+ blocks in our code could queue operations.
+ In our system we only have one 
+\shape italic
+synchronized
+\shape default
+ block that exists in the 
+\shape italic
+ConnectionPool
+\shape default
+ class.
+ This block is only used when not all of the given connections have been
+ created, so only at the beginning (warm up) of our system and therefore
+ is not being taken into consideration.
+ 
+\end_layout
+
+\begin_layout Section
+Queues Assumptions
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:Queues-Assumptions"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
 In the following models we simplified our analysis by considering infinite
  buffer capacity and infinite population size, as well as an FCFS service
- discipline as was suggested in the lectures (VERIFY).
+ discipline.
  We are also assuming exponentially distributed arrivals as well as service
  times.
  Finally we are going to use the Kendall notation for our queues.
@@ -2116,11 +2357,19 @@ In the following models we simplified our analysis by considering infinite
 \begin_inset Quotes eld
 \end_inset
 
-M/M/m/+oo/+oo/FCFS
+M/M/m/
+\begin_inset Formula $+\infty$
+\end_inset
+
+/
+\begin_inset Formula $+\infty$
+\end_inset
+
+/FCFS
 \begin_inset Quotes erd
 \end_inset
 
- which can be abbrevaited to 
+ which can be abbreviated to 
 \begin_inset Quotes eld
 \end_inset
 
@@ -2131,8 +2380,77 @@ M/M/m
  where m is the number of servers.
 \end_layout
 
+\begin_layout Standard
+About the infinite population size assumption we would like to note the
+ following.
+ 
+\series bold
+None
+\series default
+ of our experiments has infinite population size.
+ In every experimental data point we used a specific number of clients (populati
+on), even in our 
+\begin_inset Quotes eld
+\end_inset
+
+Increasing Number of Clients
+\begin_inset Quotes erd
+\end_inset
+
+ experiment if we consider every data point per se we had a fixed number
+ of clients.
+ This implies that our system is always stable since we know from 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "DBLP:journals/sigmetrics/Jain90"
+
+\end_inset
+
+ that 
+\begin_inset Quotes eld
+\end_inset
+
+In the finite population systems, the queue length is always finite; the
+ system can never become unstable.
+\begin_inset Quotes erd
+\end_inset
+
+.
+ Nevertheless we assume infinite population size to simplify the analysis
+ of our models.
+ Finally, note that in some models based on the stability condition that
+ states 
+\begin_inset Formula $λ<mμ$
+\end_inset
+
+ where 
+\begin_inset Formula $λ$
+\end_inset
+
+ is the arrival rate, 
+\begin_inset Formula $m$
+\end_inset
+
+ is the number of servers and 
+\begin_inset Formula $μ$
+\end_inset
+
+ is the mean server rate per sever our system could 
+\begin_inset Quotes eld
+\end_inset
+
+happen
+\begin_inset Quotes erd
+\end_inset
+
+ to be considered unstable.
+ This does not really mean that our system is unstable, but merely that
+ the specific model is incapable of successfully describing our system.
+ This is going to be explained later on as well.
+\end_layout
+
 \begin_layout Section
-Model the whole System as one queue
+Modelling with One Queue
 \begin_inset CommandInset label
 LatexCommand label
 name "sec:oneQueue"
@@ -2143,13 +2461,11 @@ name "sec:oneQueue"
 \end_layout
 
 \begin_layout Standard
-In this section we start by modelling our system as one M/M/1 queue.
- This model is going to be refined later on.
- We are going to consider the service of the queue the one that contains
- the middleware and database operations, so what is happening when a middleware
- thread picks up a socket, reads the client's request and send back to the
- client the response.
- We are not going to take network into consideration.
+In this section we model our system with just one queue.
+ First using an M/M/1 queue and then using an M/M/m queue.
+ So in our first queue we have just one server while in the second one we
+ have m servers.
+ 
 \end_layout
 
 \begin_layout Subsection*
@@ -2157,40 +2473,8 @@ One Server
 \end_layout
 
 \begin_layout Standard
-In order to check our model's results we are going to use ...
+For our first model we are going to consider the one depicted in Figure
  
-\end_layout
-
-\begin_layout Standard
-For this model we used our 
-\begin_inset Quotes eld
-\end_inset
-
- give name
-\begin_inset Quotes erd
-\end_inset
-
- experiment.
- 
-\end_layout
-
-\begin_layout Standard
-We can easily see that the the UTILIZATION (INTENSITY) is > 1, though our
- system is stable.
-\end_layout
-
-\begin_layout Standard
-EXPLAING WHY The system is shit and it doesn't work ...
- the E[w] is far off ...and is hard to calculate id using Little's Law ...
-\end_layout
-
-\begin_layout Standard
-Then show that even with more threads it's even worse
-\end_layout
-
-\begin_layout Standard
-For starting with our modelling we consider a rudimentary model with just
- one M/M/1 queue that can be seen in Figure 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "oneQueue"
@@ -2198,64 +2482,154 @@ reference "oneQueue"
 \end_inset
 
 .
- To check this model we are going to use the 1 threads, 1 connections, 1
- database m3 large and 2 clients all m3large instances.
- With this experiment we have:
+ As we can see in the figure we have one queue and the clients which issue
+ the requests (jobs) and are known as terminals.
+ For this queue we are going to consider the service of the queue as the
+ one that contains both the middleware and the database operations, so what
+ is happening when a middleware thread picks up a socket, reads the client's
+ request and send back to the client the response.
+ So actually the queue corresponds to the client's socket that contains
+ data and is waiting to be picked up by a middleware thread.
+ 
 \end_layout
 
 \begin_layout Standard
-lambda * Arrival rate (= throughput ...
- because of job flow balance) = 993 requests/sec = 0.993 requests / ms and
- the mean service time of our system is E[s] = 0.934259
+In order to check how well our model behaves we are going to use our trace
+ results given in the previous report.
+ As service time we are going to use the calculated time of 
+\begin_inset Formula $3.33ms$
+\end_inset
+
+, which corresponds to the time taken inside a middleware thread.
+ Since our system is a closed system the 
+\series bold
+job flow balance
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+The job flow balance holds in all of our experimental results and is going
+ to be used in the following models as well.
+ 
+\end_layout
+
+\end_inset
+
+
+\series default
+ assumption holds, because the number of arrivals is equal to the number
+ of completions.
+ This means we can use the arrival rate (
+\begin_inset Formula $λ$
+\end_inset
+
+) and throughput interchangeably, therefore 
+\begin_inset Formula $λ=5.897req/ms$
+\end_inset
+
+.
+ By using this as input we can calculate the traffic intensity of our system's
+ queue which is 
+\begin_inset Formula $ρ=\frac{λ}{μ}=5.897\cdot3.33=19.63$
+\end_inset
+
+.
+ But 
+\begin_inset Formula $ρ=19.63>1$
+\end_inset
+
+ meaning our system is not stable! As we already explained in the previous
+ section, this merely implies that this model is not very good for describing
+ our system.
+ Specifically that traffic intensity is greater than one can be explained
+ for the simple reason that we used middleware 20 threads and 20 connections
+ in the middleware so the general assumption of having just one server is
+ not valid.
+ To prove this is the case we created a new experiment where we just ran
+ 50 clients using 1 thread and 1 connection.
+ Specifically the configuration of our experiment was the following:
+\end_layout
+
+\begin_layout Itemize
+One m3.large client instance with 50 clients 
+\end_layout
+
+\begin_layout Itemize
+One m3.large middleware with 1 middleware thread and 1 connection
+\end_layout
+
+\begin_layout Itemize
+One m3.large database
 \end_layout
 
 \begin_layout Standard
-which means the utilization of our queue ??/device is ??? r = lambda * E[s]
- = 0.993 * 0.934259 = 0.9277 = 92.77%
+Running this experiment for 10 minutes and removing 2 minutes as warm up
+ and 1 minute as cool down we got arrival rate of 
+\begin_inset Formula $λ=1.096509req/ms$
+\end_inset
+
+ and mean service rate of our one server 
+\begin_inset Formula $μ=\frac{1}{0.906036}=1.10370890$
+\end_inset
+
+.
+ Finally the mean response time for a request for this experiment was 
+\begin_inset Formula $45.5888ms$
+\end_inset
+
+ with a standard deviation of 
+\begin_inset Formula $6.28519$
+\end_inset
+
+.
+ So in this case the traffic intensity is 
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+
+\begin_inset Formula $ρ=\frac{λ}{μ}=1.096509\cdot0.906036\simeq0.9934<1$
+\end_inset
+
+.
+ In this case we found out traffic intensity less than one, which we believe
+ shows that the number of threads or connections should be taken into account
+ when thinking about our model.
+ Using the traffic intensity and the mean service rate we can compute the
+ expected response time using the following formula:
 \end_layout
 
 \begin_layout Standard
-Using this we calculate the waiting time which is E[w] = E[s] / (1 - r)
- = 0.934259 / (1 - 0.9277)
+\begin_inset Formula 
+\[
+E[r]=\frac{\frac{1}{μ}}{1-ρ}=\frac{0.906036}{1-0.9934}\simeq137.27ms
+\]
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
-CONNECTION: 0.000256094, 0.0165939 
-\end_layout
+But the response time of 
+\begin_inset Formula $137.27ms$
+\end_inset
 
-\begin_layout Standard
-REQUEST: 0.934259, 0.913034 
-\end_layout
+ is far away from the real response time of 
+\begin_inset Formula $45.5888ms$
+\end_inset
 
-\begin_layout Standard
-IN WORKER THREAD QUEUE: 0.659202, 0.895857 
-\end_layout
-
-\begin_layout Standard
-TIMES A SOCKET IS WORKED for a REQUEST TO BE READ: 1, 0 
-\end_layout
-
-\begin_layout Standard
-TIMES TO ENTER: 1.53631, 26.2023 
-\end_layout
-
-\begin_layout Standard
-TIMES (DOING) INSIDE: 1.00002, 0.933932 
-\end_layout
-
-\begin_layout Standard
-('993.364285714', '66.0613894561') 
-\end_layout
-
-\begin_layout Standard
-('2.00468', '1.25358') 
-\end_layout
-
-\begin_layout Standard
-We can seee that E[w] = E[w_q] + E[s] holds but the utilization r of our
- system is > 1.
- This is because ...
- for fixing this we are going to refine our model.
+.
+ We conclude that using just an M/M/1 queue to model our whole system is
+ not enough.
+ We need to refine our model.
 \end_layout
 
 \begin_layout Standard
@@ -2284,7 +2658,7 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-M/M/1 queueing system
+Model with an M/M/1 queue
 \end_layout
 
 \end_inset
@@ -2313,9 +2687,779 @@ name "oneQueue"
 
 \begin_layout Standard
 For refining the model we are going to consider again a model with one queue
- but this time with more than one server.
- For server we are going to consider a middleware thread.
+ but this time with 
+\begin_inset Formula $m$
+\end_inset
+
+ servers.
+ As a server we are going to consider a middleware thread.
+ So each server picks up a request from the client, calls the underlying
+ database operation and returns the response to the client.
+ This model is depicted in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "mServers"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename images/mServers.png
+	lyxscale 15
+	scale 90
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Model with an M/M/m queue
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "mServers"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Let us revisit our trace experimental results.
+ We remind that the arrival rate is 
+\begin_inset Formula $λ=5.897req/ms$
+\end_inset
+
+ and the mean service rate per server 
+\begin_inset Formula $μ=\frac{1}{3.33}=0.3003$
+\end_inset
+
+.
+ The traffic intensity now defined as 
+\begin_inset Formula $ρ=\frac{λ}{m\cdotμ}$
+\end_inset
+
+ where 
+\begin_inset Formula $m$
+\end_inset
+
+ is the number of servers.
  
+\begin_inset Formula $m$
+\end_inset
+
+ in our case is 20 since for our trace experiment we used 20 middleware
+ threads.
+ Using our trace results we can find the traffic intensity of 
+\begin_inset Formula $ρ=\frac{λ}{m\cdotμ}=\frac{5.897\cdot3.33}{20}=\frac{19.63}{20}=0.981<1$
+\end_inset
+
+.
+ As we can see using 
+\begin_inset Formula $m$
+\end_inset
+
+ servers seems to better model compared to our previous one.
+ The mean response time can be calculated as:
+\begin_inset Formula 
+\[
+E[r]=\frac{1}{μ}(1+\frac{\varrho}{m(1-ρ)})
+\]
+
+\end_inset
+
+In order to calculate this we have to calculate the probability of queueing
+ 
+\begin_inset Formula $\varrho$
+\end_inset
+
+ which is 
+\begin_inset Formula 
+\[
+\varrho=P(\geq mjobs)=\frac{(m\rho)^{m}}{m!(1-\rho)}P_{0}
+\]
+
+\end_inset
+
+where
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+ 
+\begin_inset Formula $P_{0}$
+\end_inset
+
+ corresponds to the probability of having zero jobs in our system and can
+ be computed using the 
+\begin_inset Formula $m=20$
+\end_inset
+
+ and 
+\begin_inset Formula $ρ=0.981$
+\end_inset
+
+ as follows:
+\family default
+\series default
+\shape default
+\size default
+\emph default
+\bar default
+\strikeout default
+\uuline default
+\uwave default
+\noun default
+\color inherit
+ 
+\begin_inset Formula 
+\[
+P_{0}=(1+\frac{(m\rho)^{m}}{m!(1-\rho)}+\sum_{n=1}^{m-1}\frac{(m\rho)^{n}}{n!})^{-1}=9.34^{-10}
+\]
+
+\end_inset
+
+Using the computed 
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+
+\begin_inset Formula $P_{0}$
+\end_inset
+
+ 
+\family default
+\series default
+\shape default
+\size default
+\emph default
+\bar default
+\strikeout default
+\uuline default
+\uwave default
+\noun default
+\color inherit
+we get 
+\begin_inset Formula $\varrho=0.86$
+\end_inset
+
+.
+ Therefore the expected response time can be calculated and is: 
+\begin_inset Formula 
+\[
+E[r]=\frac{1}{μ}(1+\frac{\varrho}{m(1-ρ)})=8.57ms
+\]
+
+\end_inset
+
+This is actually less than our mean response time of 
+\begin_inset Formula $16.668ms$
+\end_inset
+
+
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+Again this value was taken from the first report from the 
+\begin_inset Quotes eld
+\end_inset
+
+Stability
+\begin_inset Quotes erd
+\end_inset
+
+ (trace) part.
+\end_layout
+
+\end_inset
+
+ and considering the standard deviation of our response time which about
+ 5, 
+\begin_inset Formula $8.57ms$
+\end_inset
+
+ is still far off.
+ Next we consider the mean waiting time 
+\begin_inset Formula $E[w]$
+\end_inset
+
+ which can be calculated as 
+\begin_inset Formula $E[w]=\frac{\varrho}{mμ(1-ρ)}=7.88ms$
+\end_inset
+
+.
+ The real waiting time is around 
+\begin_inset Formula $13ms$
+\end_inset
+
+, 
+\begin_inset Formula $13.3207$
+\end_inset
+
+ to be exact with a 
+\begin_inset Formula $4.17$
+\end_inset
+
+ standard deviation.
+ 
+\end_layout
+
+\begin_layout Standard
+As we can see using an M/M/m queue gives us better results in comparison
+ to a M/M/1 queue but still our model cannot predict the real performance
+ of our system.
+ To show this more blatantly we are going to use this model to see how it
+ responds to our 
+\begin_inset Quotes eld
+\end_inset
+
+Increasing Number of Clients
+\begin_inset Quotes erd
+\end_inset
+
+ experiment.
+ In what follows we computed the expected mean response time based on the
+ arrival rate and mean service rate.
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+
+\backslash
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\align center
+\begin_inset Tabular
+<lyxtabular version="3" rows="8" columns="5">
+<features rotate="0" tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+n (number of clients)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $μ$
+\end_inset
+
+(1request /ms)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $λ$
+\end_inset
+
+ (requests/ms)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $ρ=λ/(mμ)$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $E[r]$
+\end_inset
+
+ (ms)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1 / 1.18
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.41919
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.08373221
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.18
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+5
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1 / 1.76
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2.47349
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.217667
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.76
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+10
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1 / 2.95
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3.09045
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.45584
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2.95
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+15
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1 / 3.91
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3.59149
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.70213
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3.97
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+20
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1 / 5.30
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3.360391
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.8905
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+6.54
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+25
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1 / 4.98
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4.0087
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.9987
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+139.45
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+30
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1 / 4.79
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4.198323
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.0063 > 1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+-
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+
+\backslash
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+As we can see after 30 clients traffic intensity is greater than 1 in this
+ scenario and therefore we cannot calculate the response time.
+ We can see that in the first 20 clients the model can predict quite well
+ the expected response time but after 20 clients it increases dramatically
+ due to the increase in the traffic intensity as we see in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "increasingNumberOfClientsOneQueue"
+
+\end_inset
+
+.
+ We believed this has to do with not taking into consideration the database
+ explicitly in our model.
+ And since we already have shown that the database is the bottleneck, by
+ introducing more clients to the system there is contention starting to
+ happening in the database which is not appropriately perceived by the model.
+ To solve this we created a queueing network that is shown in the next section.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename plots/increasingClients/responseTimeForOneQueue/responseTime.eps
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Increasing Number of Clients Predicted Response Time in Contrast with Real
+ Response Time
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "increasingNumberOfClientsOneQueue"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Section
@@ -2330,10 +3474,141 @@ name "sec:Queueing-Network"
 \end_layout
 
 \begin_layout Standard
-Run MVA and all the stuff here ...
- show similar plots.
- benefit.
+In this section we consider a queueing network, which is a refinement of
+ our previous model.
+ Since we have a closed system and requests (jobs) in our system from one
+ queue to the next one our corresponding queueing network is a 
+\series bold
+closed queueing network
+\series default
+.
+ This section's model is depicted in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "queueingNetwork"
+
+\end_inset
+
+, as can be seen there are two queues one corresponding to the middleware
+ threads while the other corresponds to the database.
+ The database 
+\begin_inset Quotes eld
+\end_inset
+
+servers
+\begin_inset Quotes erd
+\end_inset
+
+ does not actually correspond to the database connections since as we said
+ previously there is no queueing actually happening in the database connections
+ (in cases the number of middleware threads is greater or equal than the
+ connections).
+ Here the database 
+\begin_inset Quotes eld
+\end_inset
+
+servers
+\begin_inset Quotes erd
+\end_inset
+
+ correspond to how many operations can actually our database execute at
+ the same time.
  
+\end_layout
+
+\begin_layout Standard
+We consider the middleware and the database as load-dependent service centers
+ since their service rate depends on the number of jobs in the device.
+ We wanted to compare this model with our 
+\begin_inset Quotes eld
+\end_inset
+
+Increasing Number of Clients
+\begin_inset Quotes erd
+\end_inset
+
+ experimental results.
+ Since for this experiment we had 20 middleware threads, we consider that
+ our first queue is an M/M/20 queue, while for the database, although we
+ had 20 connections we consider it as an M/M/6 queue for the reasons explained
+ in Section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:systemQueues"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+In order to predict the response time based on our model we used the Mean
+ Value Analysis (MVA) algorithm that includes load-dependent centers.
+ The code of the MVA algorithms was implemented in Java using 
+\shape italic
+BigDecimal
+\shape default
+ objects and can be found in the 
+\shape italic
+MVA
+\shape default
+ class (
+\family typewriter
+code/MVA.java
+\family default
+ file).
+ In order to provide as input the service rate of our middleware threads
+ and our database we ran one more experiment with the following configuration:
+\end_layout
+
+\begin_layout Itemize
+One m3.large client instance with 2 clients 
+\end_layout
+
+\begin_layout Itemize
+One m3.large middleware with 2 middleware thread and 2 connection
+\end_layout
+
+\begin_layout Itemize
+One m3.large database
+\end_layout
+
+\begin_layout Standard
+We chose two clients since we cannot have a running system with just one
+ client by they way we have designed our clients.
+ And we chose to have the same number of middleware threads and connections
+ so there is no queueing in our system.
+ Therefore the calculated values would correspond to real service times.
+ We concluded that the service time of the middleware device is 
+\begin_inset Formula $0.000534249ms$
+\end_inset
+
+ while for the database device it is 
+\begin_inset Formula $1.35318ms$
+\end_inset
+
+.
+ MVA also takes as input think time which as usually was 0 in our case.
+ Number of visits also needed for MVA was given and was one per device.
+ The service rate was given using the following 
+\begin_inset Formula $μ$
+\end_inset
+
+ function:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+μ=\begin{cases}
+\frac{n}{S}, & n=1,2,\ldots,m-1\\
+\frac{m}{S}, & n=m,m+1,\ldots,\infty
+\end{cases}
+\]
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -2347,7 +3622,7 @@ status open
 \begin_inset Graphics
 	filename images/queueingNetwork.png
 	lyxscale 20
-	scale 20
+	scale 90
 
 \end_inset
 
@@ -2378,12 +3653,402 @@ name "queueingNetwork"
 
 \end_layout
 
-\begin_layout Subsection*
+\begin_layout Standard
+Using MVA we calculated the response time and the respective throughput.
+ The comparison of the calculated results and the real ones can be seen
+ at Figures 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "queueingNetworkResponseTimes"
+
+\end_inset
+
+ and 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "queueingNetworkThroughput"
+
+\end_inset
+
+.
+ As we can see in Figures 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "queueingNetworkResponseTimes"
+
+\end_inset
+
+ response time was quite well calculated since it is always inside the error
+ bar of our actual response time.
+ Throughput on the other hand in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "queueingNetworkThroughput"
+
+\end_inset
+
+ stabilizes much quicker than it does in our real system and stays stable
+ afterwards.
+ Although our analysis results do not fit perfectly our actual experimental
+ results they show the trends of our system.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename plots/increasingClients/responseTimeForManyQueues/responseTime.eps
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+MVA's Calculated Response Time Compared to Actual Response Time
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "queueingNetworkResponseTimes"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename plots/increasingClients/throughputForManyQueues/throughput.eps
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+MVA's Calculated Throughput Compared to Actual Throughput
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "queueingNetworkThroughput"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+Visit Ratio
+\end_layout
+
+\begin_layout Standard
+Before going on we would like to describe another possible model shown in
+ Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "queueingNetwork-1"
+
+\end_inset
+
+.
+ We remind the reader by design of our system, a socket is being read many
+ times by a middleware thread and is returned back to its thread queue if
+ it does not contain any data.
+ In this sense the visit ratio of the middleware could be much higher.
+ In spite of that we did not consider this model since it would complicate
+ analysis.
+ Now we just have a client issue a request and it is immediately queued
+ up which simplifies our analysis.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename images/queueingNetworkMoreVisits.png
+	lyxscale 10
+	scale 90
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Queueing Network with Different Visit Ratio
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "queueingNetwork-1"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
 Finding Bottleneck
 \end_layout
 
 \begin_layout Standard
-Use operational laws to find demand ...
+In the previous report we showed that the database is the bottleneck.
+ In this subsection we are going to show that the database is the bottleneck
+ using operational laws.
+ Based on the queueing network of Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "queueingNetwork"
+
+\end_inset
+
+ we know that both the middleware and the database are visited once.
+ We know that the device with the highest demand and hence the highest utilizati
+on is the bottleneck device.
+ The demand of a device 
+\begin_inset Formula $i$
+\end_inset
+
+ can be calculated as follows: 
+\begin_inset Formula $D_{i}=V_{i}S_{i}$
+\end_inset
+
+ where 
+\begin_inset Formula $V_{i}$
+\end_inset
+
+ is the visit ratio of the device and 
+\begin_inset Formula $S_{i}$
+\end_inset
+
+ is the service time of the device.
+ Based on our 2 clients experiment described previously we have:
+\end_layout
+
+\begin_layout Standard
+\align center
+\begin_inset Tabular
+<lyxtabular version="3" rows="3" columns="4">
+<features rotate="0" tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Device
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $V_{i}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $S_{i}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $D_{i}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Middleware
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $0.000534249ms$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+0.000534249
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Database
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $1.35318ms$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+1.35318
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We can therefore conclude that the database is the bottleneck device which
+ was excepted.
 \end_layout
 
 \begin_layout Section
@@ -2391,6 +4056,52 @@ Conclusion
 \begin_inset CommandInset label
 LatexCommand label
 name "sec:Conclusion"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In this report we explained in detail the interactive response time law
+ and how it applies to our system.
+ Then we presented our 
+\begin_inset Formula $2^{3}$
+\end_inset
+
+ experimental design and showed how the number of middleware threads, number
+ of database connections and database instance type interact with each other.
+ 
+\end_layout
+
+\begin_layout Standard
+We continued by making some assumptions and simplifications of our system.
+ Then we modelled our system using one queue, first an M/M/1 queue that
+ proved to be insufficient for describing our system.
+ We continued with an M/M/m queue, one with 
+\begin_inset Formula $m$
+\end_inset
+
+ servers which proved to have better results but was still far away from
+ our real results.
+ 
+\end_layout
+
+\begin_layout Standard
+We continued by using a network of queues and using the MVA algorithm we
+ found results that show the general trend of our actual results.
+\end_layout
+
+\begin_layout Standard
+Finally we would like to note that through this milestone we got accustomed
+ to queueing theory and how it can be used to model a system.
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset bibtex
+LatexCommand bibtex
+bibfiles "Jain90"
+options "bibtotoc,plain"
 
 \end_inset
 

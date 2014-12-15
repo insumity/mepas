@@ -253,11 +253,50 @@ def getTimeSpentOnEachComponent(middlewareInstanceDir, percentageToRemove):
     shutil.rmtree(directoryForTempResults)
 
 
-getTimeSpentOnEachComponent("../2_k_experiment/20_threads_20_connections_m3_large_db/middlewareInstance1", 0.0)
-print getThroughput("../2_k_experiment/20_threads_20_connections_m3_large_db/", 1, 600, 120, 60, "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
-print getResponseTime("../2_k_experiment/20_threads_20_connections_m3_large_db/", 1, 600, 120, 60, "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
-# print getThroughput("../2_clients_experiment/2", 1, 600, 120, 60, "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
-# print getThroughput("../10_and_30_clients_experiment_1_queue/30", 1, 600, 120, 60, "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
-# print getThroughput("../2_k_experiment/40_threads_40_connections_m3_xlarge_db", 1, 600, 120, 60, "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
+# getTimeSpentOnEachComponent("../50_clients_1_thread/50/middlewareInstance1", 0.0)
+# print getThroughput("../50_clients_1_thread/50", 1, 600, 120, 60, "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
+# print getResponseTime("../50_clients_1_thread/50", 1, 600, 120, 60, "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
+# exit(0)
+#
+# # for n in range(60, 101, 10):
+# n = 25
+# # getTimeSpentOnEachComponent("../NEW_increasing_number_of_clients/" + str(n) + "/middlewareInstance1", 0.0)
+# # print getThroughput("../NEW_increasing_number_of_clients/" + str(n), 1, 600, 120, 60, "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
+# print getResponseTime("../NEW_increasing_number_of_clients/" + str(n), 1, 600, 120, 60, "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
+# # print getThroughput("../2_clients_experiment/2", 1, 600, 120, 60, "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
+# # print getThroughput("../10_and_30_clients_experiment_1_queue/30", 1, 600, 120, 60, "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
+# # print getThroughput("../2_k_experiment/40_threads_40_connections_m3_xlarge_db", 1, 600, 120, 60, "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
+#
+# exit(0)
 
 
+def calculateResponseTime(arrivalRate, meanServiceTime, numberOfServers):
+    serviceRate = 1.0 / meanServiceTime
+    trafficIntensity = arrivalRate / (numberOfServers * serviceRate)
+    # if (trafficIntensity >= 1):
+    # trafficIntensity = 0.9999
+
+    fact = lambda x: 1 if x == 0 else x * fact(x-1)
+    probZeroJobs = 1
+    probZeroJobs += ((numberOfServers * trafficIntensity) ** numberOfServers) / (fact(numberOfServers) * (1 - trafficIntensity))
+
+
+    sum = 0
+    for n in range(1, numberOfServers):
+        sum += ((numberOfServers * trafficIntensity) ** n) / fact(n)
+    probZeroJobs += sum
+    probZeroJobs = probZeroJobs ** (-1)
+    print "P0:"  +str(probZeroJobs)
+
+    probQueueing = (((numberOfServers * trafficIntensity) ** numberOfServers) / (fact(numberOfServers) * (1 - trafficIntensity))) * probZeroJobs
+    print probQueueing
+
+    meanResponseTime = (1 / serviceRate) * (1 + probQueueing / (numberOfServers * (1 - trafficIntensity)))
+    return (trafficIntensity, meanResponseTime)
+
+# 1 / 4.7055	4.25277
+# 1 / 4.79	4.198323
+
+
+print calculateResponseTime(3.360391, 5.30, 20)
+# print calculateResponseTime(5.897, 3.3, 20)
