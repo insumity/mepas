@@ -259,10 +259,10 @@ def getTimeSpentOnEachComponent(middlewareInstanceDir, percentageToRemove):
 # exit(0)
 #
 # # for n in range(60, 101, 10):
-# n = 25
-# # getTimeSpentOnEachComponent("../NEW_increasing_number_of_clients/" + str(n) + "/middlewareInstance1", 0.0)
-# # print getThroughput("../NEW_increasing_number_of_clients/" + str(n), 1, 600, 120, 60, "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
-# print getResponseTime("../NEW_increasing_number_of_clients/" + str(n), 1, 600, 120, 60, "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
+n = 25
+getTimeSpentOnEachComponent("../NEW_increasing_number_of_clients/" + str(n) + "/middlewareInstance1", 0.0)
+print getThroughput("../NEW_increasing_number_of_clients/" + str(n), 1, 600, 120, 60, "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
+print getResponseTime("../NEW_increasing_number_of_clients/" + str(n), 1, 600, 120, 60, "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
 # # print getThroughput("../2_clients_experiment/2", 1, 600, 120, 60, "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
 # # print getThroughput("../10_and_30_clients_experiment_1_queue/30", 1, 600, 120, 60, "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")
 # # print getThroughput("../2_k_experiment/40_threads_40_connections_m3_xlarge_db", 1, 600, 120, 60, "LIST_QUEUES|SEND_MESSAGE|RECEIVE_MESSAGE")

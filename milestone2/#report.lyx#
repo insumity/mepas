@@ -3537,7 +3537,7 @@ servers
 \begin_inset Quotes erd
 \end_inset
 
- correspond to how many operations can actually our database execute at
+ correspond to how many operations our database can actually execute at
  the same time.
  
 \end_layout
@@ -3614,7 +3614,7 @@ We chose two clients since we cannot have a running system with just one
 \end_inset
 
 .
- MVA also takes as input think time which as usually was 0 in our case.
+ MVA also takes the input think time, which in our case as usually is 0.
  Number of visits also needed for MVA was given and was one per device.
  The service rate was given using the following 
 \begin_inset Formula $μ$
@@ -3626,7 +3626,7 @@ We chose two clients since we cannot have a running system with just one
 \begin_layout Standard
 \begin_inset Formula 
 \[
-μ=\begin{cases}
+μ(n)=\begin{cases}
 \frac{n}{S}, & n=1,2,\ldots,m-1\\
 \frac{m}{S}, & n=m,m+1,\ldots,\infty
 \end{cases}
@@ -3729,6 +3729,7 @@ status open
 \align center
 \begin_inset Graphics
 	filename plots/increasingClients/responseTimeForManyQueues/responseTime.eps
+	scale 90
 
 \end_inset
 
@@ -3769,6 +3770,7 @@ status open
 \align center
 \begin_inset Graphics
 	filename plots/increasingClients/throughputForManyQueues/throughput.eps
+	scale 90
 
 \end_inset
 
