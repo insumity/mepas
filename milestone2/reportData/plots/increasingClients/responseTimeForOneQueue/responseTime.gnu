@@ -19,4 +19,4 @@ set style line 3 lt 3 lc rgb "yellow" lw 1
 set style line 4 lt 4 lc rgb "green" lw 1
 
 set xtics 0, 5
-plot "responseTimeAllRequests.csv" using 1:2:3 title "Actual response time for LIST\\_QUEUES, SEND\\_MESSAGE and RECEIVE\\_MESSAGE" with errorlines ls 1, "responseTimeAllRequests.csv" using 1:4 title "Calculated response time for LIST\\_QUEUES, SEND\\_MESSAGE and RECEIVE\\_MESSAGE" with errorlines ls 2
+plot "responseTimeAllRequests.csv" using 1:2:3 title "Actual response time for LIST\\_QUEUES, SEND\\_MESSAGE, RECEIVE\\_MESSAGE" with errorlines ls 1, "responseTimeAllRequests.csv" using 1:4 title "Calculated response time for LIST\\_QUEUES, SEND\\_MESSAGE, RECEIVE\\_MESSAGE" with errorlines ls 2

@@ -1,0 +1,10 @@
+The report can be found in the current directory
+under tha name "report.pdf". The "reportData" directory
+contains data needed for creating the report.
+
+The log files for the experiments done solely for
+this milestone can be found under the "newLogs"
+directory.
+
+The MVA code is in the MVA.java file in the "code"
+directory.

@@ -1,7 +1,6 @@
 package ch.ethz.inf.asl.mva;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.math.RoundingMode;
 
 public class MVA {
@@ -21,21 +20,12 @@ public class MVA {
     }
 
     private static BigDecimal calculateMuFunctionDatabase(int n, int m, BigDecimal S) {
-        //            System.out.println("Cool!!!");
-//        if (i < 12) {
-//            return new BigDecimal( (1.00 - i * 0.06) * i).divide(serviceTime, MathContext.DECIMAL128);
-//        } else if (i < 18) {
-//            return new BigDecimal( (1.00 - 12 * 0.06) * i).divide(serviceTime, MathContext.DECIMAL128);
-//        } else if ( i < 25) {
-//            return new BigDecimal( (1.00 - 13 * 0.06) * i).divide(serviceTime, MathContext.DECIMAL128);
-//        }
-//        else {
-//            return new BigDecimal(0.3 * numberOfServices).divide(serviceTime, MathContext.DECIMAL128);
-//        }
-        if (n < 20) {
-            return new BigDecimal(n).divide(S, MathContext.DECIMAL128);
+        if (n < 6) {
+            return new BigDecimal(0.5 * n).divide(S, 200, RoundingMode.HALF_UP);
+        } else if (n < 20) {
+            return new BigDecimal(0.3 * n).divide(S, 200, RoundingMode.HALF_UP);
         } else {
-            return new BigDecimal(m ).divide(S, MathContext.DECIMAL128);
+            return new BigDecimal(0.3 * 20).divide(S, 200, RoundingMode.HALF_UP);
         }
     }
 
@@ -65,7 +55,7 @@ public class MVA {
 
             for (int i = 0; i < M; ++i) {
                 if (types[i] == Type.FIXED_CAPACITY) {
-                    R[i] = serviceTimes[i].multiply(Q[i].add(new BigDecimal(1)));
+                    R[i] = serviceTimes[i].multiply(Q[i].add(new BigDecimal(1.0)));
                 }
                 else if (types[i] == Type.DELAY_CENTER) {
                     R[i] = serviceTimes[i];
@@ -96,11 +86,6 @@ public class MVA {
 
                     for (int j = n; j >= 1; --j) {
                         P[i][j] = (XAll.divide(serviceRates[i][j], 200, RoundingMode.HALF_UP)).multiply(P[i][j - 1]);
-
-                        if (P[i][j].compareTo(new BigDecimal(1.1)) > 0 || P[i][j].compareTo(new BigDecimal(-0.1)) < 0) {
-                            System.out.println("PROBABILITY SUCKS!"  + P[i][j]);
-                        }
-//                        System.out.println(":::> " + (String.format("%.2f", P[i][j])));
                     }
 
                     BigDecimal sum = new BigDecimal(0);
@@ -111,7 +96,6 @@ public class MVA {
                 }
             }
         }
-        System.out.println(numberOfUsers + ": " + (String.format("%.2f %.2f", XAll.multiply(new BigDecimal(1000)), RAll)));
 
         BigDecimal[] X = new BigDecimal[M];
         BigDecimal[] U = new BigDecimal[M];
@@ -126,21 +110,16 @@ public class MVA {
             else {
                 U[i] = new BigDecimal(1).subtract(P[i][0]);
             }
-
-            if (U[i].compareTo(new BigDecimal(1.1)) > 0) {
-                System.out.println("ERROR!!!: " + i + " ... " + U[i]);
-            }
         }
-
     }
 
 
     public static void main(String[] args) {
 
         for (int n = 2; n <= 200;) {
-            BigDecimal thinkTime = new BigDecimal(0);
-            Type[] types = new Type[]{Type.FIXED_CAPACITY, Type.LOAD_DEPENDENT};
-            BigDecimal[] serviceTimes = new BigDecimal[]{ new BigDecimal(0.000534249), new BigDecimal(1.35318) };
+            BigDecimal thinkTime = new BigDecimal(0.0);
+            Type[] types = new Type[]{Type.LOAD_DEPENDENT, Type.LOAD_DEPENDENT};
+            BigDecimal[] serviceTimes = new BigDecimal[]{ new BigDecimal(0.000534249), new BigDecimal(1.2686)};
             int[] numberOfVisits = new int[]{1, 1};
             int numberOfUsers = n;
 
@@ -148,7 +127,7 @@ public class MVA {
             BigDecimal[] secondDevice = new BigDecimal[numberOfUsers + 1];
             for (int i = 0; i <= numberOfUsers; ++i) {
                 firstDevice[i] = calculateMuFunction(i, 20, serviceTimes[0]);
-                secondDevice[i] = calculateMuFunctionDatabase(i, 6, serviceTimes[1]);
+                secondDevice[i] = calculateMuFunctionDatabase(i, 20, serviceTimes[1]);
             }
             BigDecimal[][] serviceRates = new BigDecimal[][]{firstDevice, secondDevice};
             calculate(thinkTime, types, serviceTimes, numberOfVisits, numberOfUsers, serviceRates);

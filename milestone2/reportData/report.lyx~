@@ -98,15 +98,15 @@ Advanced System Lab
  project.
  We start this report by giving a brief introduction about this milestone's
  objectives.
- Next we delve into the interactive response time law and how it applies
- on our system in Section 
+ Next, in Setion 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "sec:Interactive-Response-Time"
 
 \end_inset
 
-.
+ we delve into the interactive response time law and see how it applies
+ on our system.
  In Section 
 \begin_inset CommandInset ref
 LatexCommand ref
@@ -174,7 +174,7 @@ name "sec:introduction"
 Goal of this milestone was to develop an analytical queueing model for our
  system.
  After developing the model it was needed to derive the performance characterist
-ics of our system and predict its performance which is going to be compared
+ics of our system and predict its performance which was going to be compared
  with our results from the first milestone.
  All the formulas used for this report were taken from 
 \begin_inset CommandInset citation
@@ -198,14 +198,17 @@ name "sec:Interactive-Response-Time"
 \end_layout
 
 \begin_layout Standard
-As was already stated in the report of the first milestone we have a closed
- system.
+As was already stated in the report of the first milestone we have a 
+\series bold
+closed system
+\series default
+.
  Therefore the response time law should apply to our results.
- We have verified that our results were successfully satisfying the response
- time law and specifically showed that the law holds in our trace in the
- previous report.
- In this section we are going to have a closer look to this law by verifying
- it in our 
+ We have verified that all of our experimental results were successfully
+ satisfying the response time law and specifically showed that the law holds
+ in our trace in the previous report.
+ In this section we are going to have a closer look of this law and how
+ it applies in our 
 \begin_inset Quotes eld
 \end_inset
 
@@ -223,7 +226,7 @@ X=\frac{N}{R+Z}
 
 \end_inset
 
-where
+where 
 \begin_inset Formula $X$
 \end_inset
 
@@ -320,9 +323,9 @@ name "responseTimeLaw"
 \end_layout
 
 \begin_layout Standard
-We would like to note that in all the checks we did with the aforementioned
+We would like to note that in all the checks we did with the response time
  law we used the response time and throughput for all the types of requests
- but never checked a specific type of request individually.
+ but we never checked for a specific type of request individually.
  Let us see what happens for a specific type of a request, for example let
  us assume we are looking at the experiment where we used messages of 
 \begin_inset Formula $2\cdot10^{5}$
@@ -339,9 +342,9 @@ reference "responseTimeLaw2"
 
 .
  Note that the calculated throughput values are all pretty much the same.
- The explanation of this was given in the first report and has to do with
- the way clients work: they issue almost the same amount of requests per
- given type.
+ The explanation of this was given in the previous report and has to do
+ with the way clients work: they issue almost the same amount of requests
+ per given type.
  Based on those results let us try to apply the response time law to see
  if it applies for every specific type of request.
  For example for the 
@@ -364,6 +367,7 @@ X=\frac{N}{R+Z}=\frac{50}{75.2135+0}=0.664req/ms=664req/s
 \end_layout
 
 \begin_layout Standard
+The throughput of 
 \begin_inset Formula $664req/s$
 \end_inset
 
@@ -371,7 +375,7 @@ X=\frac{N}{R+Z}=\frac{50}{75.2135+0}=0.664req/ms=664req/s
 \begin_inset Formula $98req/s$
 \end_inset
 
- which is 
+ which is the 
 \begin_inset Quotes eld
 \end_inset
 
@@ -384,7 +388,7 @@ LIST_QUEUES
  that we assumed that the think time is 0.
  This is not the case for a specific request as was for all the types of
  requests.
- In case for a 
+ For example, in case of a 
 \begin_inset Quotes eld
 \end_inset
 
@@ -392,8 +396,8 @@ LIST_QUEUES
 \begin_inset Quotes erd
 \end_inset
 
- request for example there is actually think time since by the way the client
- works after a 
+ request there is actually some think time since by the way the client works
+ is that after a 
 \begin_inset Quotes eld
 \end_inset
 
@@ -444,13 +448,30 @@ RECEIVE_MESSAGE
 
  is called most of the times.
  So the think time is actually 
-\begin_inset Formula $Z=304.199+130.552=434.751$
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+Z=304.199+130.552=434.751ms
+\]
+
 \end_inset
 
-.
- By using this think time we can calculate the throughput again which now
+
+\end_layout
+
+\begin_layout Standard
+By using this think time we can calculate the throughput again which now
  is: 
-\begin_inset Formula $X=\frac{50}{75.2135+434.751}=0.098req/ms=98req/s$
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+X=\frac{50}{75.2135+434.751}=0.098req/ms=98req/s
+\]
+
 \end_inset
 
  which is also the throughput of our system.
@@ -463,10 +484,17 @@ SEND_MESSAGE
 \end_inset
 
  is 
-\begin_inset Formula $X=\frac{50}{304.199+(75.2135+130.552)}=0.098req/ms=98req/s$
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+X=\frac{50}{304.199+(75.2135+130.552)}=0.098req/ms=98req/s
+\]
+
 \end_inset
 
- and of 
+and of 
 \begin_inset Quotes eld
 \end_inset
 
@@ -475,10 +503,24 @@ RECEIVE_MESSAGE
 \end_inset
 
  is 
-\begin_inset Formula $X=\frac{50}{130.552+(75.2135+304.199)}=0.098req/ms=98req/s$
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+X=\frac{50}{130.552+(75.2135+304.199)}=0.098req/ms=98req/s
+\]
+
 \end_inset
 
-.
+
+\end_layout
+
+\begin_layout Standard
+Although we have verified that the law holds in all of our previous experiments
+ by having a closer look we saw that the think time is not zero when considering
+ a specific type of request instead of all the types of requests together.
+ We consider this to be an interesting observation of our system.
 \end_layout
 
 \begin_layout Standard
@@ -814,7 +856,7 @@ status open
 \begin_inset Text
 
 \begin_layout Plain Layout
-A
+A (#connections)
 \end_layout
 
 \end_inset
@@ -823,7 +865,7 @@ A
 \begin_inset Text
 
 \begin_layout Plain Layout
-B
+B (#threads)
 \end_layout
 
 \end_inset
@@ -832,7 +874,7 @@ B
 \begin_inset Text
 
 \begin_layout Plain Layout
-C
+C (db instance type)
 \end_layout
 
 \end_inset
@@ -1201,11 +1243,9 @@ sign table
  for calculating the effects of our design.
  Our results can be interpreted as follows.
  The mean performance is 6028 requests/sec, the effect of changing the instance
- type was the greater one with 1302 requests/sec and was expected to be
- the greater one.
+ type was the greater one with 1302 requests/sec.
  Increasing the number of connections has an effect of 103 requests/sec.
- Positive throughput also have the following combinations of AB, AC and
- ABC.
+ Positive throughput also have the combinations of AB, AC and ABC.
  Checking Figure 
 \begin_inset CommandInset ref
 LatexCommand ref
@@ -1219,8 +1259,8 @@ reference "2_k_sign_table"
  instance type.
  This implies that it is probably worthless to just increase the number
  of threads.
- And since we can see in AB it does not make sense to increase the number
- of threads without also increasing the number of connections.
+ And as we can see in AB it does not make sense to increase the number of
+ threads without also increasing the number of connections.
 \end_layout
 
 \begin_layout Standard
@@ -2193,9 +2233,9 @@ This
 \end_inset
 
  experimental design verified our previous knowledge about the factors from
- our previous experiments.
- But it also showed us that some combinations of factors and levels is useless,
- something we did not know from our previous results.
+ our already done experiments.
+ But it also showed us that some combinations of factors and levels are
+ useless, something we did not know from our previous results.
 \end_layout
 
 \begin_layout Section
@@ -2210,10 +2250,10 @@ name "sec:systemQueues"
 \end_layout
 
 \begin_layout Standard
-Before starting with modelling our system we discuss on the queueing that
- occurs in our system.
+Before starting with modelling our system as a network of queues we discuss
+ on the queueing that occurs in our system.
  Queueing can occur in many places.
- The ones that first come in our mind are the following.
+ The ones that we thought of are the following.
 \end_layout
 
 \begin_layout Itemize
@@ -2224,10 +2264,10 @@ Middleware Threads: There is a fixed number of middleware threads working
  A client is served when a middleware thread picks the client's socket as
  was explained in the previous report.
  This queue is a First In, First Out (FIFO) queue, also known as First Come,
- First Served (FCFS) queue.
+ First Served (FCFS).
  There is no queueing in case the number of clients is less than the number
  of threads.
- But implicit queuing could exist due to the number of thread our CPU can
+ But implicit queuing could exist due to the number of threads our CPU can
  handle as will be explained below.
 \end_layout
 
@@ -2255,8 +2295,8 @@ Increasing the Number of Connections
  (with less than 20 connections) experiment.
  Therefore in most of our experiments there was no queueing in this part
  of the system.
- Not although that there is queueing happening in the database as will be
- explained below.
+ Note although that there is queueing happening in the database as will
+ be explained below.
 \end_layout
 
 \begin_layout Itemize
@@ -2274,17 +2314,18 @@ FOR UPDATE
 \begin_inset Quotes erd
 \end_inset
 
- clause, there is definitely at this part of the database.
+ clause (implicit locking), there is definitely queueing at this part of
+ the database.
 \end_layout
 
 \begin_layout Itemize
 Network: The network is used when a request is sent from the client to the
- middleware, a response is sent from the middleware to the client and when
- the middleware is communicating with the database.
+ middleware and vice versa, and when the middleware is communicating with
+ the database.
  Queueing is possible to happen while TCP packets are being transmitted
  to their destination through intermediary routers.
  From our previous experiments although we did not calculate network times
- explicitly explicitly we did not find any specific delays on the network.
+ explicitly we did not find any specific delays on the network.
  Using 
 \begin_inset Quotes eld
 \end_inset
@@ -2293,13 +2334,46 @@ iperf
 \begin_inset Quotes erd
 \end_inset
 
- as well showed really huge bandwidth (1Gbps+) if compared to the small
- size of our messages (each of our message contained only 20 characters),
- furthermore we used Wireshark and found out that the message with the greatest
- size had a size of only 709 bytes.
- Because of this we are not going to consider the network in our models
- since we believe that no really queueing is happening in it and requests
- spend the same amount of time in the network.
+
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+https://iperf.fr/
+\end_layout
+
+\end_inset
+
+ as well showed really huge bandwidth (1Gbps+) between our EC2 instances.
+ By using Wireshark and our usual message sizes, messages of 20 characters
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+We used message sizes of 20 characters in all of our previous experiments
+ except the 
+\begin_inset Quotes eld
+\end_inset
+
+Increasing the Message Size
+\begin_inset Quotes erd
+\end_inset
+
+ experiment.
+\end_layout
+
+\end_inset
+
+, we found that the 
+\bar under
+transmitted message
+\bar default
+ with the greatest size had a size of only 709 bytes.
+ If we compare this message size with our bandwidth speed we can see that
+ network is not actually delaying our system, probably by just a small constant
+ time.
+ Because of this and since there is no queueing actually happening in the
+ network we are not going to consider the network in our models.
 \end_layout
 
 \begin_layout Itemize
@@ -2311,7 +2385,12 @@ CPU: We could argue that using a high number of middleware threads or concurrent
  processors etc.
  In some sense this can be considered as queueing since a processor has
  to context-switch between executed operations.
- We are going to consider this when designing our μ function later on.
+ We are going to consider this when designing our database's service rate
+ 
+\begin_inset Formula $μ(n)$
+\end_inset
+
+ function later on.
 \end_layout
 
 \begin_layout Itemize
@@ -2353,7 +2432,7 @@ In the following models we simplified our analysis by considering infinite
  We are also assuming exponentially distributed arrivals as well as service
  times.
  Finally we are going to use the Kendall notation for our queues.
- Therefore most of our queues are going to be of the form 
+ Therefore our queues are going to be of the form 
 \begin_inset Quotes eld
 \end_inset
 
@@ -2385,7 +2464,11 @@ M/M/
 \begin_inset Quotes erd
 \end_inset
 
- where m is the number of servers.
+ where 
+\begin_inset Formula $m$
+\end_inset
+
+ is the number of servers.
 \end_layout
 
 \begin_layout Standard
@@ -2443,15 +2526,8 @@ In the finite population systems, the queue length is always finite; the
 \begin_inset Formula $μ$
 \end_inset
 
- is the mean server rate per sever our system could 
-\begin_inset Quotes eld
-\end_inset
-
-happen
-\begin_inset Quotes erd
-\end_inset
-
- to be considered unstable.
+ is the mean service rate per sever, our system could happen to be considered
+ unstable.
  This does not really mean that our system is unstable, but merely that
  the specific model is incapable of successfully describing our system.
  This is going to be explained later on as well.
@@ -2469,12 +2545,13 @@ name "sec:oneQueue"
 \end_layout
 
 \begin_layout Standard
-In this section we model our system with just one queue.
- First using an M/M/
+The simplest model that we can have is a model with just one queue.
+ We consider such a model in this section.
+ First we use an M/M/
 \begin_inset Formula $1$
 \end_inset
 
- queue and then using an M/M/
+ queue and then use an M/M/
 \begin_inset Formula $m$
 \end_inset
 
@@ -2503,42 +2580,51 @@ reference "oneQueue"
 
 .
  As we can see in the figure we have one queue and the clients which issue
- the requests (jobs) and are known as terminals.
+ the requests (jobs) that are our terminals.
  For this queue we are going to consider the service of the queue as the
- one that contains both the middleware and the database operations, so what
- is happening when a middleware thread picks up a socket, reads the client's
- request and send back to the client the response.
- So actually the queue corresponds to the client's socket that contains
- data and is waiting to be picked up by a middleware thread.
+ the whole operation of what the middleware does as a whole, i.e.
+ so the one that contains both the middleware and the database operations.
  
 \end_layout
 
 \begin_layout Standard
 In order to check how well our model behaves we are going to use our trace
  results given in the previous report.
- As service time we are going to use the calculated time of 
+ We remind the reader that the configuration of our trace was the following:
+\end_layout
+
+\begin_layout Itemize
+Two t2.small client instances with 50 clients each 
+\end_layout
+
+\begin_layout Itemize
+One t2.small middleware instance with 20 middleware threads and 20 connections
+\end_layout
+
+\begin_layout Itemize
+One t2.medium database
+\end_layout
+
+\begin_layout Standard
+As service time we are going to use the calculated time of 
 \begin_inset Formula $3.33ms$
 \end_inset
 
-, which corresponds to the time taken inside a middleware thread.
- Since our system is a closed system the 
-\series bold
-job flow balance
-\begin_inset Foot
-status open
-
-\begin_layout Plain Layout
-The job flow balance holds in all of our experimental results and is going
- to be used in the following models as well.
- 
-\end_layout
-
+, which corresponds to the whole time taken inside a middleware thread,
+ so 
+\begin_inset Formula $μ=\frac{1}{3.33}$
 \end_inset
 
-
+.
+ Since our system is a closed system, the number of job arrivals is equal
+ to the number of job completions, the 
+\series bold
+job flow balance
 \series default
- assumption holds, because the number of arrivals is equal to the number
- of completions.
+ assumption holds.
+ (The job flow balance holds in all of our experimental results and is going
+ to be used in the following models as well.) The assumption holds since
+ the number of arrivals is equal to the number of completions.
  This means we can use the arrival rate (
 \begin_inset Formula $λ$
 \end_inset
@@ -2550,11 +2636,17 @@ The job flow balance holds in all of our experimental results and is going
 .
  By using this as input we can calculate the traffic intensity of our system's
  queue which is 
-\begin_inset Formula $ρ=\frac{λ}{μ}=5.897\cdot3.33=19.63$
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+ρ=\frac{λ}{μ}=5.897\cdot3.33=19.63
+\]
+
 \end_inset
 
-.
- But 
+But 
 \begin_inset Formula $ρ=19.63>1$
 \end_inset
 
@@ -2562,9 +2654,8 @@ The job flow balance holds in all of our experimental results and is going
  section, this merely implies that this model is not very good for describing
  our system.
  Specifically that traffic intensity is greater than one can be explained
- for the simple reason that we used middleware 20 threads and 20 connections
- in the middleware so the general assumption of having just one server is
- not valid.
+ for the simple reason that we used 20 middleware threads and 20 connections
+ so the general assumption of having just one server is not valid.
  To prove this is the case we created a new experiment where we just ran
  50 clients using 1 thread and 1 connection.
  Specifically the configuration of our experiment was the following:
@@ -2589,16 +2680,7 @@ Running this experiment for 10 minutes and removing 2 minutes as warm up
 \end_inset
 
  and mean service rate of our one server 
-\begin_inset Formula $μ=\frac{1}{0.906036}=1.10370890$
-\end_inset
-
-.
- Finally the mean response time for a request for this experiment was 
-\begin_inset Formula $45.5888ms$
-\end_inset
-
- with a standard deviation of 
-\begin_inset Formula $6.28519$
+\begin_inset Formula $μ=\frac{1}{0.906036}$
 \end_inset
 
 .
@@ -2615,13 +2697,42 @@ Running this experiment for 10 minutes and removing 2 minutes as warm up
 \noun off
 \color none
 
-\begin_inset Formula $ρ=\frac{λ}{μ}=1.096509\cdot0.906036\simeq0.9934<1$
+\begin_inset Formula 
+\[
+ρ=\frac{λ}{μ}=1.096509\cdot0.906036\simeq0.9934<1
+\]
+
+\end_inset
+
+In this case we found out traffic intensity less than one, which we believe
+ shows that the number of threads or connections should be taken into account
+ when thinking about our model.
+ 
+\end_layout
+
+\begin_layout Standard
+Finally for this latter experiment we found that the mean response time
+ for a request was 
+\begin_inset Formula $45.5888ms$
+\end_inset
+
+ with a standard deviation of 
+\begin_inset Formula $6.28519$
 \end_inset
 
 .
- In this case we found out traffic intensity less than one, which we believe
- shows that the number of threads or connections should be taken into account
- when thinking about our model.
+
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
  Using the traffic intensity and the mean service rate we can compute the
  expected response time using the following formula:
 \end_layout
@@ -2647,8 +2758,11 @@ But the response time of
 \end_inset
 
 .
- We conclude that using just an M/M/1 queue to model our whole system is
- not enough.
+ We conclude that using just an M/M/
+\begin_inset Formula $1$
+\end_inset
+
+ queue to model our whole system is not enough.
  We need to refine our model.
 \end_layout
 
@@ -2747,7 +2861,11 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Model with an M/M/m queue
+Model with an M/M/
+\begin_inset Formula $m$
+\end_inset
+
+ queue
 \end_layout
 
 \end_inset
@@ -2778,7 +2896,7 @@ Let us revisit our trace experimental results.
 \end_inset
 
 .
- The traffic intensity now defined as 
+ The traffic intensity is now defined as 
 \begin_inset Formula $ρ=\frac{λ}{m\cdotμ}$
 \end_inset
 
@@ -2794,15 +2912,18 @@ Let us revisit our trace experimental results.
  in our case is 20 since for our trace experiment we used 20 middleware
  threads.
  Using our trace results we can find the traffic intensity of 
-\begin_inset Formula $ρ=\frac{λ}{m\cdotμ}=\frac{5.897\cdot3.33}{20}=\frac{19.63}{20}=0.981<1$
+\begin_inset Formula 
+\[
+ρ=\frac{λ}{m\cdotμ}=\frac{5.897\cdot3.33}{20}=\frac{19.63}{20}=0.981<1
+\]
+
 \end_inset
 
-.
- As we can see using 
+As we can see using 
 \begin_inset Formula $m$
 \end_inset
 
- servers seems to better model compared to our previous one.
+ servers seems to give us a better model compared to our previous one.
  The mean response time can be calculated as:
 \begin_inset Formula 
 \[
@@ -2933,7 +3054,7 @@ Stability
 \end_inset
 
  and considering the standard deviation of our response time which about
- 5, 
+ 5, the response time of 
 \begin_inset Formula $8.57ms$
 \end_inset
 
@@ -2943,11 +3064,17 @@ Stability
 \end_inset
 
  which can be calculated as 
-\begin_inset Formula $E[w]=\frac{\varrho}{mμ(1-ρ)}=7.88ms$
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+E[w]=\frac{\varrho}{m\mu(1-\rho)}=7.88ms
+\]
+
 \end_inset
 
-.
- The real waiting time is around 
+The real waiting time is around 
 \begin_inset Formula $13ms$
 \end_inset
 
@@ -2960,7 +3087,36 @@ Stability
 \end_inset
 
  standard deviation.
+ Using 
+\begin_inset Quotes eld
+\end_inset
+
+Little's Law
+\begin_inset Quotes erd
+\end_inset
+
+ we can calculate the mean number of jobs in our system which should be
  
+\begin_inset Formula $E[n]=λ\cdot E[w]=5.897\cdot7.88=46.46$
+\end_inset
+
+.
+ This number is also far off compared to the number of jobs we are expecting
+ to have which should be around 100 since we have 100 clients.
+ Using 
+\begin_inset Quotes eld
+\end_inset
+
+Little's Law
+\begin_inset Quotes erd
+\end_inset
+
+ with our real waiting time we get 
+\begin_inset Formula $E[n]=λ\cdot E[w]=5.897\cdot13.3207=78.55$
+\end_inset
+
+ which is still far off but much closer to the actual number of jobs in
+ our system.
 \end_layout
 
 \begin_layout Standard
@@ -3423,18 +3579,18 @@ status open
 \end_layout
 
 \begin_layout Standard
-As we can see after 30 clients traffic intensity is greater than 1 in this
- scenario and therefore we cannot calculate the response time.
- We can see that in the first 20 clients the model can predict quite well
- the expected response time but after 20 clients it increases dramatically
- due to the increase in the traffic intensity as we see in Figure 
+As we can see after 30 clients traffic intensity is greater than one in
+ this scenario and therefore we cannot calculate the response time.
+ We can see in Figure 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "increasingNumberOfClientsOneQueue"
 
 \end_inset
 
-.
+ that in the first 20 clients the model can predict quite well the expected
+ response time but after 20 clients it increases dramatically due to the
+ increase in the traffic intensity.
  We believed this has to do with not taking into consideration the database
  explicitly in our model.
  And since we already have shown that the database is the bottleneck, by
@@ -3502,8 +3658,9 @@ name "sec:Queueing-Network"
 \begin_layout Standard
 In this section we consider a queueing network, which is a refinement of
  our previous model.
- Since we have a closed system and requests (jobs) in our system from one
- queue to the next one our corresponding queueing network is a 
+ Since we have a closed system and requests (jobs) in our system move from
+ one queue to the next one without having externals arrivals or departures,
+ our queuing network is a 
 \series bold
 closed queueing network
 \series default
@@ -3525,20 +3682,8 @@ servers
 \begin_inset Quotes erd
 \end_inset
 
- does not actually correspond to the database connections since as we said
- previously there is no queueing actually happening in the database connections
- (in cases the number of middleware threads is greater or equal than the
- connections).
- Here the database 
-\begin_inset Quotes eld
-\end_inset
-
-servers
-\begin_inset Quotes erd
-\end_inset
-
- correspond to how many operations our database can actually execute at
- the same time.
+ correspond to the database connections in the sense on how many operations
+ our database can actually execute at the same time.
  
 \end_layout
 
@@ -3554,17 +3699,12 @@ Increasing Number of Clients
 \end_inset
 
  experimental results.
- Since for this experiment we had 20 middleware threads, we consider that
- our first queue is an M/M/20 queue, while for the database, although we
- had 20 connections we consider it as an M/M/6 queue for the reasons explained
- in Section 
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "sec:systemQueues"
-
+ Since for this experiment we had 20 middleware threads and 20 database
+ connections we considered both as M/M/
+\begin_inset Formula $20$
 \end_inset
 
-.
+ queues.
 \end_layout
 
 \begin_layout Standard
@@ -3592,7 +3732,7 @@ One m3.large client instance with 2 clients
 \end_layout
 
 \begin_layout Itemize
-One m3.large middleware with 2 middleware thread and 2 connection
+One m3.large middleware with 2 middleware threads and 2 connections
 \end_layout
 
 \begin_layout Itemize
@@ -3604,23 +3744,28 @@ We chose two clients since we cannot have a running system with just one
  client by they way we have designed our clients.
  And we chose to have the same number of middleware threads and connections
  so there is no queueing in our system.
- Therefore the calculated values would correspond to real service times.
+ Therefore the calculated values would correspond to the real service times.
  We concluded that the service time of the middleware device is 
 \begin_inset Formula $0.000534249ms$
 \end_inset
 
  while for the database device it is 
-\begin_inset Formula $1.35318ms$
+\begin_inset Formula $1.2686ms$
 \end_inset
 
 .
- MVA also takes the input think time, which in our case as usually is 0.
+ MVA also takes the input think time, which in our case, as usually, is
+ 0.
  Number of visits also needed for MVA was given and was one per device.
- The service rate was given using the following 
-\begin_inset Formula $μ$
+ The service rate was given using the following service rate 
+\begin_inset Formula $μ(n)$
 \end_inset
 
- function:
+ function where 
+\begin_inset Formula $m$
+\end_inset
+
+ is the number of servers:
 \end_layout
 
 \begin_layout Standard
@@ -3635,6 +3780,50 @@ We chose two clients since we cannot have a running system with just one
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+For the service rate function of the database, and for the reasons explained
+ in Section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:systemQueues"
+
+\end_inset
+
+, specifically the 
+\begin_inset Quotes eld
+\end_inset
+
+Database
+\begin_inset Quotes erd
+\end_inset
+
+ queueing part we consider the following changed function.
+ This was done to take into account the queueing and inherent sequential
+ execution that is happening in our database.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+μ(n)=\begin{cases}
+0.5\cdot\frac{n}{S}, & n\leq5\\
+0.3\cdot\frac{m}{S}, & n\leq20\\
+0.3\cdot\frac{20}{S}, & n=21,22,\ldots,+\infty
+\end{cases}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Our database is an enormous and complex system so it would be really hard
+ and out of the scope of this report to actually try and model the internals
+ of the database using queueing theory.
 \end_layout
 
 \begin_layout Standard
@@ -3697,15 +3886,15 @@ reference "queueingNetworkThroughput"
 \end_inset
 
 .
- As we can see in Figures 
+ As we can see in Figure 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "queueingNetworkResponseTimes"
 
 \end_inset
 
- response time was quite well calculated since it is always inside the error
- bar of our actual response time.
+ response time was calculated pretty well since it is always inside the
+ error bar of our actual response time.
  Throughput on the other hand in Figure 
 \begin_inset CommandInset ref
 LatexCommand ref
@@ -3715,8 +3904,14 @@ reference "queueingNetworkThroughput"
 
  stabilizes much quicker than it does in our real system and stays stable
  afterwards.
- Although our analysis results do not fit perfectly our actual experimental
+ 
+\end_layout
+
+\begin_layout Standard
+Although our analysis results do not fit perfectly our actual experimental
  results they show the trends of our system.
+ So this model can be used to actually predict the general performance of
+ our system.
 \end_layout
 
 \begin_layout Standard
@@ -3729,7 +3924,6 @@ status open
 \align center
 \begin_inset Graphics
 	filename plots/increasingClients/responseTimeForManyQueues/responseTime.eps
-	scale 90
 
 \end_inset
 
@@ -3770,7 +3964,6 @@ status open
 \align center
 \begin_inset Graphics
 	filename plots/increasingClients/throughputForManyQueues/throughput.eps
-	scale 90
 
 \end_inset
 
@@ -3815,14 +4008,14 @@ reference "queueingNetwork-1"
 \end_inset
 
 .
- We remind the reader by design of our system, a socket is being read many
- times by a middleware thread and is returned back to its thread queue if
- it does not contain any data.
+ We remind the reader that by the design of our system, a socket is being
+ read many times by a middleware thread and is returned back to its sockets
+ queue if it does not contain any data.
  In this sense the visit ratio of the middleware could be much higher.
  In spite of that we did not consider this model since it would complicate
- analysis.
- Now we just have a client issue a request and it is immediately queued
- up which simplifies our analysis.
+ our analysis.
+ Now we just have a client issuing a request and then the request is immediately
+ queued up which simplifies our analysis.
 \end_layout
 
 \begin_layout Standard
@@ -4077,6 +4270,10 @@ Database
 \begin_layout Standard
 We can therefore conclude that the database is the bottleneck device which
  was excepted.
+ Note that similar results were given by our MVA's algorithm execution as
+ well.
+ Since the returned utilization per device were approximately 0.01 and 0.99
+ for the middleware and the database respectively.
 \end_layout
 
 \begin_layout Section
@@ -4093,6 +4290,8 @@ name "sec:Conclusion"
 \begin_layout Standard
 In this report we explained in detail the interactive response time law
  and how it applies to our system.
+ We specifically showed that the law holds for every type of request considering
+ different think times.
  Then we presented our 
 \begin_inset Formula $2^{3}$
 \end_inset
@@ -4103,8 +4302,9 @@ In this report we explained in detail the interactive response time law
 \end_layout
 
 \begin_layout Standard
-We continued by making some assumptions and simplifications of our system.
- Then we modelled our system using one queue, first an M/M/
+We continued by giving the parts of our system where queuing is happening.
+ Afterwards we made some assumptions and simplifications of our system.
+ We continued modelling our system using one queue, first an M/M/
 \begin_inset Formula $1$
 \end_inset
 
@@ -4118,18 +4318,17 @@ We continued by making some assumptions and simplifications of our system.
 \end_inset
 
  servers which proved to have better results but was still far away from
- our real results.
- 
+ our real system.
 \end_layout
 
 \begin_layout Standard
-We continued by using a network of queues and using the MVA algorithm we
- found results that show the general trend of our actual results.
+Then by creating a network of queues and using the MVA algorithm we found
+ results that show the general trend of our actual system.
 \end_layout
 
 \begin_layout Standard
-Finally we would like to note that through this milestone we got accustomed
- to queueing theory and how it can be used to model a system.
+At the end we would like to note that through this milestone we got accustomed
+ to queueing theory and how it can be used to model a real system.
 \end_layout
 
 \begin_layout Standard
